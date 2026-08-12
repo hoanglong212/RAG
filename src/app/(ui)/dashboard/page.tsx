@@ -17,7 +17,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { EvalRun, StatsResponse } from "@/types/contract";
 import { KhungTrang, OSoLieu, The, TieuDeMuc } from "@/components/kit/co-ban";
-import { BieuDoNho, CotDoc, CotNgang } from "@/components/kit/bieu-do";
+import { BieuDoNho, CotDoc, CotDocLon, CotNgang } from "@/components/kit/bieu-do";
 import { BaoLoi, TrongRong, XuongSoLieu } from "@/components/kit/trang-thai-kit";
 import { NHAN_LOAI, chuanHoaTenCoQuan } from "@/types/nhan";
 
@@ -51,6 +51,8 @@ export default function TrangDoLuong() {
 
   const moiNhat = lanChay.at(-1) ?? null;
   const tenNganGon = (ten: string) => ten.split("-")[0] || ten;
+  /** Bao nhiêu điểm Recall@5 kiếm được kể từ đường cơ sở. */
+  const chenhLech = moiNhat && lanChay.length > 1 ? moiNhat.recallAt5 - lanChay[0].recallAt5 : 0;
 
   return (
     <KhungTrang
@@ -152,6 +154,43 @@ export default function TrangDoLuong() {
                 phu={moiNhat ? `Trên ${moiNhat.nQuestions} câu hỏi vàng` : undefined}
               />
             </div>
+
+            {/* ---- Biểu đồ chính: luận điểm định lượng của cả dự án ---- */}
+            {lanChay.length > 0 ? (
+              <The className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
+                <div className="flex shrink-0 flex-col justify-between gap-4 lg:w-64">
+                  <TieuDeMuc phu="Tỉ lệ câu hỏi vàng có đáp án đúng nằm trong 5 kết quả đầu">
+                    Recall@5 qua các lần chạy
+                  </TieuDeMuc>
+                  <div>
+                    <p className="chu-trung-bay font-ma text-[3.25rem] tabular-nums text-muc-in">
+                      {moiNhat ? phanTram(moiNhat.recallAt5) : "—"}
+                    </p>
+                    {moiNhat && lanChay.length > 1 ? (
+                      <p className="mt-2.5 text-sm leading-relaxed text-nhan">
+                        <span className="so-hieu font-medium text-muc-in">
+                          {chenhLech > 0 ? "+" : ""}
+                          {Math.round(chenhLech * 100)} điểm
+                        </span>{" "}
+                        so với đường cơ sở{" "}
+                        <span className="so-hieu">{tenNganGon(lanChay[0].configName)}</span>{" "}
+                        ({phanTram(lanChay[0].recallAt5)}) — kẻ đứt trên biểu đồ. Đo trên{" "}
+                        {moiNhat.nQuestions} câu hỏi vàng.
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <CotDocLon
+                    cacMuc={lanChay.map((r) => ({
+                      nhan: tenNganGon(r.configName),
+                      giaTri: r.recallAt5,
+                    }))}
+                  />
+                </div>
+              </The>
+            ) : null}
 
             <div className="grid gap-3 lg:grid-cols-2">
               <The>

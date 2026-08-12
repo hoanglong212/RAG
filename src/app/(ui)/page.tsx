@@ -25,6 +25,38 @@ import { cn } from "@/lib/utils";
 
 type Pha = "rong" | "dangTim" | "coNguon" | "xong" | "khongTimThay" | "loi";
 
+/** Mặt đọc kèm đầu đề chỉ rõ đang mở ở đâu. Dùng chung cho cột tĩnh và tấm trượt. */
+function MatDocCoDau({
+  vanBan,
+  dangChon,
+  onDong,
+}: {
+  vanBan: DocumentDetail;
+  dangChon: Citation;
+  onDong?: () => void;
+}) {
+  return (
+    <div className="flex h-full flex-col bg-giay">
+      <div className="flex shrink-0 items-baseline justify-between gap-3 px-5 pt-4">
+        <div className="min-w-0">
+          <p className="so-hieu truncate text-nhan">{dangChon.soHieu}</p>
+          <p className="mt-0.5 truncate text-[0.8125rem] text-nhan">{dangChon.breadcrumb}</p>
+        </div>
+        {onDong ? (
+          <button
+            type="button"
+            onClick={onDong}
+            className="shrink-0 rounded-[--bo] px-2 py-1 text-sm font-medium text-but-xanh"
+          >
+            Đóng
+          </button>
+        ) : null}
+      </div>
+      <MatDoc tree={vanBan.tree} nodeIdDangNeo={dangChon.nodeId} className="min-h-0 flex-1" />
+    </div>
+  );
+}
+
 const CAU_HOI_GOI_Y = [
   "Công ty chậm trả tiền lương cho người lao động thì bị xử lý thế nào?",
   "Người đi xe máy vượt đèn đỏ bị phạt theo quy định nào?",
@@ -40,6 +72,7 @@ export default function TrangTraCuu() {
   const [topScore, setTopScore] = useState(0);
   const [nguong, setNguong] = useState(0.35);
   const [soVanBan, setSoVanBan] = useState(0);
+  const [soChunk, setSoChunk] = useState(0);
   const [dangChay, setDangChay] = useState(false);
   const [matDocMo, setMatDocMo] = useState(false);
 
@@ -50,7 +83,10 @@ export default function TrangTraCuu() {
   useEffect(() => {
     fetch("/api/stats")
       .then((r) => r.json())
-      .then((d: StatsResponse) => setSoVanBan(d.tongVanBan))
+      .then((d: StatsResponse) => {
+        setSoVanBan(d.tongVanBan);
+        setSoChunk(d.tongChunk);
+      })
       .catch(() => undefined);
   }, []);
 
@@ -167,12 +203,23 @@ export default function TrangTraCuu() {
 
       {/* ---------- Cột giữa: hỏi và đáp ---------- */}
       <main className="flex min-w-0 flex-1 flex-col overflow-y-auto px-4 py-5 sm:px-6">
-        <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
+        {/* Lúc chưa có văn bản, cột này được rộng hơn vì cột mặt đọc chưa dựng. */}
+        <div
+          className={cn(
+            "mx-auto flex w-full flex-1 flex-col",
+            vanBan ? "max-w-2xl" : "max-w-3xl",
+          )}
+        >
           <OHoi giaTri={cauHoi} onDoi={setCauHoi} onTraCuu={traCuu} dangChay={dangChay} />
 
           <div className="mt-7 flex-1">
             {pha === "rong" ? (
-              <TrangThaiRong cauHoiGoiY={CAU_HOI_GOI_Y} onChonCauHoi={setCauHoi} />
+              <TrangThaiRong
+                cauHoiGoiY={CAU_HOI_GOI_Y}
+                onChonCauHoi={setCauHoi}
+                tongVanBan={soVanBan}
+                tongChunk={soChunk}
+              />
             ) : null}
             {pha === "dangTim" ? <DangTai /> : null}
             {pha === "khongTimThay" ? (
@@ -233,44 +280,29 @@ export default function TrangTraCuu() {
         />
       ) : null}
 
+      {/* Từ 1280px: cột thứ ba tĩnh, KHÔNG transform. Lớp `fixed` kèm
+          `translate` sinh một tầng hợp thành thừa mà bề ngang này không cần. */}
+      {vanBan && dangChon ? (
+        <div className="hidden xl:block xl:w-[32rem] xl:shrink-0 2xl:w-[38rem]">
+          <MatDocCoDau vanBan={vanBan} dangChon={dangChon} />
+        </div>
+      ) : null}
+
+      {/* Dưới 1280px: tấm trượt. */}
       <div
         className={cn(
-          "fixed inset-y-0 right-0 z-40 w-full max-w-xl shadow-noi",
+          "fixed inset-y-0 right-0 z-40 w-full max-w-xl shadow-noi xl:hidden",
           "transition-transform duration-[--nhip-cham] [transition-timing-function:var(--duong-cong)]",
-          "xl:static xl:w-[32rem] xl:max-w-none xl:shrink-0 xl:translate-x-0 xl:shadow-none 2xl:w-[38rem]",
           matDocMo ? "translate-x-0" : "translate-x-full",
         )}
       >
         {vanBan && dangChon ? (
-          <div className="flex h-full flex-col bg-giay">
-            <div className="flex shrink-0 items-baseline justify-between gap-3 px-5 pt-4">
-              <div className="min-w-0">
-                <p className="so-hieu truncate text-nhan">{dangChon.soHieu}</p>
-                <p className="mt-0.5 truncate text-[0.8125rem] text-nhan">
-                  {dangChon.breadcrumb}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMatDocMo(false)}
-                className="shrink-0 rounded-[--bo] px-2 py-1 text-sm text-but-xanh xl:hidden"
-              >
-                Đóng
-              </button>
-            </div>
-            <MatDoc
-              tree={vanBan.tree}
-              nodeIdDangNeo={dangChon.nodeId}
-              className="min-h-0 flex-1"
-            />
-          </div>
-        ) : (
-          <div className="mat-doc flex h-full items-center justify-center px-10">
-            <p className="max-w-[22ch] text-center text-sm leading-relaxed text-nhan">
-              Bấm một nguồn để mở văn bản gốc tại đúng Khoản được trích dẫn.
-            </p>
-          </div>
-        )}
+          <MatDocCoDau
+            vanBan={vanBan}
+            dangChon={dangChon}
+            onDong={() => setMatDocMo(false)}
+          />
+        ) : null}
       </div>
     </div>
   );

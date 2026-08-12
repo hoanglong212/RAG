@@ -187,6 +187,39 @@
     animation: dong-dau var(--nhip-cham) var(--duong-cong-dong-dau) both;
   }
 
+  /**
+   * Trục vừa cuộn tới Điều được trích: nền loé lên rồi lắng xuống.
+   * Chuyển động này trả lời câu hỏi "vừa rồi có gì đổi?" — không có nó thì
+   * trục cuộn xong người dùng vẫn phải tự dò xem dấu đóng ở đâu.
+   */
+  @keyframes loe-neo {
+    0% {
+      background-color: color-mix(in srgb, var(--dau-do) 22%, var(--neo-vang));
+    }
+    100% {
+      background-color: var(--neo-vang);
+    }
+  }
+
+  .loe-neo {
+    animation: loe-neo 900ms var(--duong-cong) both;
+  }
+
+  /** Vạch mật độ của Điều đang neo: nảy dài ra rồi về đúng chiều cao. */
+  @keyframes vach-neo {
+    0% {
+      transform: scaleY(0.4);
+    }
+    100% {
+      transform: scaleY(1);
+    }
+  }
+
+  .vach-neo {
+    transform-origin: top;
+    animation: vach-neo var(--nhip-cham) var(--duong-cong-dong-dau) both;
+  }
+
   @keyframes hien-len {
     from {
       opacity: 0;
@@ -204,7 +237,9 @@
 
   @media (prefers-reduced-motion: reduce) {
     .dong-dau,
-    .hien-len {
+    .hien-len,
+    .loe-neo,
+    .vach-neo {
       animation: none;
     }
   }

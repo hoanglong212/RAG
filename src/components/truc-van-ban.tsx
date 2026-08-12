@@ -166,7 +166,7 @@ export function TrucVanBan({
                   "group relative flex w-full items-start gap-3 py-1.5 text-left",
                   "justify-center px-2 lg:justify-start lg:pl-3 lg:pr-2",
                   "transition-colors duration-[--nhip]",
-                  dangNeo ? "bg-neo-vang" : "hover:bg-khay-sau",
+                  dangNeo ? "bg-neo-vang loe-neo" : "hover:bg-khay-sau",
                 )}
               >
                 {/* Vạch mật độ: cao tỉ lệ với độ dài Điều. */}
@@ -175,7 +175,7 @@ export function TrucVanBan({
                   style={{ height: `${cao}px` }}
                   className={cn(
                     "mt-1 w-1 shrink-0 rounded-[1px] transition-colors duration-[--nhip]",
-                    dangNeo ? "bg-dau-do" : "bg-muc-in/30 group-hover:bg-but-xanh",
+                    dangNeo ? "bg-dau-do vach-neo" : "bg-muc-in/30 group-hover:bg-but-xanh",
                   )}
                 />
                 {/* Chế độ hẹp: con dấu thu nhỏ đứng cạnh vạch, vì không có chữ. */}

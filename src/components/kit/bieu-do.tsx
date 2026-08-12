@@ -101,6 +101,81 @@ export function CotDoc({ cacMuc, donVi = "" }: { cacMuc: MucCot[]; donVi?: strin
 }
 
 /**
+ * Biểu đồ chính của trang — chỗ mắt rơi vào trước.
+ *
+ * Một đại lượng, một màu, và một đường chuẩn kẻ đứt ngang ở mức của lần chạy
+ * đầu tiên. Đường chuẩn đó mới là thứ làm biểu đồ có nghĩa: nó biến bốn cây
+ * cột rời rạc thành một câu chuyện "đổi cái này thì được thêm chừng này".
+ */
+export function CotDocLon({
+  cacMuc,
+  dinhTruc = 1,
+  dinhDang = (v: number) => `${Math.round(v * 100)}%`,
+}: {
+  cacMuc: MucCot[];
+  dinhTruc?: number;
+  dinhDang?: (v: number) => string;
+}) {
+  if (cacMuc.length === 0) {
+    return <p className="text-sm text-nhan">Chưa có lần chạy nào.</p>;
+  }
+  const chuan = cacMuc[0].giaTri;
+  const caoChuan = (chuan / dinhTruc) * 100;
+
+  return (
+    <div>
+      <div className="relative flex items-end gap-2.5" style={{ height: "13rem" }}>
+        {/* Đường chuẩn: kẻ đứt, lùi hẳn về sau, nhãn nằm ngoài vùng cột. */}
+        <span
+          aria-hidden
+          className="absolute inset-x-0 border-t border-dashed border-muc-in/25"
+          style={{ bottom: `${caoChuan}%` }}
+        />
+        {cacMuc.map((m, i) => {
+          const cao = Math.max(3, (m.giaTri / dinhTruc) * 100);
+          const honChuan = i > 0 && m.giaTri > chuan;
+          return (
+            <div
+              key={m.nhan}
+              className="group relative flex min-w-0 flex-1 flex-col justify-end"
+              style={{ height: "100%" }}
+              title={`${m.nhan}: ${dinhDang(m.giaTri)}`}
+            >
+              <span
+                className={cn(
+                  "so-hieu mb-1.5 text-center text-[0.8125rem] tabular-nums",
+                  honChuan ? "font-medium text-muc-in" : "text-nhan",
+                )}
+              >
+                {m.hienThi ?? dinhDang(m.giaTri)}
+              </span>
+              {/* Chặn bề ngang: ít cột mà để giãn hết khung thì thành khối đặc,
+                  không còn đọc ra là biểu đồ nữa. */}
+              <span
+                className="mx-auto block w-full max-w-[5.5rem] rounded-t-[4px] bg-but-xanh transition-[height,background-color] duration-[--nhip-cham] group-hover:bg-but-xanh-sau"
+                style={{ height: `${cao}%` }}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-2.5 flex gap-2.5 border-t border-ke-mo pt-2.5">
+        {cacMuc.map((m) => (
+          <span
+            key={m.nhan}
+            className="so-hieu min-w-0 flex-1 truncate text-center text-nhan"
+            title={m.nhan}
+          >
+            {m.nhan}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
  * Biểu đồ nhỏ trong bộ nhiều biểu đồ cùng dạng. Mỗi cái đúng MỘT đại lượng —
  * đây là cách so ba chỉ số eval mà không phải nhét ba màu vào một khung, và
  * cũng tránh được lỗi hai trục tung.

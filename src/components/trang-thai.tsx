@@ -19,50 +19,89 @@ const soVN = (n: number) => n.toFixed(2).replace(".", ",");
 export interface TrangThaiRongProps {
   cauHoiGoiY: string[];
   onChonCauHoi: (cauHoi: string) => void;
+  tongVanBan?: number;
+  tongChunk?: number;
 }
 
-/** Màn hình trống là lời mời hành động, không phải thông báo buồn. */
-export function TrangThaiRong({ cauHoiGoiY, onChonCauHoi }: TrangThaiRongProps) {
+const soNhom = (n: number) => n.toLocaleString("vi-VN");
+
+/**
+ * Màn mở màn. Đây là chỗ DUY NHẤT trong sản phẩm được phép to tiếng —
+ * mọi màn khác đều có dữ liệu thật để nói thay.
+ *
+ * Ba việc nó phải làm, theo đúng thứ tự: nói sản phẩm hứa gì, chứng minh
+ * lời hứa đó có thật bằng số đo của kho tài liệu, rồi mời gõ câu đầu tiên.
+ */
+export function TrangThaiRong({
+  cauHoiGoiY,
+  onChonCauHoi,
+  tongVanBan,
+  tongChunk,
+}: TrangThaiRongProps) {
+  const coSo = typeof tongVanBan === "number" && tongVanBan > 0;
+
   return (
-    <div className="py-2">
+    <div className="hien-len py-2">
       {/*
-        Màn hình mở màn là chỗ duy nhất được phép to tiếng. Con dấu ở đây
-        KHÔNG phá kỷ luật màu: nó đứng cạnh chính lời hứa về trích dẫn, và
-        lời hứa đó là nghĩa của màu đỏ trong sản phẩm này.
+        Con dấu ở đây KHÔNG phá kỷ luật màu: nó đứng cạnh đúng lời hứa về
+        trích dẫn, mà lời hứa đó chính là nghĩa của màu đỏ trong sản phẩm này.
       */}
-      <div className="flex items-start gap-4">
-        <ConDau co={44} className="mt-1 hidden sm:block" />
-        <div className="min-w-0">
-          <h2 className="chu-trung-bay text-[1.75rem] sm:text-[2.125rem]">
-            Hỏi một câu.
-            <br />
-            Nhận về đúng Điều.
-          </h2>
-          <p className="mt-3 max-w-lg text-[0.9375rem] leading-relaxed text-nhan">
-            Mỗi câu trả lời đều đóng dấu về Điều, Khoản trong văn bản gốc để bạn tự kiểm
-            chứng. Không đủ căn cứ thì hệ thống nói thẳng là không tìm thấy, chứ không
-            đoán.
-          </p>
-        </div>
-      </div>
+      <ConDau co={52} className="mb-5 block" />
+
+      <h2 className="chu-trung-bay text-[2rem] sm:text-[2.5rem]">
+        Hỏi một câu.
+        <br />
+        Nhận về đúng Điều.
+      </h2>
+
+      <p className="mt-4 max-w-xl text-[0.9375rem] leading-relaxed text-nhan">
+        Mỗi câu trả lời đều đóng dấu về Điều, Khoản trong văn bản gốc để bạn tự kiểm
+        chứng. Không đủ căn cứ thì hệ thống nói thẳng là không tìm thấy, chứ không đoán.
+      </p>
+
+      {/* Số đo kho tài liệu: bằng chứng lời hứa trên có thật. */}
+      {coSo ? (
+        <dl className="ke-quoc-hieu mt-7 flex flex-wrap gap-x-10 gap-y-3 pb-4">
+          <div>
+            <dt className="nhan-hoa">Văn bản trong kho</dt>
+            <dd className="chu-trung-bay mt-1 font-ma text-[1.5rem] tabular-nums">
+              {soNhom(tongVanBan)}
+            </dd>
+          </div>
+          {typeof tongChunk === "number" && tongChunk > 0 ? (
+            <div>
+              <dt className="nhan-hoa">Đoạn đã bóc tách</dt>
+              <dd className="chu-trung-bay mt-1 font-ma text-[1.5rem] tabular-nums">
+                {soNhom(tongChunk)}
+              </dd>
+            </div>
+          ) : null}
+          <div>
+            <dt className="nhan-hoa">Độ sâu trích dẫn</dt>
+            <dd className="chu-trung-bay mt-1 text-[1.5rem]">Tới Khoản</dd>
+          </div>
+        </dl>
+      ) : null}
 
       <p className="nhan-hoa mt-8">Thử một câu</p>
-      <ul className="mt-2 flex flex-col gap-1.5">
-        {cauHoiGoiY.map((cau) => (
+      <ul className="mt-2.5 flex flex-col gap-2">
+        {cauHoiGoiY.map((cau, i) => (
           <li key={cau}>
             <button
               type="button"
               onClick={() => onChonCauHoi(cau)}
               className={cn(
-                "group flex w-full items-center gap-3 rounded-[--bo] bg-giay px-3.5 py-3",
-                "text-left text-sm shadow-the",
-                "transition-shadow duration-[--nhip] hover:shadow-noi",
+                "group flex w-full items-center gap-3.5 rounded-[--bo-lon] bg-giay py-3.5 pl-4 pr-3.5",
+                "text-left text-[0.9375rem] leading-snug shadow-the",
+                "transition-[box-shadow,transform] duration-[--nhip]",
+                "hover:-translate-y-px hover:shadow-vua",
               )}
             >
+              <span className="so-hieu shrink-0 text-nhan">0{i + 1}</span>
               <span className="flex-1">{cau}</span>
               <span
                 aria-hidden
-                className="shrink-0 text-nhan transition-transform duration-[--nhip] group-hover:translate-x-0.5"
+                className="shrink-0 text-lg leading-none text-nhan transition-[transform,color] duration-[--nhip] group-hover:translate-x-0.5 group-hover:text-but-xanh"
               >
                 →
               </span>
