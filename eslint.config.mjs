@@ -18,6 +18,10 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Script của skill, không phải mã nguồn dự án — để lọt vào đây thì
+      // cảnh báo thật của src/ bị chìm giữa hàng trăm dòng của công cụ.
+      ".claude/**",
+      ".impeccable/**",
     ],
   },
 ];

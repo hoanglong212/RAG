@@ -79,7 +79,9 @@ function NodeVanBan({
       className={cn(
         "relative scroll-mt-6 transition-colors duration-[--nhip-cham]",
         // Nền vàng nhạt + kẻ đỏ: cùng hệ nghĩa với con dấu trên chip trích dẫn.
-        dangNeo && "-mx-4 border-l-[3px] border-dau-do bg-neo-vang px-4 py-2",
+        // Nền vàng neo + con dấu đóng đè lên mép là đủ; thêm một vạch đỏ dọc
+        // nữa chỉ là nói cùng một điều tới ba lần.
+        dangNeo && "-mx-4 rounded-[--bo] bg-neo-vang px-4 py-3",
       )}
     >
       {/* Con dấu đóng đè lên mép đoạn được trích, như dấu giáp lai trên giấy. */}

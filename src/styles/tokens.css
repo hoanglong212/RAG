@@ -111,8 +111,8 @@
   --nhip: 200ms;
   --nhip-cham: 380ms;
   --duong-cong: cubic-bezier(0.2, 0, 0, 1);
-  /** Đường cong nảy nhẹ, dành riêng cho động tác đóng dấu. */
-  --duong-cong-dong-dau: cubic-bezier(0.34, 1.4, 0.5, 1);
+  /** Đường cong giảm tốc nhanh, dành riêng cho động tác đóng dấu. */
+  --duong-cong-dong-dau: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {

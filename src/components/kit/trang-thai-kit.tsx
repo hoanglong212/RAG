@@ -75,7 +75,7 @@ export function TrongRong({
   return (
     <The className="flex flex-col items-start gap-3 py-10 sm:items-center sm:text-center">
       <div className="sm:max-w-md">
-        <p className="text-[0.9375rem] font-semibold">{tieuDe}</p>
+        <p className="font-semibold">{tieuDe}</p>
         <p className="mt-1.5 text-sm leading-relaxed text-nhan">{moTa}</p>
       </div>
       {hanhDong}
@@ -101,7 +101,10 @@ export function BaoLoi({
   return (
     <div
       role="alert"
-      className="rounded-[--bo-lon] bg-giay py-4 pl-4 pr-5 shadow-the [border-left:3px_solid_var(--muc-in)]"
+      /* Không dùng dải màu dọc bên trái: ở sản phẩm này mọi vạch màu đứng cạnh
+         nội dung đều dễ bị đọc nhầm thành neo trích dẫn. Lỗi phân biệt bằng
+         SỨC NẶNG — nền khay đậm hơn giấy và tiêu đề in đậm. */
+      className="rounded-[--bo-lon] bg-khay-sau px-4 py-4 shadow-the"
     >
       <p className="text-sm font-semibold">{tieuDe}</p>
       <p className="mt-1 text-sm leading-relaxed text-nhan">{moTa}</p>

@@ -82,18 +82,31 @@ export function CotDoc({ cacMuc, donVi = "" }: { cacMuc: MucCot[]; donVi?: strin
   }
 
   return (
-    <div className="flex items-end gap-1.5" style={{ height: "9rem" }}>
+    /*
+      Cột phải nằm trong một vùng CÓ chiều cao xác định thì `height: %` mới
+      giải được. Trước đây cột là con trực tiếp của flex-column cao auto, nên
+      mọi cột về 0 và biểu đồ chỉ còn trơ lại hàng số.
+
+      `min-w-0` trên từng cột là bắt buộc: mặc định grid/flex item không co
+      xuống dưới bề rộng nội dung, nên mười một nhãn năm đủ sức bẻ rộng cả
+      thẻ chứa nó trên màn hình hẹp.
+    */
+    <div className="flex h-36 items-stretch gap-1.5">
       {cacMuc.map((m) => (
         <div key={m.nhan} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
           <span className="so-hieu text-[0.6875rem] tabular-nums text-nhan">
             {m.hienThi ?? m.giaTri}
           </span>
-          <span
-            title={`${m.nhan}: ${m.hienThi ?? m.giaTri}${donVi}`}
-            className="block w-full rounded-t-[4px] bg-but-xanh transition-[height] duration-[--nhip-cham]"
-            style={{ height: `${Math.max(2, (m.giaTri / dinh) * 100)}%` }}
-          />
-          <span className="so-hieu truncate text-[0.6875rem] text-nhan">{m.nhan}</span>
+          <span className="flex w-full flex-1 items-end">
+            <span
+              title={`${m.nhan}: ${m.hienThi ?? m.giaTri}${donVi}`}
+              className="block w-full rounded-t-[4px] bg-but-xanh transition-[height] duration-[--nhip-cham]"
+              style={{ height: `${Math.max(2, (m.giaTri / dinh) * 100)}%` }}
+            />
+          </span>
+          <span className="so-hieu w-full truncate text-center text-[0.6875rem] text-nhan">
+            {m.nhan}
+          </span>
         </div>
       ))}
     </div>
@@ -218,7 +231,7 @@ export function BieuDoNho({
         {cacMuc.map((m) => (
           <span
             key={m.nhan}
-            className="min-w-0 flex-1 truncate text-center text-[0.625rem] text-nhan"
+            className="so-hieu min-w-0 flex-1 truncate text-center text-nhan"
             title={m.nhan}
           >
             {m.nhan}

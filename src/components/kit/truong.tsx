@@ -12,9 +12,9 @@ import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 const NEN_TRUONG =
-  "w-full rounded-[--bo] bg-giay px-3 py-2 text-sm text-muc-in " +
-  "shadow-[inset_0_0_0_1px_var(--ke-mo)] placeholder:text-nhan " +
-  "transition-shadow duration-[--nhip] " +
+  "w-full min-h-11 rounded-[--bo] bg-giay px-3.5 py-2.5 text-sm text-muc-in " +
+  "shadow-[inset_0_0_0_1px_var(--ke-mo),0_1px_2px_rgb(16_20_27_/_0.03)] placeholder:text-nhan " +
+  "transition-[box-shadow,background-color] duration-[--nhip] hover:bg-white focus:bg-white focus:shadow-[inset_0_0_0_1px_var(--but-xanh),0_8px_20px_-14px_var(--muc-in)] " +
   "disabled:cursor-not-allowed disabled:bg-khay disabled:text-nhan";
 
 /** Bọc nhãn + trường + chú thích, giữ khoảng cách nhất quán. */
@@ -115,11 +115,11 @@ export function VienLoc<T extends string>({
             aria-pressed={chon}
             onClick={() => onChon(m.giaTri)}
             className={cn(
-              "rounded-full px-3 py-1.5 text-xs font-medium",
-              "transition-colors duration-[--nhip]",
+              "min-h-9 rounded-full px-3.5 py-2 text-xs font-semibold",
+              "transition-[background-color,color,transform,box-shadow] duration-[--nhip] active:translate-y-px",
               chon
-                ? "bg-but-xanh text-giay"
-                : "bg-giay text-nhan shadow-[inset_0_0_0_1px_var(--ke-mo)] hover:text-muc-in",
+                ? "bg-but-xanh text-giay shadow-vua"
+                : "bg-giay text-nhan shadow-[inset_0_0_0_1px_var(--ke-mo)] hover:-translate-y-px hover:text-muc-in hover:shadow-the",
             )}
           >
             {m.nhan}

@@ -104,6 +104,95 @@
 
 @layer components {
   /**
+   * Nền bàn làm việc: các quầng sáng rất mờ kéo mắt về vùng nội dung. Không
+   * có blur kính; mọi lớp vẫn là màu phẳng và giữ độ tương phản ổn định.
+   */
+  .nen-ung-dung {
+    position: relative;
+    isolation: isolate;
+    background-color: var(--khay);
+    background-image:
+      radial-gradient(circle at 12% 8%, rgb(36 64 107 / 0.09), transparent 28rem),
+      radial-gradient(circle at 88% 92%, rgb(253 252 250 / 0.92), transparent 32rem);
+  }
+
+  /** Đầu mỗi trang là bìa hồ sơ, đủ đậm để tách khỏi các tờ giấy thao tác. */
+  .dau-trang::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(110deg, transparent 0 65%, rgb(255 255 255 / 0.045) 65% 66%, transparent 66% 100%),
+      repeating-linear-gradient(135deg, transparent 0 14px, rgb(255 255 255 / 0.025) 14px 15px);
+  }
+
+  .dau-trang::after {
+    content: "";
+    position: absolute;
+    right: 1.75rem;
+    bottom: -1.2rem;
+    width: 8rem;
+    height: 8rem;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 999px;
+    box-shadow: 0 0 0 12px rgb(255 255 255 / 0.025), 0 0 0 28px rgb(255 255 255 / 0.018);
+    pointer-events: none;
+  }
+
+  .o-so-lieu::after {
+    content: "";
+    position: absolute;
+    right: -1.5rem;
+    top: -1.75rem;
+    width: 6rem;
+    height: 6rem;
+    border: 1px solid rgb(36 64 107 / 0.1);
+    border-radius: 999px;
+    box-shadow: 0 0 0 10px rgb(36 64 107 / 0.025);
+  }
+
+  /** Màn mở đầu: một bìa tra cứu, không phải thêm một thẻ trắng. */
+  .mo-man {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background-color: var(--but-xanh-sau);
+    background-image:
+      radial-gradient(circle at 78% 18%, rgb(230 236 247 / 0.13), transparent 20rem),
+      repeating-linear-gradient(135deg, transparent 0 17px, rgb(255 255 255 / 0.026) 17px 18px);
+  }
+
+  .mo-man::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    right: -7rem;
+    bottom: -11rem;
+    width: 30rem;
+    height: 30rem;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 999px;
+    box-shadow: 0 0 0 2rem rgb(255 255 255 / 0.018), 0 0 0 5rem rgb(255 255 255 / 0.012);
+  }
+
+  .o-hoi-noi-bat {
+    position: relative;
+  }
+
+  .o-hoi-noi-bat::before {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    top: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--but-xanh), transparent);
+    transform-origin: center;
+    animation: quet-tra-cuu 900ms var(--duong-cong) 300ms both;
+  }
+
+  /**
    * Mặt đọc — vùng duy nhất trong sản phẩm dùng serif, và vùng duy nhất có
    * vân giấy. Vân là những dòng kẻ ngang cực mờ, gợi giấy kẻ ngang mà không
    * đọc ra thành dòng kẻ; đủ để mắt phân biệt "tờ giấy" với "một hộp trắng
@@ -158,6 +247,37 @@
   }
 
   /**
+   * Ba bậc cỡ chữ lớn, khai ở đây thay vì rải text-[2.35rem] khắp nơi.
+   * Trước đó có tới năm cỡ tự chế cho cùng ba vai trò, nên các trang lệch
+   * nhau mà không ai chủ ý cả.
+   */
+
+  /** Màn mở màn. Bậc lớn nhất, mỗi trang chỉ được dùng một lần. */
+  .co-trung-bay {
+    font-size: clamp(2.25rem, 5.5vw, 3.5rem);
+  }
+
+  /** Tiêu đề trang trên bìa hồ sơ. */
+  .co-tieu-de-trang {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  }
+
+  /** Con số đo lường: ô thống kê, số liệu nổi bật. */
+  .co-so-lieu {
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  }
+
+  /** Nhãn chữ hoa đặt trên nền mực hoặc bìa navy. */
+  .nhan-hoa-sang {
+    color: rgb(253 252 250 / 0.62);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+  }
+
+  /**
    * Dải quốc hiệu: hai vạch song song dày mỏng, lấy từ đường kẻ dưới phần
    * tiêu ngữ của công văn giấy.
    */
@@ -168,6 +288,21 @@
 }
 
 @layer utilities {
+  @keyframes quet-tra-cuu {
+    0% {
+      opacity: 0;
+      transform: scaleX(0.35);
+    }
+    55% {
+      opacity: 0.75;
+      transform: scaleX(1);
+    }
+    100% {
+      opacity: 0.22;
+      transform: scaleX(0.72);
+    }
+  }
+
   /** Động tác đóng dấu: xoay nhẹ và nện xuống. */
   @keyframes dong-dau {
     0% {
@@ -240,6 +375,10 @@
     .hien-len,
     .loe-neo,
     .vach-neo {
+      animation: none;
+    }
+
+    .o-hoi-noi-bat::before {
       animation: none;
     }
   }

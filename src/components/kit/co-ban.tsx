@@ -19,7 +19,7 @@ type KieuNut = "chinh" | "phu" | "vien" | "lang";
 type CoNut = "vua" | "nho";
 
 const KIEU_NUT: Record<KieuNut, string> = {
-  chinh: "bg-but-xanh text-giay hover:bg-but-xanh-sau",
+  chinh: "bg-but-xanh text-giay shadow-vua hover:-translate-y-px hover:bg-but-xanh-sau hover:shadow-noi",
   phu: "bg-khay-sau text-muc-in hover:bg-khay-sau/70",
   vien: "bg-transparent text-muc-in shadow-[inset_0_0_0_1px_var(--ke-mo)] hover:bg-khay-sau/60",
   lang: "bg-transparent text-nhan hover:bg-khay-sau hover:text-muc-in",
@@ -40,8 +40,8 @@ export function Nut({ kieu = "chinh", co = "vua", className, ...props }: NutProp
     <button
       {...props}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-[--bo] font-medium",
-        "transition-[background-color,color,transform] duration-[--nhip]",
+        "inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-[--bo] font-semibold",
+        "transition-[background-color,color,transform,box-shadow] duration-[--nhip]",
         "active:translate-y-px",
         "disabled:pointer-events-none disabled:opacity-45",
         KIEU_NUT[kieu],
@@ -93,7 +93,7 @@ export function The({
   return (
     <div
       className={cn(
-        "rounded-[--bo-lon] bg-giay shadow-the",
+        "relative rounded-[--bo-lon] bg-giay shadow-the ring-1 ring-muc-in/[0.035]",
         khongDem ? "overflow-hidden" : "p-4 sm:p-5",
         className,
       )}
@@ -120,7 +120,7 @@ export function TieuDeMuc({
   return (
     <div className={cn("flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1", className)}>
       <div className="min-w-0">
-        <h2 className="text-[0.9375rem] font-semibold leading-snug">{children}</h2>
+        <h2 className="text-base font-semibold leading-snug tracking-[-0.015em]">{children}</h2>
         {phu ? <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-nhan">{phu}</p> : null}
       </div>
       {hanhDong ? <div className="flex shrink-0 items-center gap-2">{hanhDong}</div> : null}
@@ -150,25 +150,33 @@ export function KhungTrang({
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className={cn("mx-auto px-4 pb-16 pt-7 sm:px-6", beRong)}>
+      <div className={cn("mx-auto px-4 pb-20 pt-5 sm:px-6 sm:pt-7", beRong)}>
         {/*
           Đầu trang mượn cách bày của công văn giấy: khối tiêu đề, rồi một dải
           kẻ dày mỏng song song đóng lại phần tiêu ngữ. Cỡ chữ ở đây cố tình
           lớn hẳn so với phần thân — không có tương phản cỡ chữ thì cả trang
           đều 13px và mắt không có chỗ bám.
         */}
-        <header className="ke-quoc-hieu flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pb-4">
-          <div className="min-w-0">
-            <h1 className="chu-trung-bay text-[1.75rem] sm:text-[2rem]">{tieuDe}</h1>
-            {moTa ? (
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-nhan">{moTa}</p>
+        {/*
+          Bìa hồ sơ KHÔNG có hoạt ảnh vào. Tám trang cùng chạy một kiểu fade
+          lúc tải thì đó không còn là chuyển động có chủ ý, mà là tiếng ồn nền.
+          Khoảnh khắc chuyển động duy nhất của sản phẩm là lúc đóng dấu trích
+          dẫn — để nó đứng một mình thì nó mới được chú ý.
+        */}
+        <header className="dau-trang relative overflow-hidden rounded-[--bo-lon] bg-but-xanh-sau px-5 py-6 text-giay shadow-noi sm:px-7 sm:py-8">
+          <div className="relative z-10 flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
+            <div className="min-w-0 max-w-3xl">
+              <h1 className="chu-trung-bay co-tieu-de-trang">{tieuDe}</h1>
+              {moTa ? (
+                <p className="mt-3 max-w-2xl text-base leading-relaxed text-giay/70">{moTa}</p>
+              ) : null}
+            </div>
+            {hanhDong ? (
+              <div className="flex shrink-0 flex-wrap items-center gap-2">{hanhDong}</div>
             ) : null}
           </div>
-          {hanhDong ? (
-            <div className="flex shrink-0 flex-wrap items-center gap-2">{hanhDong}</div>
-          ) : null}
         </header>
-        <div className="mt-6">{children}</div>
+        <div className="mt-5 sm:mt-6">{children}</div>
       </div>
     </div>
   );
@@ -176,6 +184,33 @@ export function KhungTrang({
 
 /* ------------------------------------------------------------------ */
 /* Ô số liệu                                                           */
+
+/**
+ * Số liệu phụ, xếp thành hàng trong MỘT thẻ.
+ *
+ * Lý do tồn tại: một lưới bốn ô y hệt nhau nói rằng bốn con số quan trọng
+ * ngang nhau, mà gần như không bao giờ đúng. Một con số dẫn đầu cỡ lớn cộng
+ * mấy con số phụ nằm gọn một hàng đọc nhanh hơn và trung thực hơn.
+ */
+export function HangSoLieu({
+  cacMuc,
+}: {
+  cacMuc: { nhan: string; giaTri: string; phu?: string }[];
+}) {
+  return (
+    <The className="grid gap-x-6 gap-y-5 sm:grid-cols-3">
+      {cacMuc.map((m) => (
+        <div key={m.nhan} className="min-w-0">
+          <p className="nhan-hoa">{m.nhan}</p>
+          <p className="so-hieu mt-1.5 text-xl tabular-nums text-muc-in">{m.giaTri}</p>
+          {m.phu ? (
+            <p className="mt-1 text-xs leading-relaxed text-nhan">{m.phu}</p>
+          ) : null}
+        </div>
+      ))}
+    </The>
+  );
+}
 
 export function OSoLieu({
   nhan,
@@ -187,11 +222,11 @@ export function OSoLieu({
   phu?: string;
 }) {
   return (
-    <The className="flex flex-col justify-between gap-4">
-      <p className="nhan-hoa">{nhan}</p>
+    <The className="o-so-lieu flex min-h-36 flex-col justify-between gap-5 overflow-hidden">
+      <p className="nhan-hoa relative z-10">{nhan}</p>
       <div>
         {/* Con số là thứ người ta tới đây để đọc, nên nó được cỡ chữ lớn nhất trang. */}
-        <p className="chu-trung-bay font-ma text-[2.25rem] tabular-nums text-muc-in">
+        <p className="chu-trung-bay co-so-lieu relative z-10 font-ma tabular-nums text-muc-in">
           {giaTri}
         </p>
         {phu ? <p className="mt-2 text-xs leading-relaxed text-nhan">{phu}</p> : null}

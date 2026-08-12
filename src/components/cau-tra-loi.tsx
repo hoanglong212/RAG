@@ -66,7 +66,7 @@ export function CauTraLoi({
   }
 
   return (
-    <p className="whitespace-pre-wrap text-[0.9375rem] leading-[--dong-body]">
+    <p className="whitespace-pre-wrap text-base leading-[--dong-body]">
       {manh}
       {dangViet ? (
         <span

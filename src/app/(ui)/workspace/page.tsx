@@ -144,7 +144,7 @@ export default function TrangKhongGianLamViec() {
               </h3>
 
               {phanTich.answer ? (
-                <p className="whitespace-pre-wrap text-[0.9375rem] leading-[--dong-body]">
+                <p className="whitespace-pre-wrap text-base leading-[--dong-body]">
                   {phanTich.answer}
                 </p>
               ) : null}

@@ -128,7 +128,7 @@ export default function TrangKiemTraTinhHuong() {
             </div>
 
             {ketQua.answer ? (
-              <p className="whitespace-pre-wrap text-[0.9375rem] leading-[--dong-body]">
+              <p className="whitespace-pre-wrap text-base leading-[--dong-body]">
                 {ketQua.answer}
               </p>
             ) : null}

@@ -11,6 +11,7 @@
  */
 
 import { useId } from "react";
+import { ArrowRight, Search, Sparkles } from "lucide-react";
 import { Nut } from "@/components/kit/co-ban";
 import { cn } from "@/lib/utils";
 
@@ -32,10 +33,20 @@ export function OHoi({ giaTri, onDoi, onTraCuu, dangChay = false }: OHoiProps) {
         if (!rong && !dangChay) onTraCuu();
       }}
       className={cn(
-        "flex flex-col gap-3 rounded-[--bo-lon] bg-giay p-3 shadow-the",
-        "transition-shadow duration-[--nhip] focus-within:shadow-noi",
+        "o-hoi-noi-bat flex flex-col gap-3 overflow-hidden rounded-[--bo-lon] bg-giay p-4 shadow-vua ring-1 ring-muc-in/[0.045] sm:p-5",
+        "transition-[box-shadow,transform] duration-[--nhip] focus-within:-translate-y-px focus-within:shadow-noi",
       )}
     >
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex items-center gap-2 text-xs font-semibold text-but-xanh">
+          <Search className="size-4" strokeWidth={1.8} />
+          Tra cứu trên toàn bộ kho văn bản
+        </span>
+        <span className="hidden items-center gap-1.5 text-[0.6875rem] font-medium text-nhan sm:flex">
+          <Sparkles className="size-3.5" strokeWidth={1.7} />
+          Có dẫn nguồn
+        </span>
+      </div>
       <label htmlFor={id} className="sr-only">
         Câu hỏi
       </label>
@@ -50,20 +61,21 @@ export function OHoi({ giaTri, onDoi, onTraCuu, dangChay = false }: OHoiProps) {
             if (!rong && !dangChay) onTraCuu();
           }
         }}
-        rows={2}
+        rows={3}
         placeholder="Hỏi bằng tiếng Việt thường: điều kiện cấp giấy chứng nhận an toàn thực phẩm là gì?"
         className={cn(
-          "w-full resize-none bg-transparent px-1.5 pt-1 text-[0.9375rem] leading-relaxed",
+          "w-full resize-none bg-transparent px-0 pt-1 text-base font-medium leading-relaxed tracking-[-0.01em] sm:text-[1.0625rem]",
           "placeholder:text-nhan focus-visible:outline-none",
         )}
       />
-      <div className="flex items-center justify-between gap-3 pl-1.5">
-        <p className="text-xs text-nhan">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ke-mo pt-3">
+        <p className="hidden text-xs text-nhan sm:block">
           <kbd className="font-ma">Enter</kbd> để tra cứu ·{" "}
           <kbd className="font-ma">Shift + Enter</kbd> xuống dòng
         </p>
-        <Nut type="submit" disabled={rong || dangChay}>
+        <Nut type="submit" disabled={rong || dangChay} className="ml-auto min-w-32">
           {dangChay ? "Đang tra cứu…" : "Tra cứu"}
+          {!dangChay ? <ArrowRight className="size-4" strokeWidth={1.9} /> : null}
         </Nut>
       </div>
     </form>

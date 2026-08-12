@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { EvalRun, StatsResponse } from "@/types/contract";
-import { KhungTrang, OSoLieu, The, TieuDeMuc } from "@/components/kit/co-ban";
+import { HangSoLieu, KhungTrang, OSoLieu, The, TieuDeMuc } from "@/components/kit/co-ban";
 import { BieuDoNho, CotDoc, CotDocLon, CotNgang } from "@/components/kit/bieu-do";
 import { BaoLoi, TrongRong, XuongSoLieu } from "@/components/kit/trang-thai-kit";
 import { NHAN_LOAI, chuanHoaTenCoQuan } from "@/types/nhan";
@@ -75,23 +75,37 @@ export default function TrangDoLuong() {
           <section className="flex flex-col gap-3">
             <TieuDeMuc phu="Đọc từ bảng documents và chunks">Khu A — Kho văn bản</TieuDeMuc>
 
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <OSoLieu nhan="Văn bản" giaTri={String(stats.tongVanBan)} />
+            {/* Một con số dẫn đầu, phần còn lại là ngữ cảnh của nó. */}
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
               <OSoLieu
-                nhan="Chunk"
-                giaTri={String(stats.tongChunk)}
-                phu={
-                  stats.tongVanBan > 0
-                    ? `Trung bình ${Math.round(stats.tongChunk / stats.tongVanBan)} chunk mỗi văn bản`
-                    : undefined
-                }
+                nhan="Văn bản trong kho"
+                giaTri={String(stats.tongVanBan)}
+                phu={`Từ ${stats.theoCoQuan.length} cơ quan ban hành`}
               />
-              <OSoLieu
-                nhan="Bóc tách sạch"
-                giaTri={phanTram(stats.tyLeParseSach)}
-                phu="Văn bản không có cảnh báo nào"
+              <HangSoLieu
+                cacMuc={[
+                  {
+                    nhan: "Đoạn đã bóc tách",
+                    giaTri: stats.tongChunk.toLocaleString("vi-VN"),
+                    phu:
+                      stats.tongVanBan > 0
+                        ? `Trung bình ${Math.round(stats.tongChunk / stats.tongVanBan)} đoạn mỗi văn bản`
+                        : undefined,
+                  },
+                  {
+                    nhan: "Bóc tách sạch",
+                    giaTri: phanTram(stats.tyLeParseSach),
+                    phu: "Văn bản không có cảnh báo nào",
+                  },
+                  {
+                    nhan: "Khoảng năm ban hành",
+                    giaTri:
+                      stats.theoNam.length > 0
+                        ? `${stats.theoNam[0].nam}–${stats.theoNam[stats.theoNam.length - 1].nam}`
+                        : "—",
+                  },
+                ]}
               />
-              <OSoLieu nhan="Cơ quan ban hành" giaTri={String(stats.theoCoQuan.length)} />
             </div>
 
             <div className="grid gap-3 lg:grid-cols-3">
@@ -140,20 +154,27 @@ export default function TrangDoLuong() {
               Khu B — Chất lượng hệ thống
             </TieuDeMuc>
 
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <OSoLieu nhan="Độ trễ trung vị" giaTri={`${stats.latencyP50} ms`} />
-              <OSoLieu nhan="Độ trễ P95" giaTri={`${stats.latencyP95} ms`} phu="5% câu chậm nhất" />
-              <OSoLieu
-                nhan="Trả lời có trích dẫn"
-                giaTri={phanTram(stats.tyLeCoTrichDan)}
-                phu="Phần còn lại là câu hệ thống từ chối trả lời"
-              />
-              <OSoLieu
-                nhan={moiNhat ? `Recall@5 · ${tenNganGon(moiNhat.configName)}` : "Recall@5"}
-                giaTri={moiNhat ? phanTram(moiNhat.recallAt5) : "Chưa chạy"}
-                phu={moiNhat ? `Trên ${moiNhat.nQuestions} câu hỏi vàng` : undefined}
-              />
-            </div>
+            {/* Recall@5 đã là biểu đồ chính ngay dưới, nên bốn số này đứng
+                hàng phụ chứ không tranh chỗ với nó. */}
+            <HangSoLieu
+              cacMuc={[
+                {
+                  nhan: "Độ trễ trung vị",
+                  giaTri: `${stats.latencyP50} ms`,
+                  phu: `P95 ${stats.latencyP95} ms`,
+                },
+                {
+                  nhan: "Trả lời có trích dẫn",
+                  giaTri: phanTram(stats.tyLeCoTrichDan),
+                  phu: "Phần còn lại là câu hệ thống từ chối trả lời",
+                },
+                {
+                  nhan: "Câu hỏi vàng",
+                  giaTri: moiNhat ? String(moiNhat.nQuestions) : "—",
+                  phu: moiNhat ? `${lanChay.length} lần chạy đã ghi nhận` : undefined,
+                },
+              ]}
+            />
 
             {/* ---- Biểu đồ chính: luận điểm định lượng của cả dự án ---- */}
             {lanChay.length > 0 ? (
@@ -163,7 +184,7 @@ export default function TrangDoLuong() {
                     Recall@5 qua các lần chạy
                   </TieuDeMuc>
                   <div>
-                    <p className="chu-trung-bay font-ma text-[3.25rem] tabular-nums text-muc-in">
+                    <p className="chu-trung-bay co-trung-bay font-ma tabular-nums text-muc-in">
                       {moiNhat ? phanTram(moiNhat.recallAt5) : "—"}
                     </p>
                     {moiNhat && lanChay.length > 1 ? (

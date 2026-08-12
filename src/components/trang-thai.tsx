@@ -11,6 +11,7 @@
 import { Nut, The } from "@/components/kit/co-ban";
 import { ConDau } from "@/components/kit/con-dau";
 import { cn } from "@/lib/utils";
+import { ArrowUpRight, BookOpenCheck, Layers3, Quote } from "lucide-react";
 
 const soVN = (n: number) => n.toFixed(2).replace(".", ",");
 
@@ -41,75 +42,92 @@ export function TrangThaiRong({
   const coSo = typeof tongVanBan === "number" && tongVanBan > 0;
 
   return (
-    <div className="hien-len py-2">
+    <section className="mo-man hien-len rounded-[--bo-lon] px-5 py-7 text-giay shadow-noi sm:px-8 sm:py-9">
       {/*
         Con dấu ở đây KHÔNG phá kỷ luật màu: nó đứng cạnh đúng lời hứa về
         trích dẫn, mà lời hứa đó chính là nghĩa của màu đỏ trong sản phẩm này.
       */}
-      <ConDau co={52} className="mb-5 block" />
+      <div className="relative z-10 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(16rem,0.8fr)] lg:items-end">
+        <div>
+          <ConDau co={56} className="mb-6 block" />
+          <h2 className="chu-trung-bay co-trung-bay max-w-2xl">
+            Hỏi một câu.
+            <br />
+            Nhận về đúng Điều.
+          </h2>
 
-      <h2 className="chu-trung-bay text-[2rem] sm:text-[2.5rem]">
-        Hỏi một câu.
-        <br />
-        Nhận về đúng Điều.
-      </h2>
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-giay/70">
+            Mỗi câu trả lời đều đóng dấu về Điều, Khoản trong văn bản gốc để bạn tự kiểm
+            chứng. Không đủ căn cứ thì hệ thống nói thẳng là không tìm thấy, chứ không đoán.
+          </p>
+        </div>
 
-      <p className="mt-4 max-w-xl text-[0.9375rem] leading-relaxed text-nhan">
-        Mỗi câu trả lời đều đóng dấu về Điều, Khoản trong văn bản gốc để bạn tự kiểm
-        chứng. Không đủ căn cứ thì hệ thống nói thẳng là không tìm thấy, chứ không đoán.
-      </p>
+        <div className="border-l border-giay/15 pl-5 sm:pl-6">
+          <Quote className="size-6 text-giay/35" strokeWidth={1.5} />
+          <p className="mt-4 text-sm font-medium leading-relaxed text-giay/85">
+            Từ câu hỏi đời thường tới đúng căn cứ pháp lý, trong cùng một mặt đọc.
+          </p>
+          <p className="mt-3 text-xs leading-relaxed text-giay/75">
+            Nguồn xuất hiện trước. Lời giải thích theo sau. Bạn luôn biết hệ thống đang dựa vào đâu.
+          </p>
+        </div>
+      </div>
 
       {/* Số đo kho tài liệu: bằng chứng lời hứa trên có thật. */}
       {coSo ? (
-        <dl className="ke-quoc-hieu mt-7 flex flex-wrap gap-x-10 gap-y-3 pb-4">
+        <dl className="relative z-10 mt-9 grid gap-3 border-y border-giay/15 py-4 sm:grid-cols-3">
           <div>
-            <dt className="nhan-hoa">Văn bản trong kho</dt>
-            <dd className="chu-trung-bay mt-1 font-ma text-[1.5rem] tabular-nums">
+            <dt className="nhan-hoa-sang flex items-center gap-2">
+              <BookOpenCheck className="size-3.5" />
+              Văn bản trong kho
+            </dt>
+            <dd className="chu-trung-bay co-so-lieu mt-2 font-ma tabular-nums">
               {soNhom(tongVanBan)}
             </dd>
           </div>
           {typeof tongChunk === "number" && tongChunk > 0 ? (
             <div>
-              <dt className="nhan-hoa">Đoạn đã bóc tách</dt>
-              <dd className="chu-trung-bay mt-1 font-ma text-[1.5rem] tabular-nums">
+              <dt className="nhan-hoa-sang flex items-center gap-2">
+                <Layers3 className="size-3.5" />
+                Đoạn đã bóc tách
+              </dt>
+              <dd className="chu-trung-bay co-so-lieu mt-2 font-ma tabular-nums">
                 {soNhom(tongChunk)}
               </dd>
             </div>
           ) : null}
           <div>
-            <dt className="nhan-hoa">Độ sâu trích dẫn</dt>
-            <dd className="chu-trung-bay mt-1 text-[1.5rem]">Tới Khoản</dd>
+            <dt className="nhan-hoa-sang">Độ sâu trích dẫn</dt>
+            <dd className="chu-trung-bay co-so-lieu mt-2">Tới Khoản</dd>
           </div>
         </dl>
       ) : null}
 
-      <p className="nhan-hoa mt-8">Thử một câu</p>
-      <ul className="mt-2.5 flex flex-col gap-2">
-        {cauHoiGoiY.map((cau, i) => (
+      <p className="nhan-hoa-sang relative z-10 mt-8">Thử một câu</p>
+      <ul className="relative z-10 mt-3 grid gap-2 lg:grid-cols-3">
+        {/*
+          Không đánh số 01/02/03: thứ tự ba câu gợi ý không mang thông tin nào,
+          nên con số chỉ là trang trí giả vờ có hệ thống.
+        */}
+        {cauHoiGoiY.map((cau) => (
           <li key={cau}>
             <button
               type="button"
               onClick={() => onChonCauHoi(cau)}
               className={cn(
-                "group flex w-full items-center gap-3.5 rounded-[--bo-lon] bg-giay py-3.5 pl-4 pr-3.5",
-                "text-left text-[0.9375rem] leading-snug shadow-the",
+                "group flex h-full w-full items-start gap-3.5 rounded-[--bo-lon] bg-giay/[0.075] py-4 pl-4 pr-3.5",
+                "text-left text-sm leading-relaxed text-giay ring-1 ring-giay/10",
                 "transition-[box-shadow,transform] duration-[--nhip]",
-                "hover:-translate-y-px hover:shadow-vua",
+                "hover:-translate-y-1 hover:bg-giay/[0.12] hover:shadow-vua",
               )}
             >
-              <span className="so-hieu shrink-0 text-nhan">0{i + 1}</span>
               <span className="flex-1">{cau}</span>
-              <span
-                aria-hidden
-                className="shrink-0 text-lg leading-none text-nhan transition-[transform,color] duration-[--nhip] group-hover:translate-x-0.5 group-hover:text-but-xanh"
-              >
-                →
-              </span>
+              <ArrowUpRight aria-hidden className="mt-0.5 size-4 shrink-0 text-giay/40 transition-[transform,color] duration-[--nhip] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-giay" />
             </button>
           </li>
         ))}
       </ul>
-    </div>
+    </section>
   );
 }
 
@@ -201,7 +219,7 @@ export function TrangThaiLoi({ onThuLai }: TrangThaiLoiProps) {
   return (
     <div
       role="alert"
-      className="rounded-[--bo-lon] bg-giay py-4 pl-4 pr-5 shadow-the [border-left:3px_solid_var(--muc-in)]"
+      className="rounded-[--bo-lon] bg-khay-sau px-4 py-4 shadow-the"
     >
       <h2 className="text-base font-semibold">Không gửi được câu hỏi</h2>
       <p className="mt-1.5 text-sm leading-relaxed text-nhan">

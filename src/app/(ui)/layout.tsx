@@ -11,9 +11,9 @@ export default function KhungGiaoDien({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="flex h-dvh flex-col bg-khay">
+    <div className="nen-ung-dung flex h-dvh flex-col bg-khay">
       <DieuHuong />
-      <div className="min-h-0 flex-1">{children}</div>
+      <div className="relative z-0 min-h-0 flex-1">{children}</div>
     </div>
   );
 }
