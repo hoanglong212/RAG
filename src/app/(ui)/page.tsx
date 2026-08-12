@@ -29,12 +29,6 @@ import {
 } from "@/components/trang-thai";
 import { cn } from "@/lib/utils";
 
-/**
- * Ngưỡng để hiển thị. Bản thật đọc từ NGUONG_DIEM_TOI_THIEU qua /api/chat;
- * mock chưa mang theo trường này nên tạm ghim ở đây, đúng giá trị mặc định.
- */
-const NGUONG = 0.35;
-
 /** Độ trễ giả lập, chỉ để diễn thứ tự sự kiện của contract trên mock. */
 const TRE_TIM_NGUON = 700;
 const TRE_VIET_CHU = 900;
@@ -63,6 +57,13 @@ export default function TrangTraCuu() {
   const [kichBan, setKichBan] = useState<TenKichBan>("ok");
   const [phanHoi, setPhanHoi] = useState<ChatResponse | null>(null);
   const [trichDanDangChon, setTrichDanDangChon] = useState<Citation | null>(null);
+  /** Chỉ có ý nghĩa dưới 1280px, nơi mặt đọc là tấm trượt thay vì cột thứ ba. */
+  const [matDocMo, setMatDocMo] = useState(false);
+
+  const chonTrichDan = useCallback((td: Citation) => {
+    setTrichDanDangChon(td);
+    setMatDocMo(true);
+  }, []);
 
   const dongHo = useRef<ReturnType<typeof setTimeout>[]>([]);
   useEffect(() => {
@@ -105,25 +106,27 @@ export default function TrangTraCuu() {
 
   return (
     <div className="flex h-full">
-      {/* ---------- Cột trái: trục văn bản ---------- */}
+      {/* ---------- Cột trái: trục văn bản ----------
+          Luôn chiếm chỗ ở mọi bề ngang. Dưới 1024px nó thu thành dải vạch chứ
+          không ẩn — đây là yếu tố chữ ký, không được biến mất trên máy chiếu. */}
       {coVanBan ? (
         <TrucVanBan
           soHieu={chiTietVanBanDayDu.soHieu}
           tree={chiTietVanBanDayDu.tree}
           nodeIdDangNeo={trichDanDangChon?.nodeId ?? null}
-          moRong
-          onChon={(nodeId) =>
-            setTrichDanDangChon(
-              phanHoi?.citations.find((c) => c.nodeId === nodeId) ??
-                trichDanDangChon,
-            )
-          }
-          className="hidden shrink-0 lg:flex"
+          onChon={(nodeId) => {
+            const td = phanHoi?.citations.find((c) => c.nodeId === nodeId);
+            if (td) chonTrichDan(td);
+          }}
+          className="shrink-0"
         />
       ) : (
-        <div className="hidden w-80 shrink-0 flex-col px-3 pt-3 lg:flex">
-          <p className="nhan-hoa">Trục văn bản</p>
-          <p className="mt-2 text-[0.8125rem] leading-relaxed text-nhan">
+        <div className="w-14 shrink-0 flex-col px-2 pt-3 lg:flex lg:w-52 lg:px-3 xl:w-72">
+          <p className="nhan-hoa text-center lg:text-left">
+            <span className="lg:hidden">Trục</span>
+            <span className="hidden lg:inline">Trục văn bản</span>
+          </p>
+          <p className="mt-2 hidden text-[0.8125rem] leading-relaxed text-nhan lg:block">
             Trục hiện ra khi có câu trả lời, và cuộn tới đúng Điều được trích dẫn.
           </p>
         </div>
@@ -149,7 +152,7 @@ export default function TrangTraCuu() {
             {pha === "khongTimThay" && phanHoi ? (
               <KhongTimThay
                 topScore={phanHoi.topScore}
-                nguong={NGUONG}
+                nguong={phanHoi.nguong}
                 soVanBan={mockStats.tongVanBan}
               />
             ) : null}
@@ -170,7 +173,7 @@ export default function TrangTraCuu() {
                           trichDan={td}
                           soThuTu={i + 1}
                           dangChon={trichDanDangChon?.chunkId === td.chunkId}
-                          onChon={setTrichDanDangChon}
+                          onChon={chonTrichDan}
                         />
                       </li>
                     ))}
@@ -193,14 +196,45 @@ export default function TrangTraCuu() {
         </div>
       </main>
 
-      {/* ---------- Cột phải: mặt đọc ---------- */}
-      <div className="hidden w-[38rem] shrink-0 xl:block">
+      {/* ---------- Cột phải: mặt đọc ----------
+          Từ 1280px trở lên là cột thứ ba cố định. Hẹp hơn thì thành tấm trượt
+          gọi ra khi bấm một nguồn, vì ba cột dưới bề ngang đó sẽ bóp cột giữa
+          xuống mức không đọc được. */}
+      {matDocMo ? (
+        <button
+          type="button"
+          aria-label="Đóng văn bản gốc"
+          onClick={() => setMatDocMo(false)}
+          className="fixed inset-0 z-30 bg-muc-in/25 xl:hidden"
+        />
+      ) : null}
+
+      <div
+        className={cn(
+          "fixed inset-y-0 right-0 z-40 w-full max-w-xl",
+          "transition-transform duration-[--nhip-cham] [transition-timing-function:var(--duong-cong)]",
+          "xl:static xl:w-[32rem] xl:max-w-none xl:shrink-0 xl:translate-x-0 2xl:w-[38rem]",
+          matDocMo ? "translate-x-0" : "translate-x-full",
+        )}
+      >
         {trichDanDangChon ? (
-          <MatDoc
-            tree={chiTietVanBanDayDu.tree}
-            nodeIdDangNeo={trichDanDangChon.nodeId}
-            className="h-full"
-          />
+          <div className="flex h-full flex-col bg-giay">
+            <div className="flex shrink-0 items-center justify-between px-4 py-2 xl:hidden">
+              <span className="so-hieu text-nhan">{trichDanDangChon.soHieu}</span>
+              <button
+                type="button"
+                onClick={() => setMatDocMo(false)}
+                className="rounded-[--bo] px-2.5 py-1.5 text-sm text-but-xanh"
+              >
+                Đóng
+              </button>
+            </div>
+            <MatDoc
+              tree={chiTietVanBanDayDu.tree}
+              nodeIdDangNeo={trichDanDangChon.nodeId}
+              className="min-h-0 flex-1"
+            />
+          </div>
         ) : (
           <div className="mat-doc flex h-full items-center justify-center px-10">
             <p className="max-w-xs text-center text-sm text-nhan">

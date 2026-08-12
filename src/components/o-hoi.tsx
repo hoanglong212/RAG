@@ -47,7 +47,8 @@ export function OHoi({ giaTri, onDoi, onTraCuu, dangChay = false }: OHoiProps) {
         placeholder="Ví dụ: Điều kiện cấp giấy chứng nhận cơ sở đủ điều kiện an toàn thực phẩm?"
         className={cn(
           "w-full resize-none rounded-[--bo] bg-giay px-3.5 py-3 text-sm",
-          "placeholder:text-nhan/70",
+          // Chữ giữ chỗ vẫn phải đọc được: dùng đủ --nhan, không giảm độ mờ.
+          "placeholder:text-nhan",
           "shadow-[inset_0_0_0_1px_var(--ke-mo)]",
         )}
       />

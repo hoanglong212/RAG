@@ -86,6 +86,7 @@ export interface ChatResponse {
   answer: string | null;            // null khi status !== 'ok'
   citations: Citation[];            // rỗng khi khong_tim_thay
   topScore: number;
+  nguong: number;                   // ngưỡng tin cậy đang áp dụng
   latencyMs: number;
 }
 
@@ -147,7 +148,7 @@ event: token
 data: {"text": "..."}               // nhiều lần
 
 event: done
-data: {"status":"ok","topScore":0.82,"latencyMs":1430}
+data: {"status":"ok","topScore":0.82,"nguong":0.35,"latencyMs":1430}
 ```
 
 Gửi citations trước là chủ ý: người dùng thấy được nguồn trong lúc câu trả lời còn đang chảy ra. Đây cũng là chi tiết đáng nói khi demo.
@@ -157,7 +158,7 @@ Gửi citations trước là chủ ý: người dùng thấy được nguồn tr
 Mọi lỗi trả HTTP 200 kèm `status` trong body, trừ lỗi hạ tầng thật (500). Lý do: `khong_tim_thay` không phải lỗi, nó là một câu trả lời hợp lệ và cần giao diện riêng.
 
 ```json
-{ "status": "khong_tim_thay", "answer": null, "citations": [], "topScore": 0.31, "latencyMs": 890 }
+{ "status": "khong_tim_thay", "answer": null, "citations": [], "topScore": 0.31, "nguong": 0.35, "latencyMs": 890 }
 ```
 
 ---
@@ -193,3 +194,4 @@ Mọi thay đổi contract ghi lại đây, kèm ngày và lý do.
 | Ngày | Đổi gì | Lý do | Ai yêu cầu |
 |---|---|---|---|
 | D1 | Không đổi contract. Sửa schema cho khớp | schema.ts lược mất các trường đã đặc tả ở mục 4 kế hoạch gốc | Track B phát hiện |
+| D7 | Thêm `nguong: number` vào `ChatResponse` | Giao diện cần hiện "đoạn gần nhất 0,31 — ngưỡng 0,35" mà không ghim cứng | Track B |

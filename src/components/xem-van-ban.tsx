@@ -20,9 +20,8 @@ export function XemVanBan({ chiTiet }: { chiTiet: DocumentDetail }) {
         soHieu={chiTiet.soHieu}
         tree={chiTiet.tree}
         nodeIdDangNeo={nodeDangChon}
-        moRong
         onChon={setNodeDangChon}
-        className="hidden shrink-0 md:flex"
+        className="shrink-0"
       />
 
       <div className="flex min-w-0 flex-1 flex-col">

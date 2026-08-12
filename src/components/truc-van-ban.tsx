@@ -7,8 +7,14 @@
  * tỉ lệ với độ dài thật của Điều, nên nhìn một cái là thấy Điều nào nặng,
  * Điều nào chỉ một câu. Một cột mục lục thường không làm được việc đó.
  *
- * Trục là chỗ dồn toàn bộ độ táo bạo của thiết kế. Nếu tới cuối dự án nó vẫn
- * đứng yên và trông như một danh sách, phần này đã hỏng.
+ * BA CHẾ ĐỘ, ĐỔI THEO BỀ NGANG, KHÔNG BAO GIỜ BIẾN MẤT:
+ *   < 1024px   dải vạch 56px — mất chữ nhưng giữ nguyên vị trí và dấu đỏ
+ *   ≥ 1024px   thêm số Điều
+ *   ≥ 1280px   thêm tiêu đề Điều
+ *
+ * Máy chiếu phòng họp thường 1280×720 và laptop phổ biến 1366×768. Trục mà
+ * ẩn đi ở những bề ngang đó thì yếu tố chữ ký của cả dự án không xuất hiện
+ * đúng lúc cần nhất. Vì vậy chế độ hẹp là dải vạch chứ không phải `hidden`.
  */
 
 import { useEffect, useMemo, useRef } from "react";
@@ -60,7 +66,6 @@ export interface TrucVanBanProps {
   tree: DocNode[];
   /** Node đang được trích dẫn. Có thể là Khoản hoặc Điểm, không nhất thiết là Điều. */
   nodeIdDangNeo: string | null;
-  moRong?: boolean;
   onChon?: (nodeId: string) => void;
   className?: string;
 }
@@ -69,7 +74,6 @@ export function TrucVanBan({
   soHieu,
   tree,
   nodeIdDangNeo,
-  moRong = false,
   onChon,
   className,
 }: TrucVanBanProps) {
@@ -104,15 +108,19 @@ export function TrucVanBan({
   return (
     <nav
       aria-label="Trục văn bản"
-      className={cn(
-        "flex flex-col overflow-hidden bg-khay transition-[width] duration-[--nhip]",
-        moRong ? "w-80" : "w-52",
-        className,
-      )}
+      className={cn("flex w-14 flex-col bg-khay lg:w-52 xl:w-72", className)}
     >
-      <div className="shrink-0 px-3 pb-2 pt-3">
-        <p className="nhan-hoa">Trục văn bản</p>
-        <p className="so-hieu mt-1 truncate text-muc-in" title={soHieu ?? undefined}>
+      <div className="shrink-0 px-2 pb-2 pt-3 lg:px-3">
+        <p className="nhan-hoa text-center lg:text-left">
+          <span className="lg:hidden" title={soHieu ?? "Trục văn bản"}>
+            Trục
+          </span>
+          <span className="hidden lg:inline">Trục văn bản</span>
+        </p>
+        <p
+          className="so-hieu mt-1 hidden truncate text-muc-in lg:block"
+          title={soHieu ?? undefined}
+        >
           {soHieu ?? "Không có số hiệu"}
         </p>
       </div>
@@ -121,12 +129,17 @@ export function TrucVanBan({
         {hang.map((h) => {
           if (h.kieu === "nhom") {
             return (
-              <li key={h.node.id} className="px-3 pb-1 pt-4">
-                <p className="nhan-hoa">
+              <li key={h.node.id} className="px-2 pb-1 pt-4 lg:px-3">
+                {/* Chế độ hẹp: ranh giới Chương thành một vạch ngăn. */}
+                <div
+                  aria-hidden
+                  className="mx-auto h-px w-6 bg-nhan/50 lg:hidden"
+                />
+                <p className="nhan-hoa hidden lg:block">
                   {NHAN_NODE[h.node.type]} {h.node.soThuTu}
                 </p>
                 {h.node.tieuDe ? (
-                  <p className="mt-0.5 text-[0.8125rem] leading-snug text-nhan">
+                  <p className="mt-0.5 hidden text-[0.8125rem] leading-snug text-nhan xl:block">
                     {h.node.tieuDe}
                   </p>
                 ) : null}
@@ -145,8 +158,10 @@ export function TrucVanBan({
                 type="button"
                 onClick={() => onChon?.(h.node.id)}
                 aria-current={dangNeo ? "true" : undefined}
+                title={`Điều ${h.node.soThuTu}${h.node.tieuDe ? ` — ${h.node.tieuDe}` : ""}`}
                 className={cn(
-                  "group flex w-full items-start gap-2.5 py-1 pl-3 pr-2 text-left",
+                  "group flex w-full items-start gap-2.5 py-1 text-left",
+                  "justify-center px-2 lg:justify-start lg:pl-3 lg:pr-2",
                   "transition-colors duration-[--nhip]",
                   dangNeo ? "bg-khay-sau" : "hover:bg-khay-sau",
                 )}
@@ -157,10 +172,18 @@ export function TrucVanBan({
                   style={{ height: `${cao}px` }}
                   className={cn(
                     "mt-1 w-[3px] shrink-0 rounded-[1px] transition-colors duration-[--nhip]",
-                    dangNeo ? "bg-dau-do" : "bg-nhan/35 group-hover:bg-but-xanh/60",
+                    dangNeo ? "bg-dau-do" : "bg-nhan/70 group-hover:bg-but-xanh",
                   )}
                 />
-                <span className="min-w-0 flex-1 py-0.5">
+                {/* Chế độ hẹp: dấu chứng thực đứng cạnh vạch, vì không có chữ. */}
+                {dangNeo ? (
+                  <span
+                    aria-hidden
+                    className="mt-2 size-1.5 shrink-0 rounded-full bg-dau-do lg:hidden"
+                  />
+                ) : null}
+
+                <span className="hidden min-w-0 flex-1 py-0.5 lg:block">
                   <span
                     className={cn(
                       "block text-[0.8125rem] font-medium",
@@ -175,8 +198,8 @@ export function TrucVanBan({
                       </span>
                     ) : null}
                   </span>
-                  {moRong && h.node.tieuDe ? (
-                    <span className="mt-0.5 block text-xs leading-snug text-nhan">
+                  {h.node.tieuDe ? (
+                    <span className="mt-0.5 hidden text-xs leading-snug text-nhan xl:block">
                       {h.node.tieuDe}
                     </span>
                   ) : null}

@@ -82,6 +82,7 @@ export interface ChatResponse {
   answer: string | null;            // null khi status !== 'ok'
   citations: Citation[];            // rỗng khi khong_tim_thay
   topScore: number;
+  nguong: number;                   // ngưỡng tin cậy đang áp dụng
   latencyMs: number;
 }
 

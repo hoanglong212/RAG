@@ -39,24 +39,37 @@
   --but-xanh: #24406b;
   --but-xanh-sau: #1a3054;
 
-  /** Nhãn, metadata, chữ phụ. */
-  --nhan: #6b7280;
+  /**
+   * Nhãn, metadata, chữ phụ.
+   *
+   * Brief đề xuất #6B7280. Đo ra thì màu đó chỉ được 4,52:1 trên nền --khay
+   * và 4,68:1 trên nền --giay — qua AA nhưng gần như không còn biên nào, mà
+   * phần lớn chữ dùng token này lại là chữ nhỏ 11–13px. Đậm thêm một bậc,
+   * giữ nguyên chất xám ngả xanh: 5,84:1 trên --khay và 6,04:1 trên --giay.
+   */
+  --nhan: #586275;
 
   /** Đường kẻ mảnh. Dùng dè. */
   --ke-mo: #dde1e6;
 
   /* ---------- Chữ ---------- */
 
+  /*
+   * Nguồn --font-* do next/font khai ở src/app/layout.tsx. Tên của chúng phải
+   * khác tên token Tailwind (--font-sans, --font-mono), nếu không sẽ thành
+   * tham chiếu vòng và font im lặng rơi về mặc định hệ thống.
+   */
+
   /** Giao diện và tiêu đề. Be Vietnam Pro — thiết kế riêng cho tiếng Việt. */
-  --chu-ui: var(--font-sans);
+  --chu-ui: var(--font-be-vietnam), "Segoe UI", system-ui, sans-serif;
 
   /** Mặt đọc. Serif CHỈ xuất hiện trong vùng văn bản gốc — đó là ranh giới
    *  dụng cụ / tài liệu, không phải lựa chọn trang trí. */
-  --chu-doc: var(--font-serif);
+  --chu-doc: var(--font-literata), Georgia, "Times New Roman", serif;
 
   /** Số hiệu và mã. `15/2020/NĐ-CP` là mã định danh chứ không phải văn xuôi:
    *  mono làm nó quét được bằng mắt và thẳng cột trong bảng. */
-  --chu-ma: var(--font-mono);
+  --chu-ma: var(--font-plex-mono), ui-monospace, "Consolas", monospace;
 
   /**
    * Dấu tiếng Việt có hai tầng (ế ộ ữ ỹ). 1.5 làm dấu chạm dòng trên.

@@ -17,6 +17,13 @@ import {
 
 const SO_HIEU_1 = '15/2020/NĐ-CP';
 
+/**
+ * Ngưỡng tin cậy đang áp dụng, đúng mặc định của NGUONG_DIEM_TOI_THIEU.
+ * Bản thật đọc từ trường `nguong` trong ChatResponse của /api/chat, nên giao
+ * diện không được ghim con số này ở bất kỳ đâu.
+ */
+const NGUONG_MOC = 0.35;
+
 const trichDanKhoan3: Citation = {
   chunkId: 'c0000000-0000-4000-8000-000000000001',
   documentId: ID_VAN_BAN_1,
@@ -64,6 +71,7 @@ export const chatOk: ChatResponse = {
     'phẩm [2]. Nội dung tập huấn và mẫu giấy xác nhận do Bộ Y tế hướng dẫn [3].',
   citations: [trichDanKhoan3, trichDanDiemD, trichDanKhoan4],
   topScore: 0.87,
+  nguong: NGUONG_MOC,
   latencyMs: 1430,
 };
 
@@ -91,6 +99,7 @@ export const chatDiemThap: ChatResponse = {
     },
   ],
   topScore: 0.41,
+  nguong: NGUONG_MOC,
   latencyMs: 1210,
 };
 
@@ -104,6 +113,7 @@ export const chatKhongTimThay: ChatResponse = {
   answer: null,
   citations: [],
   topScore: 0.31,
+  nguong: NGUONG_MOC,
   latencyMs: 890,
 };
 
@@ -113,6 +123,7 @@ export const chatLoi: ChatResponse = {
   answer: null,
   citations: [],
   topScore: 0,
+  nguong: NGUONG_MOC,
   latencyMs: 120,
 };
 
