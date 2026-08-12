@@ -40,3 +40,9 @@
 - Added `/api/chat` with the frozen SSE order (`citations`, `token`, `done`), confidence threshold, grounded-only prompt, query logging, and `/api/stats` backed by live PostgreSQL data. `/api/ask` remains a compatibility alias.
 - Live API acceptance covered `/api/stats` and the `khong_tim_thay` SSE path. The successful LLM token path requires `LLM_API_KEY` and `LLM_MODEL`, which are not configured locally.
 - Automated verification: 54 tests, TypeScript strict check, ESLint, and production build pass.
+
+## 2026-08-12 — Groq live generation acceptance
+
+- Added secret-safe `GROQ_API_KEY` auto-detection with the OpenAI-compatible Groq Chat Completions endpoint and production model `llama-3.3-70b-versatile`; explicit `LLM_*` settings still override the defaults.
+- Live `/api/chat` acceptance for the maximum fine under `115/2018/NĐ-CP` emitted citations first, streamed the grounded Vietnamese answer with citation `[2]`, then emitted `done` with `status: ok` in 1,325 ms.
+- Automated verification: 55 tests, TypeScript strict check, ESLint, and production build pass.

@@ -17,15 +17,18 @@ Nếu ngữ cảnh không đủ để trả lời, chỉ trả đúng chuỗi KH
 Trình bày ngắn gọn, rõ ràng bằng tiếng Việt và không đưa ra phán quyết pháp lý.`;
 
 export function readLlmConfig(): LlmConfig {
-  const apiKey = process.env.LLM_API_KEY?.trim();
-  const model = process.env.LLM_MODEL?.trim();
-  if (!apiKey || !model) {
-    throw new Error("Thiếu LLM_API_KEY hoặc LLM_MODEL.");
-  }
+  const groqApiKey = process.env.GROQ_API_KEY?.trim();
+  const apiKey = process.env.LLM_API_KEY?.trim() || groqApiKey;
+  const model = process.env.LLM_MODEL?.trim() || (groqApiKey ? "llama-3.3-70b-versatile" : "");
+  if (!apiKey || !model) throw new Error("Thiếu LLM_API_KEY/LLM_MODEL hoặc GROQ_API_KEY.");
   return {
     apiKey,
     model,
-    apiUrl: process.env.LLM_API_URL?.trim() || "https://api.openai.com/v1/chat/completions",
+    apiUrl:
+      process.env.LLM_API_URL?.trim() ||
+      (groqApiKey
+        ? "https://api.groq.com/openai/v1/chat/completions"
+        : "https://api.openai.com/v1/chat/completions"),
   };
 }
 
