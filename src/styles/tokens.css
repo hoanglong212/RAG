@@ -1,0 +1,85 @@
+/**
+ * Token thiết kế. Nguồn sự thật duy nhất cho màu, chữ, nhịp.
+ * Không rải giá trị hex trong component — thiếu token thì thêm ở đây.
+ *
+ * Ý niệm nền: sản phẩm là DỤNG CỤ mở văn bản ra, không phải bản sao của văn bản.
+ * Nên có đúng hai mặt nền, và ranh giới giữa chúng là ranh giới khái niệm:
+ *   --khay  bao quanh, là dụng cụ  → chữ sans, dày đặc thao tác
+ *   --giay  bên trong, là tài liệu → chữ serif, thoáng, đọc dài
+ * Tách vùng bằng đổi nền, KHÔNG bằng kẻ chỉ. Kẻ chỉ chỉ dùng trong bảng.
+ */
+
+:root {
+  /* ---------- Màu ---------- */
+
+  /** Chữ chính. Đen ngả xanh, đúng màu mực công văn, không phải đen tuyệt đối. */
+  --muc-in: #14181f;
+
+  /** Mặt đọc. Trắng lạnh — KHÔNG phải kem. */
+  --giay: #fbfbfa;
+
+  /** Khay công cụ. Mọi thứ không phải văn bản gốc đứng trên nền này. */
+  --khay: #e7eaef;
+
+  /** Khay khi rê chuột / đang chọn. */
+  --khay-sau: #dbe0e8;
+
+  /**
+   * Đỏ mực dấu. CHỈ dùng cho thứ liên quan trực tiếp tới neo trích dẫn.
+   * Không nút, không cảnh báo, không biểu đồ. Một màu, một nghĩa:
+   * thấy đỏ nghĩa là chỗ này có căn cứ và bấm được về văn bản gốc.
+   * Hệ quả: vắng đỏ cũng mang nghĩa — hệ thống không khẳng định gì.
+   */
+  --dau-do: #a8172c;
+
+  /** Nền của đoạn đang được neo tới. Cặp với --dau-do, cùng một hệ nghĩa. */
+  --neo-vang: #fbf3d5;
+
+  /** Xanh bút bi. Liên kết, nút chính, trạng thái đang chọn. */
+  --but-xanh: #24406b;
+  --but-xanh-sau: #1a3054;
+
+  /** Nhãn, metadata, chữ phụ. */
+  --nhan: #6b7280;
+
+  /** Đường kẻ mảnh. Dùng dè. */
+  --ke-mo: #dde1e6;
+
+  /* ---------- Chữ ---------- */
+
+  /** Giao diện và tiêu đề. Be Vietnam Pro — thiết kế riêng cho tiếng Việt. */
+  --chu-ui: var(--font-sans);
+
+  /** Mặt đọc. Serif CHỈ xuất hiện trong vùng văn bản gốc — đó là ranh giới
+   *  dụng cụ / tài liệu, không phải lựa chọn trang trí. */
+  --chu-doc: var(--font-serif);
+
+  /** Số hiệu và mã. `15/2020/NĐ-CP` là mã định danh chứ không phải văn xuôi:
+   *  mono làm nó quét được bằng mắt và thẳng cột trong bảng. */
+  --chu-ma: var(--font-mono);
+
+  /**
+   * Dấu tiếng Việt có hai tầng (ế ộ ữ ỹ). 1.5 làm dấu chạm dòng trên.
+   */
+  --dong-body: 1.7;
+  --dong-tieu-de: 1.3;
+
+  /* ---------- Hình khối ---------- */
+
+  /** Bo góc khác 0 là cách chủ động rời khỏi thẩm mỹ ấn phẩm in. */
+  --bo: 3px;
+  --bo-lon: 6px;
+
+  /* ---------- Chuyển động ---------- */
+
+  --nhip: 200ms;
+  --nhip-cham: 380ms;
+  --duong-cong: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --nhip: 0ms;
+    --nhip-cham: 0ms;
+  }
+}
