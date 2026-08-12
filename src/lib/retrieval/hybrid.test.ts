@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { buildTsQuery, extractLegalIdentifier, extractLegalLocator } from "./fulltext";
-import { lexicalWeightForQuestion, reciprocalRankFusion } from "./hybrid";
+import {
+  lexicalWeightForQuestion,
+  reciprocalRankFusion,
+  resolveHybridCandidateK,
+} from "./hybrid";
 import type { RetrievalResult } from "./vector";
 
 function result(chunkId: string, score: number): RetrievalResult {
@@ -56,5 +60,13 @@ describe("hybrid retrieval", () => {
   it("tăng trọng số lexical khi câu hỏi có số hiệu pháp lý chính xác", () => {
     expect(lexicalWeightForQuestion("Mức phạt là bao nhiêu?")).toBe(0.05);
     expect(lexicalWeightForQuestion("Theo 115/2018/NĐ-CP, mức phạt là bao nhiêu?")).toBe(0.2);
+    expect(lexicalWeightForQuestion("Theo Điều 12 Nghị định 115/2018/NĐ-CP?")).toBe(1);
+  });
+
+  it("giữ candidate pool mặc định giống nhau giữa API topK=5 và eval topK=10", () => {
+    expect(resolveHybridCandidateK(5)).toBe(40);
+    expect(resolveHybridCandidateK(10)).toBe(40);
+    expect(resolveHybridCandidateK(50)).toBe(50);
+    expect(resolveHybridCandidateK(5, 80)).toBe(80);
   });
 });

@@ -1,15 +1,22 @@
 import type postgres from "postgres";
 import type { EmbeddingProvider } from "../embedding/provider";
 import type { ChunkStrategy } from "../db/schema";
-import { extractLegalIdentifier } from "./fulltext";
+import { extractLegalIdentifier, extractLegalLocator } from "./fulltext";
 import { fulltextSearch } from "./fulltext";
 import { vectorSearch, type RetrievalResult } from "./vector";
 
 export const RRF_K = 60;
+export const MIN_HYBRID_CANDIDATES = 40;
 
 export function lexicalWeightForQuestion(question: string): number {
-  // Số hiệu là tín hiệu lexical có độ tin cậy cao; OR-query tiếng Việt thông thường thì nhiễu hơn.
-  return extractLegalIdentifier(question) === null ? 0.05 : 0.2;
+  if (extractLegalIdentifier(question) === null) return 0.05;
+  // Số hiệu + Điều/Khoản/Điểm là locator chính xác, đáng tin ngang với vector.
+  const locator = extractLegalLocator(question);
+  return locator.dieu !== null || locator.khoan !== null || locator.diem !== null ? 1 : 0.2;
+}
+
+export function resolveHybridCandidateK(topK: number, candidateK?: number): number {
+  return Math.max(topK, candidateK ?? MIN_HYBRID_CANDIDATES);
 }
 
 /** Pure RRF để phép trộn có thể kiểm thử độc lập với DB/model. */
@@ -53,7 +60,7 @@ export async function hybridSearch(
   options: { topK: number; strategy: ChunkStrategy; candidateK?: number },
   dependencies: { sql: postgres.Sql; embeddingProvider: EmbeddingProvider },
 ): Promise<RetrievalResult[]> {
-  const candidateK = Math.max(options.topK, options.candidateK ?? options.topK * 4);
+  const candidateK = resolveHybridCandidateK(options.topK, options.candidateK);
   const [vectorResults, fulltextResults] = await Promise.all([
     vectorSearch(
       question,
