@@ -20,6 +20,7 @@ export function bocMetadata(dong: DongVanBan[]): {
   const textDayDu = dong.map((d) => d.text).join("\n");
 
   const so_hieu = docSoHieu(textPhanDau) ?? docSoHieu(textDayDu);
+  const loai_van_ban_raw = docLoaiVanBanRaw(phanDau);
   const loai_van_ban = docLoaiVanBan(phanDau, so_hieu);
   const co_quan_ban_hanh = docCoQuanBanHanh(phanDau);
   const ngay_ban_hanh = docNgayBanHanh(textPhanDau);
@@ -29,13 +30,22 @@ export function bocMetadata(dong: DongVanBan[]): {
   const metadata: MetadataVanBan = {
     so_hieu,
     loai_van_ban,
+    loai_van_ban_raw,
     co_quan_ban_hanh,
     ngay_ban_hanh,
     ngay_hieu_luc,
     trich_yeu,
   };
 
-  for (const [ten, gt] of Object.entries(metadata)) {
+  const metadataBatBuoc = {
+    so_hieu,
+    loai_van_ban,
+    co_quan_ban_hanh,
+    ngay_ban_hanh,
+    ngay_hieu_luc,
+    trich_yeu,
+  };
+  for (const [ten, gt] of Object.entries(metadataBatBuoc)) {
     if (gt === null) {
       canhBao.push({
         loai: "thieu_metadata",
@@ -45,6 +55,18 @@ export function bocMetadata(dong: DongVanBan[]): {
   }
 
   return { metadata, canh_bao: canhBao };
+}
+
+export function docLoaiVanBanRaw(phanDau: DongVanBan[]): string | null {
+  const uuTien = [...LOAI_VAN_BAN].sort((a, b) => b.length - a.length);
+  for (const dong of phanDau) {
+    const lower = dong.text.toLocaleLowerCase("vi");
+    for (const loai of uuTien) {
+      const index = lower.indexOf(loai.toLocaleLowerCase("vi"));
+      if (index !== -1) return dong.text.slice(index, index + loai.length);
+    }
+  }
+  return null;
 }
 
 /** Phan dau = tu dau van ban toi tieu de Chuong/Dieu dau tien. */

@@ -184,6 +184,7 @@ describe("Tinh huong 5 — so hieu dang 15/2020/ND-CP", () => {
   it("boc dung metadata", () => {
     expect(kq.metadata.so_hieu).toBe("15/2020/NĐ-CP");
     expect(kq.metadata.loai_van_ban).toBe("Nghị định");
+    expect(kq.metadata.loai_van_ban_raw).toBe("NGHỊ ĐỊNH");
     expect(kq.metadata.co_quan_ban_hanh).toBe("CHÍNH PHỦ");
     expect(kq.metadata.ngay_ban_hanh).toBe("2020-02-15");
     expect(kq.metadata.ngay_hieu_luc).toBe("2020-02-02");
@@ -407,5 +408,33 @@ describe("Chuan hoa van ban", () => {
   it("bao canh bao khi khong nhan dang duoc Dieu nao", () => {
     const kq = parseVanBan("Một đoạn văn bản không có cấu trúc pháp lý nào cả.");
     expect(kq.canh_bao.some((c) => c.loai === "khong_co_dieu")).toBe(true);
+  });
+});
+
+describe("D1 — doc_nodes ben vung va bang chu cai Diem", () => {
+  it("tao cay day du, co depth va chunk structural tro toi node thap nhat", () => {
+    const kq = parseVanBan(ND_15_2020, { tenFile: "nd-15-2020.pdf" });
+    const diemB = kq.nodes.find((node) => node.key === "dieu:8/khoan:2/diem:b");
+
+    expect(kq.nodes).toHaveLength(12);
+    expect(diemB).toMatchObject({
+      parent_key: "dieu:8/khoan:2",
+      node_type: "diem",
+      so_thu_tu: "b",
+      breadcrumb: "Chương II > Mục 1 > Điều 8 > Khoản 2 > Điểm b",
+      depth: 4,
+    });
+    expect(timChunk(kq.chunks, 8, 2).node_key).toBe("dieu:8/khoan:2");
+    expect(timChunk(kq.chunks, 1).node_key).toBe("dieu:1");
+  });
+
+  it("xep chu đ ngay sau d va truoc e, khong bao nhay coc", () => {
+    const kq = parseVanBan(`Điều 1. Phạm vi\n1. Các trường hợp gồm:\na) Mục a.\nb) Mục b.\nc) Mục c.\nd) Mục d.\nđ) Mục đ.\ne) Mục e.`);
+    const diem = kq.nodes
+      .filter((node) => node.node_type === "diem")
+      .map((node) => node.so_thu_tu);
+
+    expect(diem).toEqual(["a", "b", "c", "d", "đ", "e"]);
+    expect(kq.canh_bao.some((warning) => warning.loai === "diem_khong_lien_tuc")).toBe(false);
   });
 });

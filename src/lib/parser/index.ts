@@ -3,7 +3,7 @@
  * Doan nao khong hieu duoc thi day vao mang canh_bao, khong im lang bo qua.
  */
 import { bocMetadata } from "./metadata";
-import { chuanHoaVanBan, demSoTrang, tachCauTruc, taoChunk } from "./structure";
+import { chuanHoaVanBan, demSoTrang, tachCauTruc, taoChunk, taoDocNodes } from "./structure";
 import type { KetQuaParse } from "./types";
 
 export interface TuyChonParse {
@@ -18,10 +18,12 @@ export function parseVanBan(raw: string, tuyChon: TuyChonParse = {}): KetQuaPars
 
   const ketQuaMetadata = bocMetadata(dong);
   const cauTruc = tachCauTruc(dong, soTrang);
+  const nodes = taoDocNodes(cauTruc);
   const ketQuaChunk = taoChunk(cauTruc, ketQuaMetadata.metadata, tenFile);
 
   return {
     metadata: ketQuaMetadata.metadata,
+    nodes,
     chunks: ketQuaChunk.chunks,
     canh_bao: [
       ...ketQuaMetadata.canh_bao,
@@ -32,11 +34,13 @@ export function parseVanBan(raw: string, tuyChon: TuyChonParse = {}): KetQuaPars
   };
 }
 
-export { chuanHoaVanBan, tachCauTruc, taoChunk, uocLuongSoToken } from "./structure";
+export { chuanHoaVanBan, tachCauTruc, taoChunk, taoDocNodes, uocLuongSoToken } from "./structure";
 export { bocMetadata } from "./metadata";
 export type {
   CanhBao,
   ChunkParse,
+  DocNodeParse,
+  DocNodeType,
   KetQuaParse,
   LoaiVanBan,
   MetadataVanBan,

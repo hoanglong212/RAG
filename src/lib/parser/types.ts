@@ -3,12 +3,15 @@
  * Ten truong nghiep vu giu nguyen tieng Viet khong dau de khop voi cot trong DB.
  */
 import type { LOAI_VAN_BAN } from "./patterns";
+import type { NodeType } from "../../types/contract";
 
 export type LoaiVanBan = (typeof LOAI_VAN_BAN)[number];
 
 export interface MetadataVanBan {
   so_hieu: string | null;
   loai_van_ban: LoaiVanBan | null;
+  /** Chuoi loai van ban dung nguyen cach viet trong file goc. */
+  loai_van_ban_raw: string | null;
   co_quan_ban_hanh: string | null;
   /** ISO yyyy-mm-dd */
   ngay_ban_hanh: string | null;
@@ -35,6 +38,8 @@ export interface CanhBao {
 
 /** Mot don vi truy hoi, tuong ung mot dong bang `chunks`. */
 export interface ChunkParse {
+  /** Khoa noi bo de noi chunk structural vao doc_nodes luc persist. */
+  node_key: string | null;
   chuong: string | null;
   chuong_tieu_de: string | null;
   muc: string | null;
@@ -55,8 +60,24 @@ export interface ChunkParse {
   bi_cat_cung: boolean;
 }
 
+export type DocNodeType = NodeType;
+
+/** Cay parser dang phang; key chi dung trong mot lan persist, khong ghi vao DB. */
+export interface DocNodeParse {
+  key: string;
+  parent_key: string | null;
+  node_type: DocNodeType;
+  so_thu_tu: string | null;
+  tieu_de: string | null;
+  noi_dung: string;
+  breadcrumb: string;
+  order_index: number;
+  depth: number;
+}
+
 export interface KetQuaParse {
   metadata: MetadataVanBan;
+  nodes: DocNodeParse[];
   chunks: ChunkParse[];
   canh_bao: CanhBao[];
   so_trang: number;

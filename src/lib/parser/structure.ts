@@ -14,7 +14,7 @@ import {
   P_CHAT,
   THU_TU_DIEM,
 } from "./patterns";
-import type { CanhBao, ChunkParse, MetadataVanBan } from "./types";
+import type { CanhBao, ChunkParse, DocNodeParse, MetadataVanBan } from "./types";
 
 export interface DongVanBan {
   text: string;
@@ -448,6 +448,7 @@ export function tenVanBan(metadata: MetadataVanBan, tenFile: string): string {
 }
 
 interface ViTriChunk {
+  node_key: string | null;
   chuong: string | null;
   chuong_tieu_de: string | null;
   muc: string | null;
@@ -457,6 +458,139 @@ interface ViTriChunk {
   khoan_so: number | null;
   diem: string | null;
   phu_luc: string | null;
+}
+
+function chuongKey(chuong: string): string {
+  return `chuong:${chuong.replace(/^Chương\s+/i, "")}`;
+}
+
+function mucKey(chuong: string | null, muc: string): string {
+  return `${chuong ? chuongKey(chuong) : "root"}/muc:${muc.replace(/^Mục\s+/i, "")}`;
+}
+
+function dieuKey(so: number): string {
+  return `dieu:${so}`;
+}
+
+function khoanKey(dieuSo: number, khoanSo: number): string {
+  return `${dieuKey(dieuSo)}/khoan:${khoanSo}`;
+}
+
+function diemKey(dieuSo: number, khoanSo: number, diem: string): string {
+  return `${khoanKey(dieuSo, khoanSo)}/diem:${diem}`;
+}
+
+function phuLucKey(index: number): string {
+  return `phu_luc:${index}`;
+}
+
+/** Tao cay doc_nodes doc lap voi chien luoc chunking. */
+export function taoDocNodes(cauTruc: CauTruc): DocNodeParse[] {
+  const nodes: DocNodeParse[] = [];
+  const seen = new Set<string>();
+
+  const add = (node: Omit<DocNodeParse, "order_index">): void => {
+    if (seen.has(node.key)) return;
+    seen.add(node.key);
+    nodes.push({ ...node, order_index: nodes.length });
+  };
+
+  for (const dieu of cauTruc.dieu) {
+    let parentKey: string | null = null;
+    let parentDepth = -1;
+    const breadcrumb: string[] = [];
+
+    if (dieu.chuong) {
+      const key = chuongKey(dieu.chuong);
+      add({
+        key,
+        parent_key: null,
+        node_type: "chuong",
+        so_thu_tu: dieu.chuong.replace(/^Chương\s+/i, ""),
+        tieu_de: dieu.chuong_tieu_de,
+        noi_dung: "",
+        breadcrumb: dieu.chuong,
+        depth: 0,
+      });
+      parentKey = key;
+      parentDepth = 0;
+      breadcrumb.push(dieu.chuong);
+    }
+
+    if (dieu.muc) {
+      const key = mucKey(dieu.chuong, dieu.muc);
+      breadcrumb.push(dieu.muc);
+      add({
+        key,
+        parent_key: parentKey,
+        node_type: "muc",
+        so_thu_tu: dieu.muc.replace(/^Mục\s+/i, ""),
+        tieu_de: dieu.muc_tieu_de,
+        noi_dung: "",
+        breadcrumb: breadcrumb.join(" > "),
+        depth: parentDepth + 1,
+      });
+      parentKey = key;
+      parentDepth += 1;
+    }
+
+    const dieuNodeKey = dieuKey(dieu.so);
+    const dieuLabel = `Điều ${dieu.so}`;
+    breadcrumb.push(dieuLabel);
+    add({
+      key: dieuNodeKey,
+      parent_key: parentKey,
+      node_type: "dieu",
+      so_thu_tu: String(dieu.so),
+      tieu_de: dieu.tieu_de,
+      noi_dung: noiCacDong(dieu.mo_dau),
+      breadcrumb: breadcrumb.join(" > "),
+      depth: parentDepth + 1,
+    });
+
+    for (const khoan of dieu.khoan) {
+      const khoanNodeKey = khoanKey(dieu.so, khoan.so);
+      const khoanBreadcrumb = [...breadcrumb, `Khoản ${khoan.so}`];
+      add({
+        key: khoanNodeKey,
+        parent_key: dieuNodeKey,
+        node_type: "khoan",
+        so_thu_tu: String(khoan.so),
+        tieu_de: null,
+        noi_dung: noiCacDong(khoan.dong),
+        breadcrumb: khoanBreadcrumb.join(" > "),
+        depth: parentDepth + 2,
+      });
+
+      for (const diem of khoan.diem) {
+        add({
+          key: diemKey(dieu.so, khoan.so, diem.ky_hieu),
+          parent_key: khoanNodeKey,
+          node_type: "diem",
+          so_thu_tu: diem.ky_hieu,
+          tieu_de: null,
+          noi_dung: noiCacDong(diem.dong),
+          breadcrumb: [...khoanBreadcrumb, `Điểm ${diem.ky_hieu}`].join(" > "),
+          depth: parentDepth + 3,
+        });
+      }
+    }
+  }
+
+  cauTruc.phu_luc.forEach((phuLuc, index) => {
+    add({
+      key: phuLucKey(index),
+      parent_key: null,
+      node_type: "phu_luc",
+      so_thu_tu: phuLuc.ten.replace(/^PHỤ\s*LỤC\s*/i, "") || String(index + 1),
+      tieu_de: phuLuc.ten,
+      noi_dung: noiCacDong(phuLuc.dong),
+      breadcrumb: phuLuc.ten,
+      depth: 0,
+    });
+  });
+
+  return nodes;
 }
 
 function dungDuongDan(ten: string, v: ViTriChunk): string {
@@ -522,6 +656,7 @@ export function taoChunk(
 
   for (const d of cauTruc.dieu) {
     const goc: ViTriChunk = {
+      node_key: dieuKey(d.so),
       chuong: d.chuong,
       chuong_tieu_de: d.chuong_tieu_de,
       muc: d.muc,
@@ -547,7 +682,11 @@ export function taoChunk(
     const dan = moDau !== "" && dieuNgan ? moDau : "";
 
     for (const k of d.khoan) {
-      const viTriKhoan: ViTriChunk = { ...goc, khoan_so: k.so };
+      const viTriKhoan: ViTriChunk = {
+        ...goc,
+        node_key: khoanKey(d.so, k.so),
+        khoan_so: k.so,
+      };
       const dauKhoan = noiCacDong(k.dong);
       const cacDiem = k.diem.map((dm) => ({ ky_hieu: dm.ky_hieu, text: noiCacDong(dm.dong), trang: dm.trang }));
       const toanBo = [dan, dauKhoan, ...cacDiem.map((x) => `${x.ky_hieu}) ${x.text}`)]
@@ -565,17 +704,18 @@ export function taoChunk(
       for (const dm of cacDiem) {
         them(
           [dan, danKhoan, dm.text].filter((x) => x !== "").join("\n"),
-          { ...viTriKhoan, diem: dm.ky_hieu },
+          { ...viTriKhoan, node_key: diemKey(d.so, k.so, dm.ky_hieu), diem: dm.ky_hieu },
           dm.trang,
         );
       }
     }
   }
 
-  for (const pl of cauTruc.phu_luc) {
+  cauTruc.phu_luc.forEach((pl, index) => {
     them(
       noiCacDong(pl.dong),
       {
+        node_key: phuLucKey(index),
         chuong: null,
         chuong_tieu_de: null,
         muc: null,
@@ -588,7 +728,7 @@ export function taoChunk(
       },
       pl.trang,
     );
-  }
+  });
 
   return { chunks, canh_bao: canhBao };
 }
