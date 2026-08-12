@@ -17,7 +17,6 @@ export function assertValidEmbeddings(
       `Nhà cung cấp embedding trả ${embeddings.length} vector cho ${expectedCount} văn bản.`,
     );
   }
-
   embeddings.forEach((embedding, index) => {
     if (embedding.length !== dimensions) {
       throw new Error(
@@ -34,12 +33,15 @@ export async function createEmbeddingProvider(
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<EmbeddingProvider> {
   const provider = env.EMBEDDING_PROVIDER?.trim().toLowerCase() || "hosted";
+  if (provider === "local") {
+    const { LocalEmbeddingProvider } = await import("./local");
+    return LocalEmbeddingProvider.fromEnv(env);
+  }
   if (provider !== "hosted") {
     throw new Error(
-      `EMBEDDING_PROVIDER="${provider}" chưa được hỗ trợ ở Phase 3. Dùng "hosted"; provider local thuộc Phase 7.`,
+      `EMBEDDING_PROVIDER="${provider}" không được hỗ trợ; dùng "hosted" hoặc "local".`,
     );
   }
-
   const { HostedEmbeddingProvider } = await import("./hosted");
   return HostedEmbeddingProvider.fromEnv(env);
 }
