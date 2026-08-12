@@ -1,0 +1,124 @@
+import { basename } from "node:path";
+import {
+  assertValidEmbeddings,
+  EMBEDDING_BATCH_SIZE,
+  type EmbeddingProvider,
+} from "../embedding/provider";
+import { parseVanBan, type CanhBao, type ChunkParse, type MetadataVanBan } from "../parser";
+import { extractDocument, type ExtractedDocument, type SourceDocument } from "./extract";
+
+export interface PersistedChunk extends ChunkParse {
+  embedding: number[];
+}
+
+export interface CompleteDocumentInput {
+  metadata: MetadataVanBan;
+  pageCount: number;
+  chunks: PersistedChunk[];
+  warningDetail: string | null;
+}
+
+export interface IngestStorage {
+  createPending(fileName: string): Promise<string>;
+  complete(documentId: string, input: CompleteDocumentInput): Promise<void>;
+  fail(documentId: string, detail: string): Promise<void>;
+}
+
+export interface IngestDependencies {
+  storage: IngestStorage;
+  embeddingProvider: EmbeddingProvider;
+  extract?: (source: SourceDocument) => Promise<ExtractedDocument>;
+}
+
+export interface IngestResult {
+  documentId: string;
+  warnings: CanhBao[];
+  extractionWarnings: string[];
+  chunkCount: number;
+}
+
+export class IngestDocumentError extends Error {
+  constructor(
+    readonly documentId: string,
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+    this.name = "IngestDocumentError";
+  }
+}
+
+export async function ingestDocument(
+  source: SourceDocument,
+  dependencies: IngestDependencies,
+): Promise<IngestResult> {
+  const safeName = basename(source.fileName);
+  const documentId = await dependencies.storage.createPending(safeName);
+
+  try {
+    const extracted = await (dependencies.extract ?? extractDocument)({
+      fileName: safeName,
+      data: source.data,
+    });
+    const parsed = parseVanBan(extracted.text, { tenFile: safeName });
+    if (parsed.chunks.length === 0) {
+      throw new Error("Parser không tạo được chunk nào từ văn bản.");
+    }
+
+    const embeddings: number[][] = [];
+    for (let offset = 0; offset < parsed.chunks.length; offset += EMBEDDING_BATCH_SIZE) {
+      const batch = parsed.chunks.slice(offset, offset + EMBEDDING_BATCH_SIZE);
+      const vectors = await dependencies.embeddingProvider.embed(
+        batch.map((chunk) => chunk.noi_dung_kem_ngu_canh),
+      );
+      assertValidEmbeddings(
+        vectors,
+        batch.length,
+        dependencies.embeddingProvider.dimensions,
+      );
+      embeddings.push(...vectors);
+    }
+
+    const persistedChunks = parsed.chunks.map((chunk, index) => ({
+      ...chunk,
+      embedding: embeddings[index],
+    }));
+    const warningDetail = serializeWarnings(parsed.canh_bao, extracted.warnings);
+
+    await dependencies.storage.complete(documentId, {
+      metadata: parsed.metadata,
+      pageCount: parsed.so_trang,
+      chunks: persistedChunks,
+      warningDetail,
+    });
+
+    return {
+      documentId,
+      warnings: parsed.canh_bao,
+      extractionWarnings: extracted.warnings,
+      chunkCount: persistedChunks.length,
+    };
+  } catch (cause) {
+    const detail = safeErrorMessage(cause);
+    try {
+      await dependencies.storage.fail(documentId, detail);
+    } catch (markFailure) {
+      throw new IngestDocumentError(
+        documentId,
+        `${detail} Đồng thời không ghi được trạng thái lỗi: ${safeErrorMessage(markFailure)}`,
+        { cause },
+      );
+    }
+    throw new IngestDocumentError(documentId, detail, { cause });
+  }
+}
+
+function serializeWarnings(parserWarnings: CanhBao[], extractionWarnings: string[]): string | null {
+  if (parserWarnings.length === 0 && extractionWarnings.length === 0) return null;
+  return JSON.stringify({ parser: parserWarnings, extraction: extractionWarnings });
+}
+
+export function safeErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : "Lỗi không xác định.";
+  return message.replace(/postgres(?:ql)?:\/\/[^\s]+/gi, "[DATABASE_URL]").slice(0, 2_000);
+}
