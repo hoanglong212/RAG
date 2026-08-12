@@ -23,3 +23,11 @@
 - Preserved the frozen contract and existing database schema; full parser diagnostics are stored internally while API warnings use only frozen contract codes.
 - Automated verification: 40 tests, TypeScript strict check, ESLint, and production build pass.
 - Live acceptance remains pending because `data/raw` has no source documents and no runtime `.env` is configured in this worktree.
+
+## 2026-08-12 — D8 retrieval
+
+- Added live pgvector cosine retrieval, Vietnamese full-text retrieval with `unaccent`, exact legal-identifier boosting, and hybrid Reciprocal Rank Fusion with `k = 60`.
+- Added `POST /api/search` and `scripts/thu-tim.ts` so vector, full-text, and hybrid modes can be exercised against the same corpus and chunking strategy.
+- Live smoke acceptance: the query for `55/2010/QH12` returned that document at rank 1 in both vector and hybrid modes.
+- Automated verification: 53 tests, TypeScript strict check, ESLint, and production build pass.
+- Corpus expansion for `115/2018/NĐ-CP` and `124/2021/NĐ-CP` is intentionally pending: the official 115 PDF exposes a corrupted text layer and the official 124 PDF has no text layer. The fail-closed extractor rejected both, preventing OCR-corrupted legal text from entering the evaluation corpus.
