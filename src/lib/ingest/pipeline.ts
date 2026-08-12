@@ -13,6 +13,8 @@ import {
 } from "../parser";
 import { extractDocument, type ExtractedDocument, type SourceDocument } from "./extract";
 import { buildFixedCorpusText, createFixedChunks } from "./fixed";
+import { classifyNews } from "../news/classifier";
+import type { NewsTopic } from "../../types/news";
 
 export interface PersistedChunk extends ChunkParse {
   strategy: "structural" | "fixed";
@@ -25,6 +27,7 @@ export interface CompleteDocumentInput {
   nodes: DocNodeParse[];
   chunks: PersistedChunk[];
   parseWarnings: CanhBao[];
+  legalTopics: NewsTopic[];
 }
 
 export interface IngestStorage {
@@ -70,6 +73,9 @@ export async function ingestDocument(
       data: source.data,
     });
     const parsed = parseVanBan(extracted.text, { tenFile: safeName });
+    const legalTopics = classifyNews(
+      `${safeName}\n${parsed.metadata.trich_yeu ?? ""}\n${extracted.text.slice(0, 8_000)}`,
+    ).topics.filter((topic) => topic !== "phap_luat" && topic !== "khac");
     const documentLabel = parsed.metadata.so_hieu ?? safeName;
     const canonicalBody = buildFixedCorpusText(parsed.nodes);
     const fixedChunks = createFixedChunks(canonicalBody || extracted.text, documentLabel);
@@ -107,6 +113,7 @@ export async function ingestDocument(
       nodes: parsed.nodes,
       chunks: persistedChunks,
       parseWarnings: parsed.canh_bao,
+      legalTopics,
     });
 
     return {

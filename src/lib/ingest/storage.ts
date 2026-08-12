@@ -94,6 +94,7 @@ export class DrizzleIngestStorage implements IngestStorage {
           trich_yeu: input.metadata.trich_yeu,
           so_trang: input.pageCount,
           parse_warnings: input.parseWarnings,
+          legal_topics: input.legalTopics,
           ingest_status: "hoan_tat",
           loi_chi_tiet: null,
         })

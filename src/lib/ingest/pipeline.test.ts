@@ -52,11 +52,22 @@ describe("ingestDocument", () => {
     expect(embeddingProvider.batchSizes).toEqual([50, 2]);
     expect(storage.completed?.chunks).toHaveLength(52);
     expect(storage.completed?.nodes.filter((node) => node.node_type === "dieu")).toHaveLength(51);
+    expect(storage.completed?.legalTopics).toEqual([]);
     expect(
       storage.completed?.chunks.filter((chunk) => chunk.strategy === "structural"),
     ).toHaveLength(51);
     expect(storage.completed?.chunks.find((chunk) => chunk.strategy === "fixed")?.node_key).toBeNull();
     expect(storage.failure).toBeNull();
+  });
+
+  it("gắn chủ đề pháp lý khi ingest văn bản mới", async () => {
+    const storage = new MemoryStorage();
+    const text = "Điều 1. Phạm vi\nQuy định xử phạt người điều khiển xe máy vượt đèn đỏ.";
+    await ingestDocument(
+      { fileName: "nghi-dinh-giao-thong.txt", data: new Uint8Array() },
+      { storage, embeddingProvider: new RecordingEmbeddingProvider(), extract: async () => ({ text, warnings: [] }) },
+    );
+    expect(storage.completed?.legalTopics).toContain("giao_thong");
   });
 
   it("ghi trang thai loi nhung van nem loi cho caller xu ly file ke tiep", async () => {
