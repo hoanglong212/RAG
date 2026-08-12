@@ -11,6 +11,8 @@ import Link from "next/link";
 const DIEU_HUONG = [
   { href: "/", nhan: "Tra cứu" },
   { href: "/documents", nhan: "Kho văn bản" },
+  { href: "/news", nhan: "Tin tức" },
+  { href: "/legal-check", nhan: "Kiểm tra tình huống" },
   { href: "/dashboard", nhan: "Đo lường" },
 ] as const;
 
@@ -19,11 +21,11 @@ export default function KhungGiaoDien({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="flex h-dvh flex-col bg-khay">
-      <header className="flex shrink-0 items-center gap-1 px-4 py-2.5">
+      <header className="flex shrink-0 flex-wrap items-center gap-1 px-4 py-2.5">
         <span className="mr-4 text-sm font-semibold tracking-tight">
           Tra cứu văn bản
         </span>
-        <nav className="flex items-center gap-1" aria-label="Điều hướng chính">
+        <nav className="flex flex-wrap items-center gap-1" aria-label="Điều hướng chính">
           {DIEU_HUONG.map((muc) => (
             <Link
               key={muc.href}

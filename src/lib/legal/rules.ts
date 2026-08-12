@@ -132,8 +132,14 @@ export async function resolveRuleEvidence(
         AND d.so_hieu = ${match.source.soHieu}
         AND c.dieu_so = ${match.source.dieu}
         AND (${match.source.khoan ?? null}::int IS NULL OR c.khoan_so = ${match.source.khoan ?? null}::int)
-        AND (${match.source.diem ?? null}::text IS NULL OR c.diem = ${match.source.diem ?? null}::text)
-      ORDER BY length(c.noi_dung) DESC
+        AND (
+          ${match.source.diem ?? null}::text IS NULL
+          OR c.diem = ${match.source.diem ?? null}::text
+          OR c.diem IS NULL
+        )
+      ORDER BY
+        CASE WHEN c.diem = ${match.source.diem ?? null}::text THEN 0 ELSE 1 END,
+        length(c.noi_dung) DESC
       LIMIT 1
     `;
     const row = rows[0];

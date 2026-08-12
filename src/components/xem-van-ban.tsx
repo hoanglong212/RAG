@@ -11,8 +11,14 @@ import { NHAN_CANH_BAO } from "@/types/nhan";
 import { MatDoc } from "@/components/mat-doc";
 import { TrucVanBan } from "@/components/truc-van-ban";
 
-export function XemVanBan({ chiTiet }: { chiTiet: DocumentDetail }) {
-  const [nodeDangChon, setNodeDangChon] = useState<string | null>(null);
+export function XemVanBan({
+  chiTiet,
+  nodeBanDau = null,
+}: {
+  chiTiet: DocumentDetail;
+  nodeBanDau?: string | null;
+}) {
+  const [nodeDangChon, setNodeDangChon] = useState<string | null>(nodeBanDau);
 
   return (
     <div className="flex h-full">

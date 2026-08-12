@@ -1,267 +1,130 @@
 "use client";
 
-/**
- * Trang tra cứu — màn hình chính.
- *
- * Chạy hoàn toàn trên src/mocks/ cho tới ngày gộp. Ngày gộp chỉ đổi nguồn dữ
- * liệu sang /api/chat, không sửa component nào ở đây.
- *
- * KHOẢNH KHẮC CHỮ KÝ: contract quy định /api/chat gửi sự kiện `citations`
- * TRƯỚC rồi mới tới `token`. Trang này diễn đúng thứ tự đó — trục văn bản cuộn
- * tới Điều được trích và đóng dấu đỏ trong khi câu trả lời còn chưa hiện chữ
- * nào. Chỗ đến có trước, lời giải thích tới sau.
- */
-
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { ChatResponse, Citation } from "@/types/contract";
-import { chatDiemThap, chatKhongTimThay, chatLoi, chatOk, cauHoiGoiY } from "@/mocks/chat";
-import { chiTietVanBanDayDu } from "@/mocks/detail";
-import { mockStats } from "@/mocks/stats";
+import { useCallback, useEffect, useState } from "react";
 import { ChipTrichDan } from "@/components/chip-trich-dan";
-import { MatDoc } from "@/components/mat-doc";
 import { OHoi } from "@/components/o-hoi";
-import { TrucVanBan } from "@/components/truc-van-ban";
-import {
-  DangTai,
-  KhongTimThay,
-  TrangThaiLoi,
-  TrangThaiRong,
-} from "@/components/trang-thai";
-import { cn } from "@/lib/utils";
-
-/** Độ trễ giả lập, chỉ để diễn thứ tự sự kiện của contract trên mock. */
-const TRE_TIM_NGUON = 700;
-const TRE_VIET_CHU = 900;
+import { DangTai, KhongTimThay, TrangThaiLoi, TrangThaiRong } from "@/components/trang-thai";
+import type { ChatStatus, Citation, StatsResponse } from "@/types/contract";
 
 type Pha = "rong" | "dangTim" | "coNguon" | "xong" | "khongTimThay" | "loi";
 
-const KICH_BAN = {
-  ok: chatOk,
-  diemThap: chatDiemThap,
-  khongTimThay: chatKhongTimThay,
-  loi: chatLoi,
-} as const;
-
-type TenKichBan = keyof typeof KICH_BAN;
-
-const NHAN_KICH_BAN: Record<TenKichBan, string> = {
-  ok: "Điểm cao",
-  diemThap: "Điểm thấp",
-  khongTimThay: "Không tìm thấy",
-  loi: "Lỗi",
-};
+const CAU_HOI_GOI_Y = [
+  "Công ty chậm trả tiền lương cho người lao động thì bị xử lý thế nào?",
+  "Người đi xe máy vượt đèn đỏ bị phạt theo quy định nào?",
+  "Cửa hàng từ chối bảo hành sản phẩm lỗi có đúng pháp luật không?",
+];
 
 export default function TrangTraCuu() {
   const [cauHoi, setCauHoi] = useState("");
   const [pha, setPha] = useState<Pha>("rong");
-  const [kichBan, setKichBan] = useState<TenKichBan>("ok");
-  const [phanHoi, setPhanHoi] = useState<ChatResponse | null>(null);
-  const [trichDanDangChon, setTrichDanDangChon] = useState<Citation | null>(null);
-  /** Chỉ có ý nghĩa dưới 1280px, nơi mặt đọc là tấm trượt thay vì cột thứ ba. */
-  const [matDocMo, setMatDocMo] = useState(false);
+  const [answer, setAnswer] = useState("");
+  const [citations, setCitations] = useState<Citation[]>([]);
+  const [topScore, setTopScore] = useState(0);
+  const [nguong, setNguong] = useState(0.35);
+  const [soVanBan, setSoVanBan] = useState(0);
+  const [dangChay, setDangChay] = useState(false);
 
-  const chonTrichDan = useCallback((td: Citation) => {
-    setTrichDanDangChon(td);
-    setMatDocMo(true);
-  }, []);
-
-  const dongHo = useRef<ReturnType<typeof setTimeout>[]>([]);
   useEffect(() => {
-    const ds = dongHo.current;
-    return () => ds.forEach(clearTimeout);
+    fetch("/api/stats")
+      .then((response) => response.json())
+      .then((data: StatsResponse) => setSoVanBan(data.tongVanBan))
+      .catch(() => undefined);
   }, []);
 
-  const traCuu = useCallback(() => {
-    dongHo.current.forEach(clearTimeout);
-    dongHo.current = [];
-    setPhanHoi(null);
-    setTrichDanDangChon(null);
+  const traCuu = useCallback(async () => {
+    if (!cauHoi.trim()) return;
+    setDangChay(true);
     setPha("dangTim");
+    setAnswer("");
+    setCitations([]);
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ question: cauHoi, strategy: "structural", mode: "hybrid" }),
+      });
+      if (!response.ok || !response.body) throw new Error("Máy chủ không trả luồng dữ liệu.");
 
-    const ketQua = KICH_BAN[kichBan];
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        buffer += decoder.decode(value, { stream: !done });
+        const frames = buffer.split("\n\n");
+        buffer = frames.pop() ?? "";
+        for (const frame of frames) handleEvent(frame);
+        if (done) break;
+      }
+    } catch {
+      setPha("loi");
+    } finally {
+      setDangChay(false);
+    }
+  }, [cauHoi]);
 
-    dongHo.current.push(
-      setTimeout(() => {
-        if (ketQua.status === "khong_tim_thay") {
-          setPhanHoi(ketQua);
-          setPha("khongTimThay");
-          return;
-        }
-        if (ketQua.status === "loi") {
-          setPhanHoi(ketQua);
-          setPha("loi");
-          return;
-        }
-        // Nguồn về trước: trục cuộn và đóng dấu, chữ chưa có.
-        setPhanHoi(ketQua);
-        setTrichDanDangChon(ketQua.citations[0] ?? null);
-        setPha("coNguon");
-        dongHo.current.push(setTimeout(() => setPha("xong"), TRE_VIET_CHU));
-      }, TRE_TIM_NGUON),
-    );
-  }, [kichBan]);
-
-  const coVanBan = pha === "coNguon" || pha === "xong";
-  const dangChay = pha === "dangTim" || pha === "coNguon";
+  function handleEvent(frame: string) {
+    const event = frame.match(/^event:\s*(.+)$/m)?.[1];
+    const raw = frame.match(/^data:\s*(.+)$/m)?.[1];
+    if (!event || !raw) return;
+    const data = JSON.parse(raw) as Record<string, unknown>;
+    if (event === "citations") {
+      const next = (data.citations ?? []) as Citation[];
+      setCitations(next);
+      if (next.length > 0) setPha("coNguon");
+    } else if (event === "token") {
+      setPha("xong");
+      setAnswer((current) => current + String(data.text ?? ""));
+    } else if (event === "done") {
+      const status = data.status as ChatStatus;
+      setTopScore(Number(data.topScore ?? 0));
+      setNguong(Number(data.nguong ?? 0.35));
+      setPha(status === "ok" ? "xong" : status === "khong_tim_thay" ? "khongTimThay" : "loi");
+    }
+  }
 
   return (
-    <div className="flex h-full">
-      {/* ---------- Cột trái: trục văn bản ----------
-          Luôn chiếm chỗ ở mọi bề ngang. Dưới 1024px nó thu thành dải vạch chứ
-          không ẩn — đây là yếu tố chữ ký, không được biến mất trên máy chiếu. */}
-      {coVanBan ? (
-        <TrucVanBan
-          soHieu={chiTietVanBanDayDu.soHieu}
-          tree={chiTietVanBanDayDu.tree}
-          nodeIdDangNeo={trichDanDangChon?.nodeId ?? null}
-          onChon={(nodeId) => {
-            const td = phanHoi?.citations.find((c) => c.nodeId === nodeId);
-            if (td) chonTrichDan(td);
-          }}
-          className="shrink-0"
-        />
-      ) : (
-        <div className="w-14 shrink-0 flex-col px-2 pt-3 lg:flex lg:w-52 lg:px-3 xl:w-72">
-          <p className="nhan-hoa text-center lg:text-left">
-            <span className="lg:hidden">Trục</span>
-            <span className="hidden lg:inline">Trục văn bản</span>
-          </p>
-          <p className="mt-2 hidden text-[0.8125rem] leading-relaxed text-nhan lg:block">
-            Trục hiện ra khi có câu trả lời, và cuộn tới đúng Điều được trích dẫn.
-          </p>
-        </div>
-      )}
+    <main className="h-full overflow-y-auto px-5 py-4">
+      <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col">
+        <OHoi giaTri={cauHoi} onDoi={setCauHoi} onTraCuu={traCuu} dangChay={dangChay} />
 
-      {/* ---------- Cột giữa: hỏi và đáp ---------- */}
-      <main className="flex min-w-0 flex-1 flex-col overflow-y-auto px-5 py-4">
-        <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
-          <OHoi
-            giaTri={cauHoi}
-            onDoi={setCauHoi}
-            onTraCuu={traCuu}
-            dangChay={dangChay}
-          />
+        <div className="mt-6 flex-1">
+          {pha === "rong" ? <TrangThaiRong cauHoiGoiY={CAU_HOI_GOI_Y} onChonCauHoi={setCauHoi} /> : null}
+          {pha === "dangTim" ? <DangTai /> : null}
+          {pha === "khongTimThay" ? (
+            <KhongTimThay topScore={topScore} nguong={nguong} soVanBan={soVanBan} />
+          ) : null}
+          {pha === "loi" ? <TrangThaiLoi onThuLai={traCuu} /> : null}
 
-          <div className="mt-6 flex-1">
-            {pha === "rong" ? (
-              <TrangThaiRong cauHoiGoiY={cauHoiGoiY} onChonCauHoi={setCauHoi} />
-            ) : null}
+          {(pha === "coNguon" || pha === "xong") && citations.length > 0 ? (
+            <div className="flex flex-col gap-6">
+              <section>
+                <h2 className="nhan-hoa mb-2">Nguồn ({citations.length})</h2>
+                <ul className="flex flex-col gap-1.5">
+                  {citations.map((citation, index) => (
+                    <li key={citation.chunkId}>
+                      <ChipTrichDan
+                        trichDan={citation}
+                        soThuTu={index + 1}
+                        onChon={() => {
+                          window.location.href = `/documents/${citation.documentId}?node=${citation.nodeId}`;
+                        }}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </section>
 
-            {pha === "dangTim" ? <DangTai /> : null}
-
-            {pha === "khongTimThay" && phanHoi ? (
-              <KhongTimThay
-                topScore={phanHoi.topScore}
-                nguong={phanHoi.nguong}
-                soVanBan={mockStats.tongVanBan}
-              />
-            ) : null}
-
-            {pha === "loi" ? <TrangThaiLoi onThuLai={traCuu} /> : null}
-
-            {coVanBan && phanHoi ? (
-              <div className="flex flex-col gap-6">
-                {/* Nguồn đứng TRÊN câu trả lời, đúng thứ tự chúng về. */}
-                <section>
-                  <h2 className="nhan-hoa mb-2">
-                    Nguồn ({phanHoi.citations.length})
-                  </h2>
-                  <ul className="flex flex-col gap-1.5">
-                    {phanHoi.citations.map((td, i) => (
-                      <li key={td.chunkId}>
-                        <ChipTrichDan
-                          trichDan={td}
-                          soThuTu={i + 1}
-                          dangChon={trichDanDangChon?.chunkId === td.chunkId}
-                          onChon={chonTrichDan}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-
-                <section>
-                  <h2 className="nhan-hoa mb-2">Trả lời</h2>
-                  {pha === "coNguon" ? (
-                    <p className="text-sm text-nhan">Đang soạn câu trả lời…</p>
-                  ) : (
-                    <p className="text-[0.9375rem] leading-[--dong-body]">
-                      {phanHoi.answer}
-                    </p>
-                  )}
-                </section>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </main>
-
-      {/* ---------- Cột phải: mặt đọc ----------
-          Từ 1280px trở lên là cột thứ ba cố định. Hẹp hơn thì thành tấm trượt
-          gọi ra khi bấm một nguồn, vì ba cột dưới bề ngang đó sẽ bóp cột giữa
-          xuống mức không đọc được. */}
-      {matDocMo ? (
-        <button
-          type="button"
-          aria-label="Đóng văn bản gốc"
-          onClick={() => setMatDocMo(false)}
-          className="fixed inset-0 z-30 bg-muc-in/25 xl:hidden"
-        />
-      ) : null}
-
-      <div
-        className={cn(
-          "fixed inset-y-0 right-0 z-40 w-full max-w-xl",
-          "transition-transform duration-[--nhip-cham] [transition-timing-function:var(--duong-cong)]",
-          "xl:static xl:w-[32rem] xl:max-w-none xl:shrink-0 xl:translate-x-0 2xl:w-[38rem]",
-          matDocMo ? "translate-x-0" : "translate-x-full",
-        )}
-      >
-        {trichDanDangChon ? (
-          <div className="flex h-full flex-col bg-giay">
-            <div className="flex shrink-0 items-center justify-between px-4 py-2 xl:hidden">
-              <span className="so-hieu text-nhan">{trichDanDangChon.soHieu}</span>
-              <button
-                type="button"
-                onClick={() => setMatDocMo(false)}
-                className="rounded-[--bo] px-2.5 py-1.5 text-sm text-but-xanh"
-              >
-                Đóng
-              </button>
+              <section>
+                <h2 className="nhan-hoa mb-2">Trả lời</h2>
+                <p className="whitespace-pre-wrap text-[0.9375rem] leading-relaxed">
+                  {answer || "Đang soạn câu trả lời…"}
+                </p>
+              </section>
             </div>
-            <MatDoc
-              tree={chiTietVanBanDayDu.tree}
-              nodeIdDangNeo={trichDanDangChon.nodeId}
-              className="min-h-0 flex-1"
-            />
-          </div>
-        ) : (
-          <div className="mat-doc flex h-full items-center justify-center px-10">
-            <p className="max-w-xs text-center text-sm text-nhan">
-              Bấm một nguồn để mở văn bản gốc tại đúng Khoản được trích dẫn.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Bộ chọn kịch bản — chỉ có khi phát triển, để soi đủ bốn trạng thái. */}
-      {process.env.NODE_ENV !== "production" ? (
-        <div className="fixed bottom-3 left-3 z-50 flex items-center gap-1 rounded-[--bo-lon] bg-muc-in/90 p-1">
-          {(Object.keys(KICH_BAN) as TenKichBan[]).map((ten) => (
-            <button
-              key={ten}
-              type="button"
-              onClick={() => setKichBan(ten)}
-              className={cn(
-                "rounded-[--bo] px-2 py-1 text-xs text-giay/70 transition-colors",
-                kichBan === ten && "bg-giay/15 text-giay",
-              )}
-            >
-              {NHAN_KICH_BAN[ten]}
-            </button>
-          ))}
+          ) : null}
         </div>
-      ) : null}
-    </div>
+      </div>
+    </main>
   );
 }
