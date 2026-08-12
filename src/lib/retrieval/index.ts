@@ -8,6 +8,8 @@ export interface SearchOptions {
   mode?: NonNullable<ChatRequest["mode"]>;
   strategy?: ChunkStrategy;
   topK?: number;
+  candidateK?: number;
+  lexicalWeight?: number;
 }
 
 export async function timKiem(
@@ -34,7 +36,11 @@ export async function timKiem(
   if (mode === "vector") {
     return vectorSearch(cleanQuestion, { topK, strategy }, { sql, embeddingProvider: provider });
   }
-  return hybridSearch(cleanQuestion, { topK, strategy }, { sql, embeddingProvider: provider });
+  return hybridSearch(
+    cleanQuestion,
+    { topK, strategy, candidateK: options.candidateK, lexicalWeight: options.lexicalWeight },
+    { sql, embeddingProvider: provider },
+  );
 }
 
 export type { RetrievalResult } from "./vector";

@@ -56,3 +56,10 @@
 - Interpretation: structural chunking is the main gain (`+17.5` points Recall@5). Hybrid keeps overall Recall@5 flat, raises Recall@10 by `2.5` points, and raises the exact-identifier subgroup from `90%` to `100%`; its lower MRR means it is not a universal ranking improvement and should be presented with that trade-off.
 - The set was prepared by Codex after explicit user authorization. A domain-owner review is still recommended before treating it as an independent held-out benchmark in the final report.
 - Runtime follow-up fixed API/eval drift by using a default minimum pool of 40 candidates for both `topK=5` and `topK=10`. Questions containing an exact document identifier plus Điều/Khoản/Điểm now give the lexical ranking full RRF weight; broad lexical questions retain their conservative weight.
+
+## 2026-08-12 — Multi-topic news and legal-check backend
+
+- Added official RSS metadata ingestion for Tuổi Trẻ, Thanh Niên, and VnExpress with URL-hash deduplication, 17-topic rule classification, source health state, sync-run logs, protected production sync, filtering, detail, and per-article legal-check APIs. Full article bodies are not copied.
+- Applied the additive news schema migration and completed a live sync: 152 unique articles. A second sync updated the same rows without duplicating them.
+- Added fail-closed corpus scope: the backend may ingest every news topic, but legal analysis currently claims support only for `an_toan_thuc_pham`; a labor scenario returned `insufficient_corpus` instead of irrelevant law.
+- Added an extensible structured violation-rule layer. The live acceptance scenario about using expired chemicals was pinned to `115/2018/NĐ-CP > Điều 6 > Khoản 1`, then Groq produced a grounded explanation from that single current source.

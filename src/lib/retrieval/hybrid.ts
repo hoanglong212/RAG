@@ -57,7 +57,12 @@ export function reciprocalRankFusion(
 
 export async function hybridSearch(
   question: string,
-  options: { topK: number; strategy: ChunkStrategy; candidateK?: number },
+  options: {
+    topK: number;
+    strategy: ChunkStrategy;
+    candidateK?: number;
+    lexicalWeight?: number;
+  },
   dependencies: { sql: postgres.Sql; embeddingProvider: EmbeddingProvider },
 ): Promise<RetrievalResult[]> {
   const candidateK = resolveHybridCandidateK(options.topK, options.candidateK);
@@ -74,6 +79,6 @@ export async function hybridSearch(
     [vectorResults, fulltextResults],
     options.topK,
     RRF_K,
-    [1, lexicalWeightForQuestion(question)],
+    [1, options.lexicalWeight ?? lexicalWeightForQuestion(question)],
   );
 }

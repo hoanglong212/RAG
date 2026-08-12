@@ -15,6 +15,7 @@ import {
   real,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   vector,
   type AnyPgColumn,
@@ -211,6 +212,69 @@ export const lan_chay_eval = pgTable("lan_chay_eval", {
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Nguồn RSS chính thức; chỉ lưu metadata và liên kết bài gốc. */
+export const news_sources = pgTable(
+  "news_sources",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    slug: text("slug").notNull(),
+    name: text("name").notNull(),
+    feed_url: text("feed_url").notNull(),
+    homepage_url: text("homepage_url").notNull(),
+    enabled: boolean("enabled").notNull().default(true),
+    last_fetched_at: timestamp("last_fetched_at", { withTimezone: true }),
+    last_error: text("last_error"),
+    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("news_sources_slug_uidx").on(t.slug),
+    uniqueIndex("news_sources_feed_url_uidx").on(t.feed_url),
+  ],
+);
+
+/** Bài tin đã chuẩn hóa từ RSS. Không sao chép toàn văn bài báo. */
+export const news_articles = pgTable(
+  "news_articles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    source_id: uuid("source_id")
+      .notNull()
+      .references(() => news_sources.id, { onDelete: "cascade" }),
+    /** SHA-256 của URL canonical, tránh index trực tiếp URL rất dài. */
+    external_id: text("external_id").notNull(),
+    url: text("url").notNull(),
+    title: text("title").notNull(),
+    summary: text("summary"),
+    image_url: text("image_url"),
+    published_at: timestamp("published_at", { withTimezone: true }),
+    topics: text("topics").array().notNull().default(sql`'{}'::text[]`),
+    keywords: text("keywords").array().notNull().default(sql`'{}'::text[]`),
+    locations: text("locations").array().notNull().default(sql`'{}'::text[]`),
+    fetched_at: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("news_articles_source_external_uidx").on(t.source_id, t.external_id),
+    index("news_articles_published_at_idx").on(t.published_at.desc()),
+    index("news_articles_source_id_idx").on(t.source_id),
+    index("news_articles_topics_idx").using("gin", t.topics),
+  ],
+);
+
+/** Nhật ký mỗi lần đồng bộ để dashboard giám sát nguồn lỗi. */
+export const news_sync_runs = pgTable("news_sync_runs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  source_id: uuid("source_id").references(() => news_sources.id, { onDelete: "set null" }),
+  status: text("status").notNull(),
+  fetched_count: integer("fetched_count").notNull().default(0),
+  inserted_count: integer("inserted_count").notNull().default(0),
+  updated_count: integer("updated_count").notNull().default(0),
+  error: text("error"),
+  started_at: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+  finished_at: timestamp("finished_at", { withTimezone: true }),
+});
+
 export type Document = typeof documents.$inferSelect;
 export type DocumentMoi = typeof documents.$inferInsert;
 export type Chunk = typeof chunks.$inferSelect;
@@ -220,3 +284,6 @@ export type DocNodeMoi = typeof doc_nodes.$inferInsert;
 export type TruyVanMoi = typeof truy_van.$inferInsert;
 export type CauHoiEval = typeof cau_hoi_eval.$inferSelect;
 export type LanChayEvalMoi = typeof lan_chay_eval.$inferInsert;
+export type NewsSource = typeof news_sources.$inferSelect;
+export type NewsArticle = typeof news_articles.$inferSelect;
+export type NewsSyncRun = typeof news_sync_runs.$inferSelect;

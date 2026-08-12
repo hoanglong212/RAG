@@ -1,6 +1,6 @@
-# RAG văn bản pháp luật Việt Nam
+# Nền tảng tin tức và tra cứu pháp luật Việt Nam
 
-Hệ thống RAG cho văn bản pháp luật, dùng parser cấu trúc Điều/Khoản/Điểm, PostgreSQL + pgvector và embedding tiếng Việt self-host.
+Backend tổng hợp metadata RSS đa chủ đề và đối chiếu tình huống với văn bản pháp luật. Phần pháp lý dùng parser cấu trúc Điều/Khoản/Điểm, rule engine, PostgreSQL + pgvector và embedding tiếng Việt self-host.
 
 Hướng dẫn dựng và vận hành local stack nằm tại [`docs/LOCAL-STACK.md`](docs/LOCAL-STACK.md).
 
@@ -13,10 +13,13 @@ npm run db:migrate
 npm run db:check
 npm run data:collect -- --query "thực phẩm" --limit 50 --require-structural
 npm run ingest
+npm run news:sync
 npm run dev
 ```
 
 Mở [http://localhost:3000](http://localhost:3000).
+
+Backend tin tức chỉ lưu tiêu đề, tóm tắt, ảnh đại diện và URL bài gốc từ RSS chính thức; không sao chép toàn văn bài báo. Xem [tài liệu API backend](docs/NEWS-LEGAL-BACKEND.md).
 
 ## Kiểm tra
 

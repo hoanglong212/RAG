@@ -14,6 +14,9 @@ const BANG_CAN_CO = [
   "doc_nodes",
   "documents",
   "lan_chay_eval",
+  "news_articles",
+  "news_sources",
+  "news_sync_runs",
   "truy_van",
 ];
 
