@@ -15,6 +15,7 @@ import { ChipTrichDan } from "@/components/chip-trich-dan";
 import { KhungTrang, Nut, The, TieuDeMuc } from "@/components/kit/co-ban";
 import { OVanBan, VienLoc } from "@/components/kit/truong";
 import { BaoLoi } from "@/components/kit/trang-thai-kit";
+import { docLoi, guiJson } from "@/components/kit/goi-api";
 import type { LegalCheckResult } from "@/lib/legal/check";
 import type { NewsTopic } from "@/types/news";
 import { NHAN_CHU_DE_TIN, NHAN_KET_QUA_PHAP_LY } from "@/types/nhan-news";
@@ -55,7 +56,8 @@ export default function TrangKiemTraTinhHuong() {
   const [dangChay, setDangChay] = useState(false);
   const [loi, setLoi] = useState<string | null>(null);
 
-  async function gui() {
+  /** `chuDeChay` cho phép chạy lại ngay với chủ đề vừa chọn, không chờ state. */
+  async function gui(chuDeChay: NewsTopic | "" = chuDe) {
     if (tinhHuong.trim().length < 10) {
       setLoi("Mô tả còn quá ngắn để tìm căn cứ. Hãy viết rõ hơn, ít nhất 10 ký tự.");
       return;
@@ -64,16 +66,14 @@ export default function TrangKiemTraTinhHuong() {
     setLoi(null);
     setKetQua(null);
     try {
-      const r = await fetch("/api/legal-check", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ scenario: tinhHuong.trim(), ...(chuDe ? { topic: chuDe } : {}) }),
-      });
-      const d = (await r.json()) as LegalCheckResult | { error?: string };
-      if (!r.ok) throw new Error("error" in d ? d.error : "Không đối chiếu được tình huống.");
-      setKetQua(d as LegalCheckResult);
+      setKetQua(
+        await guiJson<LegalCheckResult>("/api/legal-check", {
+          scenario: tinhHuong.trim(),
+          ...(chuDeChay ? { topic: chuDeChay } : {}),
+        }),
+      );
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : "Không đối chiếu được tình huống.");
+      setLoi(docLoi(e));
     } finally {
       setDangChay(false);
     }
@@ -131,6 +131,37 @@ export default function TrangKiemTraTinhHuong() {
               <p className="whitespace-pre-wrap text-base leading-[--dong-body]">
                 {ketQua.answer}
               </p>
+            ) : null}
+
+            {/*
+              Bộ tự nhận diện chủ đề không phải lúc nào cũng đúng — một tranh
+              chấp đặt cọc mua nhà dễ bị xếp vào "kinh tế", chủ đề mà corpus
+              chưa phủ, và người dùng nhận về ngõ cụt. Chọn tay đúng chủ đề
+              thì thường ra căn cứ, nên phải nói ra chứ đừng để họ tự đoán.
+            */}
+            {ketQua.status === "insufficient_corpus" && !chuDe ? (
+              <div className="rounded-[--bo] bg-khay px-3.5 py-3">
+                <p className="text-sm leading-relaxed">
+                  Hệ thống tự xếp tình huống này vào một chủ đề mà kho chưa phủ. Nếu bạn
+                  biết nó thuộc lĩnh vực nào, hãy chọn thẳng chủ đề ở trên rồi kiểm tra
+                  lại — thường sẽ ra căn cứ.
+                </p>
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                  {CHU_DE_HO_TRO.map((t) => (
+                    <Nut
+                      key={t}
+                      kieu="vien"
+                      co="nho"
+                      onClick={() => {
+                        setChuDe(t);
+                        void gui(t);
+                      }}
+                    >
+                      {NHAN_CHU_DE_TIN[t]}
+                    </Nut>
+                  ))}
+                </div>
+              </div>
             ) : null}
 
             {ketQua.matchedRules.length > 0 ? (

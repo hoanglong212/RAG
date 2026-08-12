@@ -18,6 +18,7 @@ import { ChipTrichDan } from "@/components/chip-trich-dan";
 import { KhungTrang, Nhan, Nut, The, TieuDeMuc } from "@/components/kit/co-ban";
 import { OChon, ONhap, VienLoc } from "@/components/kit/truong";
 import { BaoLoi, TrongRong, XuongDanhSach } from "@/components/kit/trang-thai-kit";
+import { docLoi, docPhanHoi, layJson } from "@/components/kit/goi-api";
 import type { LegalCheckResult } from "@/lib/legal/check";
 import { NEWS_TOPICS, type NewsArticleSummary, type NewsTopic } from "@/types/news";
 import { NHAN_CHU_DE_TIN, NHAN_KET_QUA_PHAP_LY } from "@/types/nhan-news";
@@ -82,12 +83,9 @@ export default function TrangTinTuc() {
     if (loc.chuDe) p.set("topic", loc.chuDe);
     if (loc.nguon) p.set("source", loc.nguon);
     try {
-      const r = await fetch(`/api/news?${p}`);
-      const kq = (await r.json()) as NewsResponse | { error?: string };
-      if (!r.ok) throw new Error("error" in kq ? kq.error : "Không đọc được tin tức.");
-      setData(kq as NewsResponse);
+      setData(await layJson<NewsResponse>(`/api/news?${p}`));
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : "Không đọc được tin tức.");
+      setLoi(docLoi(e));
     } finally {
       setDangTai(false);
     }
@@ -109,12 +107,11 @@ export default function TrangTinTuc() {
     setDoiChieuKq(null);
     setLoi(null);
     try {
-      const r = await fetch(`/api/news/${encodeURIComponent(id)}/legal-check`, { method: "POST" });
-      const kq = (await r.json()) as LegalCheckResult | { error?: string };
-      if (!r.ok) throw new Error("error" in kq ? kq.error : "Không đối chiếu được bài tin.");
-      setDoiChieuKq({ id, kq: kq as LegalCheckResult });
+      const duongDan = `/api/news/${encodeURIComponent(id)}/legal-check`;
+      const r = await fetch(duongDan, { method: "POST" });
+      setDoiChieuKq({ id, kq: await docPhanHoi<LegalCheckResult>(r, duongDan) });
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : "Không đối chiếu được bài tin.");
+      setLoi(docLoi(e));
     } finally {
       setDangChay(null);
     }
@@ -123,12 +120,12 @@ export default function TrangTinTuc() {
   async function timLienQuan(id: string) {
     setDangChay(id);
     try {
-      const r = await fetch(`/api/news/${encodeURIComponent(id)}/related`);
-      const kq = (await r.json()) as RelatedArticle[] | { error?: string };
-      if (!r.ok) throw new Error("error" in kq ? kq.error : "Không tìm được tin liên quan.");
-      setLienQuan({ id, items: kq as RelatedArticle[] });
+      const items = await layJson<RelatedArticle[]>(
+        `/api/news/${encodeURIComponent(id)}/related`,
+      );
+      setLienQuan({ id, items });
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : "Không tìm được tin liên quan.");
+      setLoi(docLoi(e));
     } finally {
       setDangChay(null);
     }

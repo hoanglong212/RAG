@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { XemVanBan } from "@/components/xem-van-ban";
+import { docLoi, layJson } from "@/components/kit/goi-api";
 import type { DocumentDetail } from "@/types/contract";
 
 export default function TrangChiTietVanBan({
@@ -17,16 +18,12 @@ export default function TrangChiTietVanBan({
 
   useEffect(() => {
     let active = true;
-    void fetch(`/api/documents/${encodeURIComponent(id)}`)
-      .then(async (response) => {
-        const data = (await response.json()) as DocumentDetail | { error?: string };
-        if (!response.ok) {
-          throw new Error("error" in data ? data.error : "Không đọc được văn bản.");
-        }
-        if (active) setChiTiet(data as DocumentDetail);
+    void layJson<DocumentDetail>(`/api/documents/${encodeURIComponent(id)}`)
+      .then((data) => {
+        if (active) setChiTiet(data);
       })
       .catch((error: unknown) => {
-        if (active) setLoi(error instanceof Error ? error.message : "Không đọc được văn bản.");
+        if (active) setLoi(docLoi(error));
       });
     return () => {
       active = false;

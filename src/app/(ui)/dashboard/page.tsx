@@ -19,6 +19,7 @@ import type { EvalRun, StatsResponse } from "@/types/contract";
 import { HangSoLieu, KhungTrang, OSoLieu, The, TieuDeMuc } from "@/components/kit/co-ban";
 import { BieuDoNho, CotDoc, CotDocLon, CotNgang } from "@/components/kit/bieu-do";
 import { BaoLoi, TrongRong, XuongSoLieu } from "@/components/kit/trang-thai-kit";
+import { docLoi, layJson } from "@/components/kit/goi-api";
 import { NHAN_LOAI, chuanHoaTenCoQuan } from "@/types/nhan";
 import { NHAN_CHU_DE_TIN } from "@/types/nhan-news";
 import type { CoverageRow } from "@/types/platform";
@@ -39,15 +40,15 @@ export default function TrangDoLuong() {
     setLoi(null);
     try {
       const [s, e, p] = await Promise.all([
-        fetch("/api/stats").then(docJson<StatsResponse>),
-        fetch("/api/eval/runs").then(docJson<EvalRun[]>),
-        fetch("/api/coverage").then(docJson<CoverageRow[]>),
+        layJson<StatsResponse>("/api/stats"),
+        layJson<EvalRun[]>("/api/eval/runs"),
+        layJson<CoverageRow[]>("/api/coverage"),
       ]);
       setStats(s);
       setLanChay(e);
       setPhuSong(p);
     } catch (err) {
-      setLoi(err instanceof Error ? err.message : "Không đọc được số liệu.");
+      setLoi(docLoi(err));
     } finally {
       setDangTai(false);
     }
@@ -400,13 +401,4 @@ export default function TrangDoLuong() {
   );
 }
 
-async function docJson<T>(r: Response): Promise<T> {
-  const d = (await r.json()) as T | { error?: string };
-  if (!r.ok) {
-    throw new Error(
-      ("error" in (d as object) ? (d as { error?: string }).error : null) ??
-        "Máy chủ không trả về số liệu.",
-    );
-  }
-  return d as T;
-}
+/* Xem components/kit/goi-api.ts. */

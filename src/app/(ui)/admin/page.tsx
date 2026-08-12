@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { KhungTrang, OSoLieu, The, TieuDeMuc } from "@/components/kit/co-ban";
 import { BaoLoi, TrongRong, XuongSoLieu } from "@/components/kit/trang-thai-kit";
+import { docLoi, layJson } from "@/components/kit/goi-api";
 
 interface DuLieuChatLuong {
   summary: {
@@ -74,12 +75,9 @@ export default function TrangQuanTriChatLuong() {
     setDangTai(true);
     setLoi(null);
     try {
-      const r = await fetch("/api/admin/quality");
-      const kq = (await r.json()) as DuLieuChatLuong | { error?: string };
-      if (!r.ok) throw new Error("error" in kq ? kq.error : "Không đọc được hàng đợi.");
-      setData(kq as DuLieuChatLuong);
+      setData(await layJson<DuLieuChatLuong>("/api/admin/quality"));
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : "Không đọc được dữ liệu.");
+      setLoi(docLoi(e));
     } finally {
       setDangTai(false);
     }

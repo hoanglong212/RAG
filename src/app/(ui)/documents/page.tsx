@@ -20,6 +20,7 @@ import { NHAN_LOAI, NHAN_TRANG_THAI, chuanHoaTenCoQuan } from "@/types/nhan";
 import { BanTraCuu } from "@/components/tra-cuu/ban-tra-cuu";
 import { Nhan } from "@/components/kit/co-ban";
 import { BaoLoi, BaoTin, TrongRong, Vach } from "@/components/kit/trang-thai-kit";
+import { docLoi, docPhanHoi, layJson } from "@/components/kit/goi-api";
 
 interface DocumentsResponse {
   items: DocumentSummary[];
@@ -52,11 +53,9 @@ function DuyetKho({ onChonCauHoi }: { onChonCauHoi: (cau: string) => void }) {
     setDangTai(true);
     setLoi(null);
     try {
-      const r = await fetch("/api/documents");
-      if (!r.ok) throw new Error("Máy chủ không trả về danh sách văn bản.");
-      setData((await r.json()) as DocumentsResponse);
+      setData(await layJson<DocumentsResponse>("/api/documents"));
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : "Không đọc được kho văn bản.");
+      setLoi(docLoi(e));
     } finally {
       setDangTai(false);
     }
@@ -72,8 +71,7 @@ function DuyetKho({ onChonCauHoi }: { onChonCauHoi: (cau: string) => void }) {
       const form = new FormData();
       form.set("file", file);
       const r = await fetch("/api/ingest", { method: "POST", body: form });
-      const kq = (await r.json()) as { error?: string; warnings?: unknown[] };
-      if (!r.ok) throw new Error(kq.error ?? "Không nạp được văn bản.");
+      const kq = await docPhanHoi<{ warnings?: unknown[] }>(r, "/api/ingest");
       const soCanhBao = kq.warnings?.length ?? 0;
       setTin(
         `Đã nạp ${file.name}` +
@@ -81,7 +79,7 @@ function DuyetKho({ onChonCauHoi }: { onChonCauHoi: (cau: string) => void }) {
       );
       await doc();
     } catch (e) {
-      setLoi(e instanceof Error ? e.message : "Không nạp được văn bản.");
+      setLoi(docLoi(e));
     } finally {
       setDangNap(false);
     }

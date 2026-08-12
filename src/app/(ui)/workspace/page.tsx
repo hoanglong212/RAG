@@ -16,6 +16,7 @@ import { ChipTrichDan } from "@/components/chip-trich-dan";
 import { KhungTrang, Nut, The, TieuDeMuc } from "@/components/kit/co-ban";
 import { ONhap, OChon, OVanBan, Truong, VienLoc } from "@/components/kit/truong";
 import { BaoLoi, BaoTin } from "@/components/kit/trang-thai-kit";
+import { docLoi, guiJson, layJson } from "@/components/kit/goi-api";
 import type { NewsTopic } from "@/types/news";
 import { NHAN_CHU_DE_TIN, NHAN_KET_QUA_PHAP_LY } from "@/types/nhan-news";
 import type {
@@ -453,20 +454,4 @@ function DanhSach({ tieuDe, cacMuc }: { tieuDe: string; cacMuc: string[] }) {
   );
 }
 
-async function layJson<T>(url: string): Promise<T> {
-  const r = await fetch(url);
-  const d = (await r.json()) as T & { error?: string };
-  if (!r.ok) throw new Error(d.error ?? "Không đọc được dữ liệu.");
-  return d;
-}
-async function guiJson<T = unknown>(url: string, body: unknown): Promise<T> {
-  const r = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const d = (await r.json()) as T & { error?: string };
-  if (!r.ok) throw new Error(d.error ?? "Không xử lý được yêu cầu.");
-  return d;
-}
-const docLoi = (e: unknown) => (e instanceof Error ? e.message : "Có lỗi xảy ra.");
+/* Xem components/kit/goi-api.ts. */

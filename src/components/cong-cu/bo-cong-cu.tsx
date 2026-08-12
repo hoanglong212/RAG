@@ -20,6 +20,7 @@ import { ChipTrichDan } from "@/components/chip-trich-dan";
 import { Nhan, Nut, TieuDeMuc } from "@/components/kit/co-ban";
 import { ONhap, OChon, OVanBan } from "@/components/kit/truong";
 import { BaoLoi } from "@/components/kit/trang-thai-kit";
+import { docLoi, guiJson, layJson } from "@/components/kit/goi-api";
 import type { DocumentSummary } from "@/types/contract";
 import type {
   CompareChange,
@@ -83,23 +84,9 @@ const tien = (v: number) =>
     maximumFractionDigits: 0,
   }).format(v);
 
-async function layJson<T>(url: string): Promise<T> {
-  const r = await fetch(url);
-  const d = (await r.json()) as T & { error?: string };
-  if (!r.ok) throw new Error(d.error ?? "Không đọc được dữ liệu.");
-  return d;
-}
-async function guiJson<T>(url: string, body: unknown): Promise<T> {
-  const r = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const d = (await r.json()) as T & { error?: string };
-  if (!r.ok) throw new Error(d.error ?? "Không xử lý được yêu cầu.");
-  return d;
-}
-const docLoi = (e: unknown) => (e instanceof Error ? e.message : "Có lỗi xảy ra.");
+/* layJson / guiJson / docLoi dùng chung ở components/kit/goi-api.ts — chúng
+   kiểm content-type trước khi parse, nên trang lỗi HTML không còn biến thành
+   "Unexpected token '<'". */
 
 /* ------------------------------------------------------------------ */
 /* 1. Hiệu lực tại một thời điểm                                       */
