@@ -48,12 +48,14 @@ describe("ingestDocument", () => {
       },
     );
 
-    expect(result.chunkCount).toBe(51);
-    expect(embeddingProvider.batchSizes).toEqual([50, 1]);
-    expect(storage.completed?.chunks).toHaveLength(51);
+    expect(result.chunkCount).toBe(52);
+    expect(embeddingProvider.batchSizes).toEqual([50, 2]);
+    expect(storage.completed?.chunks).toHaveLength(52);
     expect(storage.completed?.nodes.filter((node) => node.node_type === "dieu")).toHaveLength(51);
-    expect(storage.completed?.chunks.every((chunk) => chunk.node_key !== null)).toBe(true);
-    expect(storage.completed?.strategy).toBe("structural");
+    expect(
+      storage.completed?.chunks.filter((chunk) => chunk.strategy === "structural"),
+    ).toHaveLength(51);
+    expect(storage.completed?.chunks.find((chunk) => chunk.strategy === "fixed")?.node_key).toBeNull();
     expect(storage.failure).toBeNull();
   });
 
@@ -75,5 +77,20 @@ describe("ingestDocument", () => {
     ).rejects.toMatchObject({ documentId: "document-1" });
     expect(storage.failure).toBe("PDF không có text layer");
     expect(storage.completed).toBeNull();
+  });
+
+  it("van nap fixed chunk khi van ban khong co cau truc Dieu", async () => {
+    const storage = new MemoryStorage();
+    const embeddingProvider = new RecordingEmbeddingProvider();
+    const text = "CÔNG VĂN\nNội dung chỉ đạo không chia thành điều khoản.";
+
+    const result = await ingestDocument(
+      { fileName: "cong-van.txt", data: new Uint8Array() },
+      { storage, embeddingProvider, extract: async () => ({ text, warnings: [] }) },
+    );
+
+    expect(result.chunkCount).toBe(1);
+    expect(storage.completed?.chunks[0]).toMatchObject({ strategy: "fixed", node_key: null });
+    expect(storage.completed?.nodes).toHaveLength(0);
   });
 });

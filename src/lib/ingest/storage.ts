@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
-import { db } from "../db/client";
+import { db, sql } from "../db/client";
 import {
   chunks,
   doc_nodes,
@@ -11,6 +11,10 @@ import type { LoaiVanBan } from "../parser";
 import type { CompleteDocumentInput, IngestStorage } from "./pipeline";
 
 export class DrizzleIngestStorage implements IngestStorage {
+  async close(): Promise<void> {
+    await sql.end({ timeout: 5 });
+  }
+
   async createPending(fileName: string): Promise<string> {
     const [created] = await db
       .insert(documents)
@@ -50,13 +54,13 @@ export class DrizzleIngestStorage implements IngestStorage {
         await transaction.insert(chunks).values(
           input.chunks.map((chunk) => {
             const nodeId = chunk.node_key ? nodeIds.get(chunk.node_key) : null;
-            if (input.strategy === "structural" && !nodeId) {
+            if (chunk.strategy === "structural" && !nodeId) {
               throw new Error(`Chunk structural không ánh xạ được doc_node "${chunk.node_key}".`);
             }
             return {
               document_id: documentId,
               node_id: nodeId,
-              strategy: input.strategy,
+              strategy: chunk.strategy,
               chuong: chunk.chuong,
               chuong_tieu_de: chunk.chuong_tieu_de,
               muc: chunk.muc,

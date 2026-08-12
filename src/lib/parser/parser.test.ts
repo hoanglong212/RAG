@@ -362,6 +362,15 @@ Thông tư này có hiệu lực thi hành kể từ ngày 01 tháng 7 năm 2023
 /* --- Quy tac cat chunk o muc 7.2 --- */
 
 describe("Cat chunk khi vuot 800 token", () => {
+  it("cat tiep theo tu khi mot cau don le van vuot nguong", () => {
+    const cauRatDai = `${Array.from({ length: 851 }, (_, index) => `tu${index}`).join(" ")}.`;
+    const kq = parseVanBan(`Điều 1. Nội dung\n1. ${cauRatDai}`);
+
+    expect(kq.chunks.length).toBeGreaterThan(1);
+    expect(kq.chunks.every((chunk) => chunk.so_token <= 800)).toBe(true);
+    expect(kq.chunks.every((chunk) => chunk.bi_cat_cung)).toBe(true);
+  });
+
   const doanDai = (tu: string, soTu: number) =>
     Array.from({ length: soTu }, () => tu).join(" ");
 

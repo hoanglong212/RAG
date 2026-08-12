@@ -12,8 +12,10 @@ import {
   type MetadataVanBan,
 } from "../parser";
 import { extractDocument, type ExtractedDocument, type SourceDocument } from "./extract";
+import { createFixedChunks } from "./fixed";
 
 export interface PersistedChunk extends ChunkParse {
+  strategy: "structural" | "fixed";
   embedding: number[];
 }
 
@@ -23,7 +25,6 @@ export interface CompleteDocumentInput {
   nodes: DocNodeParse[];
   chunks: PersistedChunk[];
   parseWarnings: CanhBao[];
-  strategy: "structural";
 }
 
 export interface IngestStorage {
@@ -69,13 +70,21 @@ export async function ingestDocument(
       data: source.data,
     });
     const parsed = parseVanBan(extracted.text, { tenFile: safeName });
-    if (parsed.chunks.length === 0) {
-      throw new Error("Parser không tạo được chunk nào từ văn bản.");
+    const documentLabel = parsed.metadata.so_hieu ?? safeName;
+    const fixedChunks = createFixedChunks(extracted.text, documentLabel);
+    const chunks = [
+      ...parsed.chunks.map((chunk) => ({ ...chunk, strategy: "structural" as const })),
+      ...fixedChunks.map((chunk) => ({
+        ...chunk,
+        strategy: "fixed" as const,
+      })),
+    ];
+    if (chunks.length === 0) {
+      throw new Error("Không tạo được chunk nào từ văn bản rỗng.");
     }
-
     const embeddings: number[][] = [];
-    for (let offset = 0; offset < parsed.chunks.length; offset += EMBEDDING_BATCH_SIZE) {
-      const batch = parsed.chunks.slice(offset, offset + EMBEDDING_BATCH_SIZE);
+    for (let offset = 0; offset < chunks.length; offset += EMBEDDING_BATCH_SIZE) {
+      const batch = chunks.slice(offset, offset + EMBEDDING_BATCH_SIZE);
       const vectors = await dependencies.embeddingProvider.embed(
         batch.map((chunk) => chunk.noi_dung_kem_ngu_canh),
       );
@@ -87,7 +96,7 @@ export async function ingestDocument(
       embeddings.push(...vectors);
     }
 
-    const persistedChunks = parsed.chunks.map((chunk, index) => ({
+    const persistedChunks = chunks.map((chunk, index) => ({
       ...chunk,
       embedding: embeddings[index],
     }));
@@ -97,7 +106,6 @@ export async function ingestDocument(
       nodes: parsed.nodes,
       chunks: persistedChunks,
       parseWarnings: parsed.canh_bao,
-      strategy: "structural",
     });
 
     return {

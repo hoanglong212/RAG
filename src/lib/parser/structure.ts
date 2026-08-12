@@ -428,6 +428,17 @@ function catTheoCau(text: string, nguong: number): string[] {
   const manh: string[] = [];
   let hienTai = "";
   for (const c of cau) {
+    if (uocLuongSoToken(c) > nguong) {
+      if (hienTai.trim() !== "") {
+        manh.push(hienTai);
+        hienTai = "";
+      }
+      const tu = c.trim().split(/\s+/);
+      for (let offset = 0; offset < tu.length; offset += nguong) {
+        manh.push(tu.slice(offset, offset + nguong).join(" "));
+      }
+      continue;
+    }
     const thu = hienTai === "" ? c : `${hienTai} ${c}`;
     if (hienTai !== "" && uocLuongSoToken(thu) > nguong) {
       manh.push(hienTai);

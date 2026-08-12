@@ -54,6 +54,7 @@ async function main(): Promise<void> {
 
   renderProgress(files.length, files.length, "hoàn tất");
   console.log(`\nĐã xử lý ${files.length} tệp: ${succeeded} thành công, ${failed} lỗi.`);
+  await storage.close();
   if (failed > 0) process.exitCode = 1;
 }
 
