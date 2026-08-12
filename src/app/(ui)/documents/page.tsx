@@ -1,20 +1,24 @@
 "use client";
 
 /**
- * Kho văn bản.
+ * Kho văn bản — vừa duyệt vừa hỏi.
  *
- * Bảng này là chỗ lộ lỗi tràn khung sớm nhất: tên cơ quan và trích yếu tiếng
- * Việt đều dài. Trích yếu bị kẹp hai dòng, cơ quan bị kẹp một cột hẹp, và số
- * hiệu để mono nên các hàng thẳng cột đọc lướt được.
+ * Tra cứu corpus chuyển về đây từ trang chủ cũ: hỏi "điều kiện cấp giấy
+ * chứng nhận là gì" và lật xem kho có những văn bản nào là CÙNG một việc,
+ * chỉ khác đường vào. Tách chúng ra hai trang buộc người dùng đoán xem câu
+ * hỏi của mình thuộc loại nào trước khi được phép hỏi.
  *
- * Văn bản có cảnh báo KHÔNG tô đỏ — đỏ chỉ dành cho neo trích dẫn.
+ * Chưa hỏi gì thì cột giữa là danh sách để duyệt. Hỏi rồi thì nó thành câu
+ * trả lời, kèm trục văn bản bên trái và mặt đọc bên phải.
  */
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { Upload } from "lucide-react";
 import type { DocumentSummary } from "@/types/contract";
 import { NHAN_LOAI, NHAN_TRANG_THAI, chuanHoaTenCoQuan } from "@/types/nhan";
-import { KhungTrang, Nhan, The } from "@/components/kit/co-ban";
+import { BanTraCuu } from "@/components/tra-cuu/ban-tra-cuu";
+import { Nhan } from "@/components/kit/co-ban";
 import { BaoLoi, BaoTin, TrongRong, Vach } from "@/components/kit/trang-thai-kit";
 
 interface DocumentsResponse {
@@ -22,7 +26,22 @@ interface DocumentsResponse {
   total: number;
 }
 
+const CAU_HOI_GOI_Y = [
+  "Công ty chậm trả tiền lương cho người lao động thì bị xử lý thế nào?",
+  "Người đi xe máy vượt đèn đỏ bị phạt theo quy định nào?",
+  "Cửa hàng từ chối bảo hành sản phẩm lỗi có đúng pháp luật không?",
+];
+
 export default function TrangKhoVanBan() {
+  return (
+    <BanTraCuu
+      cheDo="corpus"
+      khiTrong={(chonCauHoi) => <DuyetKho onChonCauHoi={chonCauHoi} />}
+    />
+  );
+}
+
+function DuyetKho({ onChonCauHoi }: { onChonCauHoi: (cau: string) => void }) {
   const [data, setData] = useState<DocumentsResponse>({ items: [], total: 0 });
   const [dangTai, setDangTai] = useState(true);
   const [dangNap, setDangNap] = useState(false);
@@ -71,17 +90,38 @@ export default function TrangKhoVanBan() {
   const soCoCanhBao = data.items.filter((d) => d.coCanhBao).length;
 
   return (
-    <KhungTrang
-      tieuDe="Kho văn bản"
-      moTa={
-        dangTai
-          ? "Đang đọc danh sách…"
-          : `${data.total} văn bản đã nạp${soCoCanhBao > 0 ? `, ${soCoCanhBao} văn bản có cảnh báo khi bóc tách` : ""}.`
-      }
-      hanhDong={
+    <div className="flex flex-col gap-4">
+      {/* Gợi ý câu hỏi đứng trước danh sách: hỏi là đường vào nhanh hơn duyệt. */}
+      <section>
+        <p className="nhan-hoa">Hỏi thẳng trong kho</p>
+        <ul className="mt-2 flex flex-wrap gap-1.5">
+          {CAU_HOI_GOI_Y.map((cau) => (
+            <li key={cau}>
+              <button
+                type="button"
+                onClick={() => onChonCauHoi(cau)}
+                className="rounded-full bg-giay px-3.5 py-2 text-left text-xs font-medium text-nhan shadow-[inset_0_0_0_1px_var(--ke-mo)] transition-[color,transform,box-shadow] duration-[--nhip] hover:-translate-y-px hover:text-muc-in hover:shadow-the"
+              >
+                {cau}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div className="flex flex-wrap items-end justify-between gap-3 border-t border-ke-mo pt-4">
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold">Toàn bộ kho</h2>
+          <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-nhan">
+            {dangTai
+              ? "Đang đọc danh sách…"
+              : `${data.total} văn bản${soCoCanhBao > 0 ? `, ${soCoCanhBao} có cảnh báo khi bóc tách` : ""}.`}
+          </p>
+        </div>
         <label
-          className={`inline-flex cursor-pointer items-center rounded-[--bo] bg-but-xanh px-4 py-2 text-sm font-medium text-giay transition-colors duration-[--nhip] hover:bg-but-xanh-sau ${dangNap ? "pointer-events-none opacity-45" : ""}`}
+          className={`inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-[--bo] bg-but-xanh px-4 py-2 text-sm font-medium text-giay transition-colors duration-[--nhip] hover:bg-but-xanh-sau ${dangNap ? "pointer-events-none opacity-45" : ""}`}
         >
+          <Upload className="size-4" strokeWidth={1.9} />
           {dangNap ? "Đang nạp…" : "Nạp văn bản"}
           <input
             type="file"
@@ -95,96 +135,68 @@ export default function TrangKhoVanBan() {
             }}
           />
         </label>
-      }
-    >
-      <div className="flex flex-col gap-3">
-        {tin ? <BaoTin>{tin}</BaoTin> : null}
-        {loi ? <BaoLoi moTa={loi} onThuLai={() => void doc()} /> : null}
-
-        {dangTai ? (
-          <The khongDem>
-            <div className="flex flex-col gap-px">
-              {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} className="flex items-center gap-4 px-4 py-4">
-                  <Vach className="w-28 shrink-0" />
-                  <Vach className="flex-1" />
-                  <Vach className="w-24 shrink-0" />
-                </div>
-              ))}
-            </div>
-          </The>
-        ) : null}
-
-        {!dangTai && data.items.length === 0 && !loi ? (
-          <TrongRong
-            tieuDe="Kho chưa có văn bản nào"
-            moTa="Nạp một tệp PDF hoặc DOCX có sẵn lớp chữ. Hệ thống sẽ bóc tách Chương, Điều, Khoản rồi mới cho tra cứu."
-          />
-        ) : null}
-
-        {data.items.length > 0 ? (
-          <The khongDem>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[46rem] border-collapse text-left text-sm">
-                <thead>
-                  <tr className="border-b border-ke-mo">
-                    <th className="nhan-hoa px-4 py-3 font-semibold">Số hiệu</th>
-                    <th className="nhan-hoa px-4 py-3 font-semibold">Trích yếu</th>
-                    <th className="nhan-hoa px-4 py-3 font-semibold">Cơ quan</th>
-                    <th className="nhan-hoa px-4 py-3 text-right font-semibold">Điều</th>
-                    <th className="nhan-hoa px-4 py-3 font-semibold">Hiệu lực</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.items.map((vb) => (
-                    <tr
-                      key={vb.id}
-                      className="group border-b border-ke-mo transition-colors duration-[--nhip] last:border-0 hover:bg-khay/60"
-                    >
-                      <td className="px-4 py-3.5 align-top">
-                        <Link
-                          href={`/documents/${vb.id}`}
-                          className="so-hieu text-but-xanh underline-offset-4 group-hover:underline"
-                        >
-                          {vb.soHieu ?? "Không có số hiệu"}
-                        </Link>
-                        <span className="mt-1.5 block text-xs text-nhan">
-                          {NHAN_LOAI[vb.loaiVanBan]}
-                        </span>
-                      </td>
-                      <td className="max-w-md px-4 py-3.5 align-top">
-                        <Link href={`/documents/${vb.id}`} className="block">
-                          <span className="line-clamp-2 leading-relaxed">
-                            {vb.trichYeu ?? vb.soHieu ?? "Chưa có trích yếu"}
-                          </span>
-                        </Link>
-                        {vb.coCanhBao ? (
-                          <Nhan className="mt-2">Có cảnh báo khi bóc tách</Nhan>
-                        ) : null}
-                      </td>
-                      <td className="max-w-[13rem] px-4 py-3.5 align-top leading-relaxed text-nhan">
-                        {chuanHoaTenCoQuan(vb.coQuan)}
-                      </td>
-                      <td className="so-hieu px-4 py-3.5 text-right align-top text-nhan">
-                        {vb.soDieu}
-                      </td>
-                      <td className="px-4 py-3.5 align-top text-nhan">
-                        {NHAN_TRANG_THAI[vb.trangThai]}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </The>
-        ) : null}
-
-        {data.total > data.items.length ? (
-          <p className="text-xs text-nhan">
-            Đang hiển thị {data.items.length} văn bản mới nhất trên tổng số {data.total}.
-          </p>
-        ) : null}
       </div>
-    </KhungTrang>
+
+      {tin ? <BaoTin>{tin}</BaoTin> : null}
+      {loi ? <BaoLoi moTa={loi} onThuLai={() => void doc()} /> : null}
+
+      {dangTai ? (
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 5 }, (_, i) => (
+            <div key={i} className="rounded-[--bo-lon] bg-giay p-4 shadow-the">
+              <Vach className="w-32" />
+              <Vach className="mt-3 h-4 w-3/4" />
+              <Vach className="mt-2.5 w-1/2" />
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {!dangTai && data.items.length === 0 && !loi ? (
+        <TrongRong
+          tieuDe="Kho chưa có văn bản nào"
+          moTa="Nạp một tệp PDF hoặc DOCX có sẵn lớp chữ. Hệ thống bóc tách Chương, Điều, Khoản rồi mới cho tra cứu."
+        />
+      ) : null}
+
+      {data.items.length > 0 ? (
+        <ul className="flex flex-col gap-2">
+          {data.items.map((vb) => (
+            <li key={vb.id}>
+              <Link
+                href={`/documents/${vb.id}`}
+                className="block rounded-[--bo-lon] bg-giay p-4 shadow-the ring-1 ring-muc-in/[0.045] transition-[box-shadow,transform] duration-[--nhip] hover:-translate-y-px hover:shadow-vua"
+              >
+                <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                  <span className="so-hieu text-but-xanh">
+                    {vb.soHieu ?? "Không có số hiệu"}
+                  </span>
+                  <span className="text-xs text-nhan">{NHAN_LOAI[vb.loaiVanBan]}</span>
+                </div>
+
+                <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-relaxed">
+                  {vb.trichYeu ?? vb.soHieu ?? "Chưa có trích yếu"}
+                </p>
+
+                <p className="mt-2 text-xs leading-relaxed text-nhan">
+                  {chuanHoaTenCoQuan(vb.coQuan)} · {vb.soDieu} Điều ·{" "}
+                  {NHAN_TRANG_THAI[vb.trangThai]}
+                </p>
+
+                {vb.coCanhBao ? (
+                  <Nhan className="mt-2">Có cảnh báo khi bóc tách</Nhan>
+                ) : null}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {data.total > data.items.length ? (
+        <p className="text-xs text-nhan">
+          Đang hiển thị {data.items.length} văn bản mới nhất trên tổng số {data.total}.
+        </p>
+      ) : null}
+    </div>
   );
 }

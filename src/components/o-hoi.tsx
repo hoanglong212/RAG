@@ -11,7 +11,7 @@
  */
 
 import { useId } from "react";
-import { ArrowRight, BookOpen, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Search, Sparkles } from "lucide-react";
 import { Nut } from "@/components/kit/co-ban";
 import { cn } from "@/lib/utils";
 
@@ -20,8 +20,8 @@ export interface OHoiProps {
   onDoi: (giaTri: string) => void;
   onTraCuu: () => void;
   dangChay?: boolean;
+  /** Do trang quyết định; chỉ đổi chữ trên nhãn và nút, không có công tắc. */
   cheDo?: "corpus" | "research";
-  onDoiCheDo?: (cheDo: "corpus" | "research") => void;
 }
 
 export function OHoi({
@@ -30,7 +30,6 @@ export function OHoi({
   onTraCuu,
   dangChay = false,
   cheDo = "corpus",
-  onDoiCheDo,
 }: OHoiProps) {
   const id = useId();
   const rong = giaTri.trim().length === 0;
@@ -56,34 +55,11 @@ export function OHoi({
           Có dẫn nguồn
         </span>
       </div>
-      <div className="grid grid-cols-2 gap-1 rounded-[--bo] bg-khay p-1" aria-label="Chế độ tra cứu">
-        <button
-          type="button"
-          aria-pressed={cheDo === "corpus"}
-          disabled={dangChay}
-          onClick={() => onDoiCheDo?.("corpus")}
-          className={cn(
-            "flex min-h-10 items-center justify-center gap-2 rounded-[--bo] px-3 text-xs font-semibold transition-[background-color,color,box-shadow]",
-            cheDo === "corpus" ? "bg-giay text-muc-in shadow-the" : "text-nhan hover:text-muc-in",
-          )}
-        >
-          <BookOpen className="size-4" strokeWidth={1.8} />
-          Kho văn bản
-        </button>
-        <button
-          type="button"
-          aria-pressed={cheDo === "research"}
-          disabled={dangChay}
-          onClick={() => onDoiCheDo?.("research")}
-          className={cn(
-            "flex min-h-10 items-center justify-center gap-2 rounded-[--bo] px-3 text-xs font-semibold transition-[background-color,color,box-shadow]",
-            cheDo === "research" ? "bg-but-xanh text-giay shadow-vua" : "text-nhan hover:text-muc-in",
-          )}
-        >
-          <Sparkles className="size-4" strokeWidth={1.8} />
-          Nghiên cứu sâu
-        </button>
-      </div>
+      {/*
+        Không còn nút gạt chế độ ở đây. Hỏi trong kho văn bản và nghiên cứu sâu
+        giờ là hai trang riêng, nên chế độ do NGỮ CẢNH quyết định thay vì bắt
+        người dùng nhớ mình đang đứng ở nấc nào của một cái công tắc.
+      */}
       <label htmlFor={id} className="sr-only">
         Câu hỏi
       </label>
@@ -101,7 +77,7 @@ export function OHoi({
         rows={3}
         placeholder="Hỏi bằng tiếng Việt thường: điều kiện cấp giấy chứng nhận an toàn thực phẩm là gì?"
         className={cn(
-          "w-full resize-none bg-transparent px-0 pt-1 text-base font-medium leading-relaxed tracking-[-0.01em] sm:text-[1.0625rem]",
+          "w-full resize-none bg-transparent px-0 pt-1 text-base font-medium leading-relaxed tracking-[-0.01em]",
           "placeholder:text-nhan focus-visible:outline-none",
         )}
       />

@@ -1,399 +1,285 @@
 "use client";
 
 /**
- * Trang tra cứu — màn hình chính.
+ * TRANG CHỦ — trang riêng, không phải màn tra cứu nữa.
  *
- * KHOẢNH KHẮC CHỮ KÝ, giờ chạy trên dữ liệu thật: /api/chat gửi sự kiện
- * `citations` TRƯỚC rồi mới tới `token`. Ngay khi nguồn về, trục văn bản nạp
- * cây của văn bản được trích, cuộn tới đúng Điều và đóng dấu đỏ — trong lúc
- * câu trả lời còn chưa có chữ nào. Chỗ đến có trước, lời giải thích tới sau.
+ * Việc của nó: nói sản phẩm này là gì, chứng minh bằng số đo thật của kho,
+ * rồi chỉ đường vào đúng việc người dùng đang cần.
  *
- * Trích dẫn KHÔNG điều hướng sang trang khác nữa. Rời trang là mất câu trả
- * lời, mà việc của người dùng là đối chiếu câu trả lời với văn bản gốc — hai
- * thứ đó phải nhìn thấy cùng lúc.
+ * MỌI CON SỐ Ở ĐÂY ĐỀU ĐỌC TỪ API. Không có số liệu trang trí — một trang
+ * chủ khoe "10.000+ văn bản" trong khi kho có 61 thì hỏng ngay ở câu đầu.
+ * Kho lớn lên thì trang này tự lớn theo.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { ChatStatus, Citation, DocumentDetail, StatsResponse } from "@/types/contract";
-import type { ResearchProgress, ResearchSource } from "@/types/research";
-import { CauTraLoi } from "@/components/cau-tra-loi";
-import { ChipTrichDan } from "@/components/chip-trich-dan";
-import { NguonNghienCuu } from "@/components/nguon-nghien-cuu";
-import { MatDoc } from "@/components/mat-doc";
-import { OHoi } from "@/components/o-hoi";
-import { TrucVanBan } from "@/components/truc-van-ban";
-import { DangTai, KhongTimThay, TrangThaiLoi, TrangThaiRong } from "@/components/trang-thai";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { ArrowRight, Library, Scale, Sparkles } from "lucide-react";
+import type { EvalRun, StatsResponse } from "@/types/contract";
+import type { NewsArticleSummary } from "@/types/news";
+import type { CoverageRow } from "@/types/platform";
+import { ConDau } from "@/components/kit/con-dau";
+import { The, TieuDeMuc } from "@/components/kit/co-ban";
+import { CotNgang } from "@/components/kit/bieu-do";
+import { Vach } from "@/components/kit/trang-thai-kit";
+import { NHAN_CHU_DE_TIN } from "@/types/nhan-news";
 import { cn } from "@/lib/utils";
 
-type Pha = "rong" | "dangTim" | "coNguon" | "xong" | "khongTimThay" | "loi";
+const soNhom = (n: number) => n.toLocaleString("vi-VN");
+const phanTram = (v: number) => `${Math.round(v * 100)}%`;
 
-/** Mặt đọc kèm đầu đề chỉ rõ đang mở ở đâu. Dùng chung cho cột tĩnh và tấm trượt. */
-function MatDocCoDau({
-  vanBan,
-  dangChon,
-  onDong,
-}: {
-  vanBan: DocumentDetail;
-  dangChon: Citation;
-  onDong?: () => void;
-}) {
-  return (
-    <div className="flex h-full flex-col bg-giay">
-      <div className="flex shrink-0 items-baseline justify-between gap-3 px-5 pt-4">
-        <div className="min-w-0">
-          <p className="so-hieu truncate text-nhan">{dangChon.soHieu}</p>
-          <p className="mt-0.5 truncate text-[0.8125rem] text-nhan">{dangChon.breadcrumb}</p>
-        </div>
-        {onDong ? (
-          <button
-            type="button"
-            onClick={onDong}
-            className="shrink-0 rounded-[--bo] px-2 py-1 text-sm font-medium text-but-xanh"
-          >
-            Đóng
-          </button>
-        ) : null}
-      </div>
-      <MatDoc tree={vanBan.tree} nodeIdDangNeo={dangChon.nodeId} className="min-h-0 flex-1" />
-    </div>
-  );
-}
+/** Ba đường vào chính, mỗi cái là một VIỆC chứ không phải một cái thẻ. */
+const LOI_VAO = [
+  {
+    href: "/documents",
+    nhan: "Hỏi trong kho văn bản",
+    moTa: "Câu trả lời neo về đúng Điều, Khoản, mở được văn bản gốc ngay cạnh.",
+    icon: Library,
+  },
+  {
+    href: "/nghien-cuu",
+    nhan: "Nghiên cứu sâu",
+    moTa: "Gom thêm nguồn ngoài kho rồi đối chiếu ngược lại với căn cứ trong kho.",
+    icon: Sparkles,
+  },
+  {
+    href: "/legal-check",
+    nhan: "Kiểm tra tình huống",
+    moTa: "Mô tả sự việc bằng lời thường, hệ thống chỉ ra quy định liên quan.",
+    icon: Scale,
+  },
+] as const;
 
-const CAU_HOI_GOI_Y = [
-  "Công ty chậm trả tiền lương cho người lao động thì bị xử lý thế nào?",
-  "Người đi xe máy vượt đèn đỏ bị phạt theo quy định nào?",
-  "Cửa hàng từ chối bảo hành sản phẩm lỗi có đúng pháp luật không?",
-];
-
-export default function TrangTraCuu() {
-  const [cauHoi, setCauHoi] = useState("");
-  const [pha, setPha] = useState<Pha>("rong");
-  const [answer, setAnswer] = useState("");
-  const [citations, setCitations] = useState<Citation[]>([]);
-  const [dangChon, setDangChon] = useState<Citation | null>(null);
-  const [topScore, setTopScore] = useState(0);
-  const [nguong, setNguong] = useState(0.35);
-  const [soVanBan, setSoVanBan] = useState(0);
-  const [soChunk, setSoChunk] = useState(0);
-  const [dangChay, setDangChay] = useState(false);
-  const [matDocMo, setMatDocMo] = useState(false);
-  const [cheDo, setCheDo] = useState<"corpus" | "research">("corpus");
-  const [researchSources, setResearchSources] = useState<ResearchSource[]>([]);
-  const [researchProgress, setResearchProgress] = useState<ResearchProgress | null>(null);
-  const [researchError, setResearchError] = useState<string | null>(null);
-
-  /** Cây văn bản của trích dẫn đang chọn, nạp theo nhu cầu và nhớ lại. */
-  const [vanBan, setVanBan] = useState<DocumentDetail | null>(null);
-  const kho = useRef(new Map<string, DocumentDetail>());
+export default function TrangChu() {
+  const [stats, setStats] = useState<StatsResponse | null>(null);
+  const [tin, setTin] = useState<NewsArticleSummary[]>([]);
+  const [phuSong, setPhuSong] = useState<CoverageRow[]>([]);
+  const [lanChay, setLanChay] = useState<EvalRun[]>([]);
 
   useEffect(() => {
-    fetch("/api/stats")
-      .then((r) => r.json())
-      .then((d: StatsResponse) => {
-        setSoVanBan(d.tongVanBan);
-        setSoChunk(d.tongChunk);
-      })
-      .catch(() => undefined);
+    const doc = async <T,>(url: string): Promise<T | null> => {
+      try {
+        const r = await fetch(url);
+        if (!r.ok) return null;
+        return (await r.json()) as T;
+      } catch {
+        return null;
+      }
+    };
+    void doc<StatsResponse>("/api/stats").then(setStats);
+    void doc<{ items: NewsArticleSummary[] }>("/api/news?pageSize=4").then((d) =>
+      setTin(d?.items ?? []),
+    );
+    void doc<CoverageRow[]>("/api/coverage").then((d) => setPhuSong(d ?? []));
+    void doc<EvalRun[]>("/api/eval/runs").then((d) => setLanChay(d ?? []));
   }, []);
 
-  /** Nạp cây cho trục và mặt đọc. Trục phải hiện được sớm nhất có thể. */
-  const moTrichDan = useCallback(async (td: Citation, moTam = false) => {
-    setDangChon(td);
-    if (moTam) setMatDocMo(true);
-    const daCo = kho.current.get(td.documentId);
-    if (daCo) {
-      setVanBan(daCo);
-      return;
-    }
-    try {
-      const r = await fetch(`/api/documents/${encodeURIComponent(td.documentId)}`);
-      if (!r.ok) return;
-      const chiTiet = (await r.json()) as DocumentDetail;
-      kho.current.set(td.documentId, chiTiet);
-      setVanBan((hienTai) => (td.documentId === chiTiet.id ? chiTiet : hienTai));
-    } catch {
-      /* Không nạp được cây thì câu trả lời vẫn dùng được, chỉ mất trục. */
-    }
-  }, []);
-
-  const traCuu = useCallback(async () => {
-    if (!cauHoi.trim()) return;
-    setDangChay(true);
-    setPha("dangTim");
-    setAnswer("");
-    setCitations([]);
-    setResearchSources([]);
-    setResearchProgress(null);
-    setResearchError(null);
-    setDangChon(null);
-    setVanBan(null);
-    setMatDocMo(false);
-
-    try {
-      const response = await fetch(cheDo === "research" ? "/api/research" : "/api/chat", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question: cauHoi, strategy: "structural", mode: "hybrid" }),
-      });
-      if (!response.ok || !response.body) throw new Error("Máy chủ không trả luồng dữ liệu.");
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      for (;;) {
-        const { value, done } = await reader.read();
-        buffer += decoder.decode(value, { stream: !done });
-        const frames = buffer.split("\n\n");
-        buffer = frames.pop() ?? "";
-        for (const frame of frames) xuLySuKien(frame);
-        if (done) break;
-      }
-    } catch {
-      setPha("loi");
-    } finally {
-      setDangChay(false);
-    }
-
-    function xuLySuKien(frame: string) {
-      const event = frame.match(/^event:\s*(.+)$/m)?.[1];
-      const raw = frame.match(/^data:\s*(.+)$/m)?.[1];
-      if (!event || !raw) return;
-      const data = JSON.parse(raw) as Record<string, unknown>;
-
-      if (event === "citations") {
-        const next = (data.citations ?? []) as Citation[];
-        setCitations(next);
-        if (next.length > 0) {
-          setPha("coNguon");
-          // Nguồn về trước: trục nạp cây và đóng dấu ngay, chữ chưa có.
-          void moTrichDan(next[0]);
-        }
-      } else if (event === "research_progress") {
-        setResearchProgress(data as unknown as ResearchProgress);
-      } else if (event === "research_sources") {
-        const next = (data.sources ?? []) as ResearchSource[];
-        const local = next.filter((source) => source.kind === "corpus").map(sourceToCitation);
-        setResearchSources(next);
-        setCitations(local);
-        if (next.length > 0) setPha("coNguon");
-        if (local[0]) void moTrichDan(local[0]);
-      } else if (event === "research_error") {
-        setResearchError(String(data.message ?? "Không thể hoàn tất nghiên cứu sâu."));
-      } else if (event === "token") {
-        setPha("xong");
-        setAnswer((cu) => cu + String(data.text ?? ""));
-      } else if (event === "done") {
-        const status = data.status as ChatStatus;
-        setTopScore(Number(data.topScore ?? 0));
-        setNguong(Number(data.nguong ?? 0.35));
-        setPha(status === "ok" ? "xong" : status === "khong_tim_thay" ? "khongTimThay" : "loi");
-      }
-    }
-  }, [cauHoi, cheDo, moTrichDan]);
-
-  const sourcesCount = cheDo === "research" ? researchSources.length : citations.length;
-  const coNguon = (pha === "coNguon" || pha === "xong") && sourcesCount > 0;
-  const soDangChon = dangChon
-    ? (cheDo === "research"
-        ? researchSources.findIndex((source) => source.chunkId === dangChon.chunkId)
-        : citations.findIndex((c) => c.chunkId === dangChon.chunkId)) + 1
-    : 0;
-
-  const doiCheDo = (next: "corpus" | "research") => {
-    if (next === cheDo || dangChay) return;
-    setCheDo(next);
-    setPha("rong");
-    setAnswer("");
-    setCitations([]);
-    setResearchSources([]);
-    setResearchProgress(null);
-    setResearchError(null);
-    setDangChon(null);
-    setVanBan(null);
-    setMatDocMo(false);
-  };
-
-  const moNguonTheoSo = (so: number) => {
-    if (cheDo === "corpus") {
-      const citation = citations[so - 1];
-      if (citation) void moTrichDan(citation, true);
-      return;
-    }
-    const source = researchSources[so - 1];
-    if (!source) return;
-    if (source.kind === "corpus") {
-      void moTrichDan(sourceToCitation(source), true);
-    } else if (source.url) {
-      window.open(source.url, "_blank", "noopener,noreferrer");
-    }
-  };
+  const moiNhat = lanChay.at(-1) ?? null;
 
   return (
-    <div className="flex h-full">
-      {/* ---------- Cột trái: trục văn bản ---------- */}
-      {vanBan ? (
-        <TrucVanBan
-          soHieu={vanBan.soHieu}
-          tree={vanBan.tree}
-          nodeIdDangNeo={dangChon?.nodeId ?? null}
-          onChon={(nodeId) => {
-            const td = citations.find((c) => c.nodeId === nodeId);
-            if (td) void moTrichDan(td, true);
-          }}
-          className="shrink-0"
-        />
-      ) : (
-        <div className="hidden w-14 shrink-0 flex-col px-2 pt-4 lg:flex lg:w-52 lg:px-3 xl:w-72">
-          <p className="nhan-hoa text-center lg:text-left">
-            <span className="lg:hidden">Trục</span>
-            <span className="hidden lg:inline">Trục văn bản</span>
-          </p>
-          <p className="mt-2 hidden text-[0.8125rem] leading-relaxed text-nhan lg:block">
-            Khi có câu trả lời, trục dựng cây Chương — Điều của văn bản được trích và
-            cuộn tới đúng chỗ.
-          </p>
-        </div>
-      )}
+    <div className="h-full overflow-y-auto">
+      <div className="mx-auto max-w-6xl px-4 pb-20 pt-5 sm:px-6 sm:pt-7">
+        {/* ---------- Mở màn ---------- */}
+        <section className="mo-man rounded-[--bo-lon] px-5 py-8 text-giay shadow-noi sm:px-8 sm:py-10">
+          <div className="relative z-10">
+            <ConDau co={52} className="mb-6 block" />
 
-      {/* ---------- Cột giữa: hỏi và đáp ---------- */}
-      <main className="flex min-w-0 flex-1 flex-col overflow-y-auto px-4 py-5 sm:px-6">
-        {/* Lúc chưa có văn bản, cột này được rộng hơn vì cột mặt đọc chưa dựng. */}
-        <div
-          className={cn(
-            "mx-auto flex w-full flex-1 flex-col",
-            vanBan ? "max-w-2xl" : "max-w-3xl",
-          )}
-        >
-          <OHoi
-            giaTri={cauHoi}
-            onDoi={setCauHoi}
-            onTraCuu={traCuu}
-            dangChay={dangChay}
-            cheDo={cheDo}
-            onDoiCheDo={doiCheDo}
-          />
+            <h1 className="chu-trung-bay co-trung-bay max-w-3xl">
+              Câu hỏi vào.
+              <br />
+              Điều, Khoản ra.
+            </h1>
 
-          <div className="mt-7 flex-1">
-            {pha === "rong" ? (
-              <TrangThaiRong
-                cauHoiGoiY={CAU_HOI_GOI_Y}
-                onChonCauHoi={setCauHoi}
-                tongVanBan={soVanBan}
-                tongChunk={soChunk}
-              />
-            ) : null}
-            {pha === "dangTim" ? (
-              <DangTai researchMode={cheDo === "research"} progress={researchProgress} />
-            ) : null}
-            {pha === "khongTimThay" ? (
-              <KhongTimThay
-                topScore={topScore}
-                nguong={nguong}
-                soVanBan={soVanBan}
-                researchMode={cheDo === "research"}
-              />
-            ) : null}
-            {pha === "loi" ? <TrangThaiLoi onThuLai={traCuu} message={researchError ?? undefined} /> : null}
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-giay/70">
+              Công cụ tra cứu văn bản quy phạm pháp luật Việt Nam. Hỏi bằng tiếng Việt
+              thường, nhận câu trả lời có đóng dấu về đúng Điều, Khoản trong văn bản gốc.
+              Không đủ căn cứ thì hệ thống nói thẳng là không tìm thấy, chứ không đoán.
+            </p>
 
-            {coNguon ? (
-              <div className="flex flex-col gap-7">
-                {/* Nguồn đứng TRÊN câu trả lời, đúng thứ tự chúng về. */}
-                <section>
-                  <h2 className="nhan-hoa mb-2.5">Nguồn ({sourcesCount})</h2>
-                  <ul className="flex flex-col gap-1.5">
-                    {cheDo === "research"
-                      ? researchSources.map((source, index) => (
-                          <li key={source.id}>
-                            <NguonNghienCuu
-                              source={source}
-                              index={index + 1}
-                              selected={Boolean(source.chunkId && source.chunkId === dangChon?.chunkId)}
-                              onSelect={() => {
-                                if (source.kind === "corpus") void moTrichDan(sourceToCitation(source), true);
-                              }}
-                            />
-                          </li>
-                        ))
-                      : citations.map((td, i) => (
-                          <li key={td.chunkId}>
-                            <ChipTrichDan
-                              trichDan={td}
-                              soThuTu={i + 1}
-                              dangChon={dangChon?.chunkId === td.chunkId}
-                              onChon={(c) => void moTrichDan(c, true)}
-                            />
-                          </li>
-                        ))}
-                  </ul>
-                </section>
-
-                <section>
-                  <h2 className="nhan-hoa mb-2.5">Trả lời</h2>
-                  {answer ? (
-                    <CauTraLoi
-                      noiDung={answer}
-                      soTrichDan={sourcesCount}
-                      dangChon={soDangChon || undefined}
-                      dangViet={dangChay}
-                      onChonSo={moNguonTheoSo}
-                    />
-                  ) : (
-                    <p className="text-sm text-nhan">Đang soạn câu trả lời…</p>
-                  )}
-                </section>
+            {stats ? (
+              <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4 border-t border-giay/15 pt-5">
+                <div>
+                  <dt className="nhan-hoa-sang">Văn bản trong kho</dt>
+                  <dd className="chu-trung-bay co-so-lieu mt-2 font-ma tabular-nums">
+                    {soNhom(stats.tongVanBan)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="nhan-hoa-sang">Đoạn đã bóc tách</dt>
+                  <dd className="chu-trung-bay co-so-lieu mt-2 font-ma tabular-nums">
+                    {soNhom(stats.tongChunk)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="nhan-hoa-sang">Cơ quan ban hành</dt>
+                  <dd className="chu-trung-bay co-so-lieu mt-2 font-ma tabular-nums">
+                    {soNhom(stats.theoCoQuan.length)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="nhan-hoa-sang">Độ sâu trích dẫn</dt>
+                  <dd className="chu-trung-bay co-so-lieu mt-2">Tới Khoản</dd>
+                </div>
+              </dl>
+            ) : (
+              <div className="mt-8 flex gap-10 border-t border-giay/15 pt-5">
+                {[0, 1, 2].map((i) => (
+                  <span key={i} className="block h-10 w-24 animate-pulse rounded-[--bo] bg-giay/15" />
+                ))}
               </div>
-            ) : null}
+            )}
           </div>
+        </section>
+
+        {/* ---------- Ba lối vào ---------- */}
+        <section className="mt-4 grid gap-2 md:grid-cols-3">
+          {LOI_VAO.map((m) => (
+            <Link
+              key={m.href}
+              href={m.href}
+              className={cn(
+                "group flex flex-col gap-2 rounded-[--bo-lon] bg-giay p-4 shadow-the ring-1 ring-muc-in/[0.045]",
+                "transition-[box-shadow,transform] duration-[--nhip] hover:-translate-y-px hover:shadow-vua",
+              )}
+            >
+              <m.icon className="size-5 text-but-xanh" strokeWidth={1.8} />
+              <span className="flex items-center gap-1.5 text-base font-semibold">
+                {m.nhan}
+                <ArrowRight
+                  aria-hidden
+                  className="size-4 text-nhan transition-transform duration-[--nhip] group-hover:translate-x-0.5"
+                  strokeWidth={1.9}
+                />
+              </span>
+              <span className="text-[0.8125rem] leading-relaxed text-nhan">{m.moTa}</span>
+            </Link>
+          ))}
+        </section>
+
+        {/* ---------- Tin mới + độ phủ ---------- */}
+        <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+          <The className="flex flex-col gap-4">
+            <TieuDeMuc
+              phu="Tin từ báo trong nước, đối chiếu được với căn cứ trong kho"
+              hanhDong={
+                <Link
+                  href="/news"
+                  className="text-[0.8125rem] font-medium text-but-xanh underline-offset-4 hover:underline"
+                >
+                  Xem tất cả
+                </Link>
+              }
+            >
+              Đang diễn ra
+            </TieuDeMuc>
+
+            {tin.length > 0 ? (
+              <ul className="flex flex-col gap-3">
+                {tin.slice(0, 4).map((bai) => (
+                  <li key={bai.id}>
+                    <a
+                      href={bai.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group flex gap-3"
+                    >
+                      {bai.imageUrl ? (
+                        <span className="shrink-0 overflow-hidden rounded-[--bo] bg-khay">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={bai.imageUrl}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            className="size-16 object-cover"
+                            onError={(e) => {
+                              const boc = e.currentTarget.parentElement;
+                              if (boc) boc.style.display = "none";
+                            }}
+                          />
+                        </span>
+                      ) : null}
+                      <span className="min-w-0 flex-1">
+                        <span className="text-xs font-medium text-nhan">
+                          {bai.source.name}
+                        </span>
+                        <span className="mt-0.5 block line-clamp-2 text-sm font-medium leading-snug underline-offset-4 group-hover:text-but-xanh group-hover:underline">
+                          {bai.title}
+                        </span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex gap-3">
+                    <Vach className="size-16 shrink-0" />
+                    <div className="flex-1">
+                      <Vach className="w-20" />
+                      <Vach className="mt-2 w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </The>
+
+          <The className="flex flex-col gap-4">
+            <TieuDeMuc phu="Số văn bản đang phục vụ tra cứu ở từng lĩnh vực">
+              Kho đang phủ tới đâu
+            </TieuDeMuc>
+            {phuSong.length > 0 ? (
+              <CotNgang
+                toiDaHien={6}
+                cacMuc={[...phuSong]
+                  .sort((a, b) => b.documents - a.documents)
+                  .map((h) => ({
+                    nhan: NHAN_CHU_DE_TIN[h.topic],
+                    giaTri: h.documents,
+                  }))}
+              />
+            ) : (
+              <div className="flex flex-col gap-3">
+                {[0, 1, 2, 3].map((i) => (
+                  <Vach key={i} />
+                ))}
+              </div>
+            )}
+          </The>
         </div>
-      </main>
 
-      {/* ---------- Cột phải: mặt đọc ----------
-          Từ 1280px là cột thứ ba cố định; hẹp hơn thì thành tấm trượt. */}
-      {matDocMo ? (
-        <button
-          type="button"
-          aria-label="Đóng văn bản gốc"
-          onClick={() => setMatDocMo(false)}
-          className="fixed inset-0 z-30 bg-muc-in/25 xl:hidden"
-        />
-      ) : null}
-
-      {/* Từ 1280px: cột thứ ba tĩnh, KHÔNG transform. Lớp `fixed` kèm
-          `translate` sinh một tầng hợp thành thừa mà bề ngang này không cần. */}
-      {vanBan && dangChon ? (
-        <div className="hidden xl:block xl:w-[32rem] xl:shrink-0 2xl:w-[38rem]">
-          <MatDocCoDau vanBan={vanBan} dangChon={dangChon} />
-        </div>
-      ) : null}
-
-      {/* Dưới 1280px: tấm trượt. */}
-      <div
-        className={cn(
-          "fixed inset-y-0 right-0 z-40 w-full max-w-xl shadow-noi xl:hidden",
-          "transition-transform duration-[--nhip-cham] [transition-timing-function:var(--duong-cong)]",
-          matDocMo ? "translate-x-0" : "translate-x-full",
-        )}
-      >
-        {vanBan && dangChon ? (
-          <MatDocCoDau
-            vanBan={vanBan}
-            dangChon={dangChon}
-            onDong={() => setMatDocMo(false)}
-          />
+        {/* ---------- Chất lượng đo được ---------- */}
+        {moiNhat ? (
+          <The className="mt-4 flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
+            <div className="min-w-0 max-w-xl">
+              <TieuDeMuc phu="Đo trên bộ câu hỏi vàng tự soạn, không phải cảm nhận. Mỗi lần chạy đổi đúng một biến để quy được nguyên nhân.">
+                Hệ thống trả lời đúng tới đâu
+              </TieuDeMuc>
+            </div>
+            <div className="flex items-end gap-8">
+              <div>
+                <p className="nhan-hoa">Recall@5</p>
+                <p className="chu-trung-bay co-so-lieu mt-1.5 font-ma tabular-nums text-muc-in">
+                  {phanTram(moiNhat.recallAt5)}
+                </p>
+              </div>
+              <div>
+                <p className="nhan-hoa">Câu hỏi vàng</p>
+                <p className="chu-trung-bay co-so-lieu mt-1.5 font-ma tabular-nums text-muc-in">
+                  {moiNhat.nQuestions}
+                </p>
+              </div>
+              <Link
+                href="/dashboard"
+                className="pb-1.5 text-[0.8125rem] font-medium text-but-xanh underline-offset-4 hover:underline"
+              >
+                Xem toàn bộ số đo
+              </Link>
+            </div>
+          </The>
         ) : null}
       </div>
     </div>
   );
-}
-
-function sourceToCitation(source: ResearchSource): Citation {
-  return {
-    chunkId: source.chunkId ?? source.id,
-    documentId: source.documentId ?? "",
-    nodeId: source.nodeId ?? "",
-    soHieu: source.soHieu ?? "Văn bản trong kho",
-    breadcrumb: source.breadcrumb ?? source.title,
-    trichDoan: source.excerpt,
-    score: source.score,
-  };
 }

@@ -20,6 +20,7 @@ import {
   BriefcaseBusiness,
   FileSearch,
   FolderOpen,
+  Home,
   Library,
   Landmark,
   Menu,
@@ -32,10 +33,11 @@ import { KhayCongCu } from "@/components/kit/khay-cong-cu";
 import { cn } from "@/lib/utils";
 
 const CHINH = [
-  { href: "/", nhan: "Tra cứu", moTa: "Hỏi đáp có trích dẫn", icon: FileSearch },
+  { href: "/", nhan: "Trang chủ", moTa: "Tổng quan kho và chất lượng", icon: Home },
+  { href: "/documents", nhan: "Kho văn bản", moTa: "Duyệt và hỏi trong corpus", icon: Library },
+  { href: "/nghien-cuu", nhan: "Nghiên cứu sâu", moTa: "Gom thêm nguồn ngoài kho", icon: FileSearch },
   { href: "/legal-check", nhan: "Kiểm tra tình huống", moTa: "Đối chiếu sự việc với luật", icon: Scale },
   { href: "/workspace", nhan: "Hồ sơ", moTa: "Theo dõi và tạo biểu mẫu", icon: FolderOpen },
-  { href: "/documents", nhan: "Kho văn bản", moTa: "Đọc corpus pháp luật", icon: Library },
   { href: "/news", nhan: "Tin tức", moTa: "Tin mới và căn cứ liên quan", icon: Newspaper },
 ] as const;
 // "Công cụ" không còn là một trang: ba dụng cụ của nó nằm trong KhayCongCu
