@@ -4,7 +4,13 @@ import {
   EMBEDDING_BATCH_SIZE,
   type EmbeddingProvider,
 } from "../embedding/provider";
-import { parseVanBan, type CanhBao, type ChunkParse, type MetadataVanBan } from "../parser";
+import {
+  parseVanBan,
+  type CanhBao,
+  type ChunkParse,
+  type DocNodeParse,
+  type MetadataVanBan,
+} from "../parser";
 import { extractDocument, type ExtractedDocument, type SourceDocument } from "./extract";
 
 export interface PersistedChunk extends ChunkParse {
@@ -14,8 +20,10 @@ export interface PersistedChunk extends ChunkParse {
 export interface CompleteDocumentInput {
   metadata: MetadataVanBan;
   pageCount: number;
+  nodes: DocNodeParse[];
   chunks: PersistedChunk[];
-  warningDetail: string | null;
+  parseWarnings: CanhBao[];
+  strategy: "structural";
 }
 
 export interface IngestStorage {
@@ -83,13 +91,13 @@ export async function ingestDocument(
       ...chunk,
       embedding: embeddings[index],
     }));
-    const warningDetail = serializeWarnings(parsed.canh_bao, extracted.warnings);
-
     await dependencies.storage.complete(documentId, {
       metadata: parsed.metadata,
       pageCount: parsed.so_trang,
+      nodes: parsed.nodes,
       chunks: persistedChunks,
-      warningDetail,
+      parseWarnings: parsed.canh_bao,
+      strategy: "structural",
     });
 
     return {
@@ -111,11 +119,6 @@ export async function ingestDocument(
     }
     throw new IngestDocumentError(documentId, detail, { cause });
   }
-}
-
-function serializeWarnings(parserWarnings: CanhBao[], extractionWarnings: string[]): string | null {
-  if (parserWarnings.length === 0 && extractionWarnings.length === 0) return null;
-  return JSON.stringify({ parser: parserWarnings, extraction: extractionWarnings });
 }
 
 export function safeErrorMessage(error: unknown): string {

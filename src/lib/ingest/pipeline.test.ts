@@ -51,6 +51,9 @@ describe("ingestDocument", () => {
     expect(result.chunkCount).toBe(51);
     expect(embeddingProvider.batchSizes).toEqual([50, 1]);
     expect(storage.completed?.chunks).toHaveLength(51);
+    expect(storage.completed?.nodes.filter((node) => node.node_type === "dieu")).toHaveLength(51);
+    expect(storage.completed?.chunks.every((chunk) => chunk.node_key !== null)).toBe(true);
+    expect(storage.completed?.strategy).toBe("structural");
     expect(storage.failure).toBeNull();
   });
 

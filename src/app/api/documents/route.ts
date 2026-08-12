@@ -6,14 +6,11 @@ import {
   desc,
   eq,
   ilike,
-  inArray,
-  isNull,
-  notInArray,
-  or,
   type SQL,
 } from "drizzle-orm";
 import { z } from "zod";
 import { chunks, documents } from "@/lib/db/schema";
+import type { DocumentSummary, LoaiVanBan } from "@/types/contract";
 
 export const runtime = "nodejs";
 
@@ -35,7 +32,7 @@ export async function GET(request: Request) {
   }
 
   const filters: SQL[] = [];
-  if (parsed.data.loai) filters.push(documentTypeFilter(parsed.data.loai));
+  if (parsed.data.loai) filters.push(eq(documents.loai_van_ban, parsed.data.loai));
   if (parsed.data.coQuan) {
     filters.push(ilike(documents.co_quan_ban_hanh, `%${parsed.data.coQuan}%`));
   }
@@ -53,7 +50,8 @@ export async function GET(request: Request) {
           trichYeu: documents.trich_yeu,
           ngayBanHanh: documents.ngay_ban_hanh,
           ngayHieuLuc: documents.ngay_hieu_luc,
-          loiChiTiet: documents.loi_chi_tiet,
+          trangThai: documents.trang_thai,
+          parseWarnings: documents.parse_warnings,
           soDieu: countDistinct(chunks.dieu_so),
         })
         .from(documents)
@@ -66,8 +64,7 @@ export async function GET(request: Request) {
       db.select({ value: count() }).from(documents).where(where),
     ]);
 
-    return NextResponse.json({
-      items: rows.map((row) => ({
+    const items: DocumentSummary[] = rows.map((row) => ({
         id: row.id,
         soHieu: row.soHieu,
         loaiVanBan: normalizeDocumentType(row.loaiVanBan),
@@ -75,10 +72,12 @@ export async function GET(request: Request) {
         trichYeu: row.trichYeu,
         ngayBanHanh: row.ngayBanHanh,
         ngayHieuLuc: row.ngayHieuLuc,
-        trangThai: "chua_xac_dinh" as const,
+        trangThai: row.trangThai,
         soDieu: row.soDieu,
-        coCanhBao: row.loiChiTiet !== null,
-      })),
+        coCanhBao: row.parseWarnings.length > 0,
+      }));
+    return NextResponse.json({
+      items,
       total: totalRows[0]?.value ?? 0,
     });
   } catch (error) {
@@ -89,49 +88,6 @@ export async function GET(request: Request) {
   }
 }
 
-function normalizeDocumentType(value: string | null) {
-  const types: Record<string, string> = {
-    "Nghị định": "nghi_dinh",
-    "Thông tư": "thong_tu",
-    "Thông tư liên tịch": "thong_tu",
-    "Quyết định": "quyet_dinh",
-    Luật: "luat",
-    "Nghị quyết": "nghi_quyet",
-    "Công văn": "cong_van",
-  };
-  return value ? (types[value] ?? "khac") : "khac";
-}
-
-const DATABASE_TYPES = [
-  "Nghị định",
-  "Thông tư",
-  "Thông tư liên tịch",
-  "Quyết định",
-  "Luật",
-  "Nghị quyết",
-  "Công văn",
-] as const;
-
-function documentTypeFilter(value: z.infer<typeof querySchema>["loai"]): SQL {
-  switch (value) {
-    case "nghi_dinh":
-      return eq(documents.loai_van_ban, "Nghị định");
-    case "thong_tu":
-      return inArray(documents.loai_van_ban, ["Thông tư", "Thông tư liên tịch"]);
-    case "quyet_dinh":
-      return eq(documents.loai_van_ban, "Quyết định");
-    case "luat":
-      return eq(documents.loai_van_ban, "Luật");
-    case "nghi_quyet":
-      return eq(documents.loai_van_ban, "Nghị quyết");
-    case "cong_van":
-      return eq(documents.loai_van_ban, "Công văn");
-    case "khac":
-      return or(
-        isNull(documents.loai_van_ban),
-        notInArray(documents.loai_van_ban, [...DATABASE_TYPES]),
-      ) as SQL;
-    default:
-      return isNull(documents.loai_van_ban);
-  }
+function normalizeDocumentType(value: LoaiVanBan | null): LoaiVanBan {
+  return value ?? "khac";
 }
