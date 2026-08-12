@@ -33,6 +33,9 @@
   --radius-lg: var(--bo-lon);
   --radius-xl: var(--bo-lon);
 
+  --shadow-the: var(--do-noi);
+  --shadow-noi: var(--do-noi-cao);
+
   /* Ánh xạ sang tên của shadcn/ui. */
   --color-background: var(--giay);
   --color-foreground: var(--muc-in);

@@ -1,9 +1,21 @@
 "use client";
 
+/**
+ * Kho văn bản.
+ *
+ * Bảng này là chỗ lộ lỗi tràn khung sớm nhất: tên cơ quan và trích yếu tiếng
+ * Việt đều dài. Trích yếu bị kẹp hai dòng, cơ quan bị kẹp một cột hẹp, và số
+ * hiệu để mono nên các hàng thẳng cột đọc lướt được.
+ *
+ * Văn bản có cảnh báo KHÔNG tô đỏ — đỏ chỉ dành cho neo trích dẫn.
+ */
+
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { DocumentSummary } from "@/types/contract";
-import { NHAN_LOAI, NHAN_TRANG_THAI } from "@/types/nhan";
+import { NHAN_LOAI, NHAN_TRANG_THAI, chuanHoaTenCoQuan } from "@/types/nhan";
+import { KhungTrang, Nhan, The } from "@/components/kit/co-ban";
+import { BaoLoi, BaoTin, TrongRong, Vach } from "@/components/kit/trang-thai-kit";
 
 interface DocumentsResponse {
   items: DocumentSummary[];
@@ -12,116 +24,167 @@ interface DocumentsResponse {
 
 export default function TrangKhoVanBan() {
   const [data, setData] = useState<DocumentsResponse>({ items: [], total: 0 });
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [dangTai, setDangTai] = useState(true);
+  const [dangNap, setDangNap] = useState(false);
+  const [tin, setTin] = useState<string | null>(null);
+  const [loi, setLoi] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const doc = useCallback(async () => {
+    setDangTai(true);
+    setLoi(null);
     try {
-      const response = await fetch("/api/documents");
-      if (!response.ok) throw new Error("Không đọc được kho văn bản.");
-      setData((await response.json()) as DocumentsResponse);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Không đọc được kho văn bản.");
+      const r = await fetch("/api/documents");
+      if (!r.ok) throw new Error("Máy chủ không trả về danh sách văn bản.");
+      setData((await r.json()) as DocumentsResponse);
+    } catch (e) {
+      setLoi(e instanceof Error ? e.message : "Không đọc được kho văn bản.");
     } finally {
-      setLoading(false);
+      setDangTai(false);
     }
   }, []);
 
-  useEffect(() => void load(), [load]);
+  useEffect(() => void doc(), [doc]);
 
-  async function upload(file: File) {
-    setUploading(true);
-    setMessage(null);
+  async function nap(file: File) {
+    setDangNap(true);
+    setTin(null);
+    setLoi(null);
     try {
       const form = new FormData();
       form.set("file", file);
-      const response = await fetch("/api/ingest", { method: "POST", body: form });
-      const result = (await response.json()) as { error?: string; warnings?: unknown[] };
-      if (!response.ok) throw new Error(result.error ?? "Không nạp được văn bản.");
-      setMessage(`Đã nạp ${file.name}${result.warnings?.length ? `, có ${result.warnings.length} cảnh báo` : ""}.`);
-      await load();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Không nạp được văn bản.");
+      const r = await fetch("/api/ingest", { method: "POST", body: form });
+      const kq = (await r.json()) as { error?: string; warnings?: unknown[] };
+      if (!r.ok) throw new Error(kq.error ?? "Không nạp được văn bản.");
+      const soCanhBao = kq.warnings?.length ?? 0;
+      setTin(
+        `Đã nạp ${file.name}` +
+          (soCanhBao > 0 ? `, có ${soCanhBao} cảnh báo khi bóc tách.` : "."),
+      );
+      await doc();
+    } catch (e) {
+      setLoi(e instanceof Error ? e.message : "Không nạp được văn bản.");
     } finally {
-      setUploading(false);
+      setDangNap(false);
     }
   }
 
+  const soCoCanhBao = data.items.filter((d) => d.coCanhBao).length;
+
   return (
-    <div className="h-full overflow-y-auto px-6 py-5">
-      <div className="mx-auto max-w-5xl">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-semibold">Kho văn bản</h1>
-            <p className="mt-1 text-sm text-nhan">{data.total} văn bản đã nạp.</p>
-          </div>
-          <label className="cursor-pointer rounded-[--bo] bg-but-xanh px-3.5 py-2 text-sm font-medium text-giay">
-            {uploading ? "Đang nạp…" : "Nạp văn bản"}
-            <input
-              type="file"
-              accept=".pdf,.docx,.txt,.md"
-              disabled={uploading}
-              className="sr-only"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) void upload(file);
-                event.target.value = "";
-              }}
-            />
-          </label>
-        </div>
+    <KhungTrang
+      tieuDe="Kho văn bản"
+      moTa={
+        dangTai
+          ? "Đang đọc danh sách…"
+          : `${data.total} văn bản đã nạp${soCoCanhBao > 0 ? `, ${soCoCanhBao} văn bản có cảnh báo khi bóc tách` : ""}.`
+      }
+      hanhDong={
+        <label
+          className={`inline-flex cursor-pointer items-center rounded-[--bo] bg-but-xanh px-4 py-2 text-sm font-medium text-giay transition-colors duration-[--nhip] hover:bg-but-xanh-sau ${dangNap ? "pointer-events-none opacity-45" : ""}`}
+        >
+          {dangNap ? "Đang nạp…" : "Nạp văn bản"}
+          <input
+            type="file"
+            accept=".pdf,.docx,.txt,.md"
+            disabled={dangNap}
+            className="sr-only"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void nap(f);
+              e.target.value = "";
+            }}
+          />
+        </label>
+      }
+    >
+      <div className="flex flex-col gap-3">
+        {tin ? <BaoTin>{tin}</BaoTin> : null}
+        {loi ? <BaoLoi moTa={loi} onThuLai={() => void doc()} /> : null}
 
-        {message ? <p className="mt-3 rounded-[--bo] bg-khay-sau px-3 py-2 text-sm text-nhan">{message}</p> : null}
-        {loading ? <p className="mt-8 text-sm text-nhan">Đang đọc kho văn bản…</p> : null}
+        {dangTai ? (
+          <The khongDem>
+            <div className="flex flex-col gap-px">
+              {Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className="flex items-center gap-4 px-4 py-4">
+                  <Vach className="w-28 shrink-0" />
+                  <Vach className="flex-1" />
+                  <Vach className="w-24 shrink-0" />
+                </div>
+              ))}
+            </div>
+          </The>
+        ) : null}
 
-        {!loading && data.items.length === 0 ? (
-          <p className="mt-8 text-sm text-nhan">Chưa có văn bản nào.</p>
+        {!dangTai && data.items.length === 0 && !loi ? (
+          <TrongRong
+            tieuDe="Kho chưa có văn bản nào"
+            moTa="Nạp một tệp PDF hoặc DOCX có sẵn lớp chữ. Hệ thống sẽ bóc tách Chương, Điều, Khoản rồi mới cho tra cứu."
+          />
         ) : null}
 
         {data.items.length > 0 ? (
-          <div className="mt-5 overflow-x-auto rounded-[--bo-lon] bg-giay">
-            <table className="w-full border-collapse text-left text-sm">
-              <thead>
-                <tr className="border-b border-ke-mo">
-                  <th className="nhan-hoa px-4 py-2.5 font-semibold">Số hiệu</th>
-                  <th className="nhan-hoa px-4 py-2.5 font-semibold">Trích yếu</th>
-                  <th className="nhan-hoa px-4 py-2.5 font-semibold">Cơ quan</th>
-                  <th className="nhan-hoa px-4 py-2.5 text-right font-semibold">Điều</th>
-                  <th className="nhan-hoa px-4 py-2.5 font-semibold">Hiệu lực</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((document) => (
-                  <tr key={document.id} className="border-b border-ke-mo last:border-0">
-                    <td className="px-4 py-3 align-top">
-                      <Link href={`/documents/${document.id}`} className="so-hieu text-but-xanh hover:underline">
-                        {document.soHieu ?? "Không có số hiệu"}
-                      </Link>
-                      <span className="mt-1 block text-xs text-nhan">{NHAN_LOAI[document.loaiVanBan]}</span>
-                    </td>
-                    <td className="max-w-md px-4 py-3 align-top">
-                      <span className="line-clamp-2 leading-snug">{document.trichYeu ?? document.soHieu}</span>
-                      {document.coCanhBao ? (
-                        <span className="mt-1 inline-block rounded-[--bo] bg-khay px-1.5 py-0.5 text-xs text-nhan">
-                          Có cảnh báo khi bóc tách
-                        </span>
-                      ) : null}
-                    </td>
-                    <td className="max-w-[14rem] px-4 py-3 align-top leading-snug text-nhan">{document.coQuan}</td>
-                    <td className="so-hieu px-4 py-3 text-right align-top text-nhan">{document.soDieu}</td>
-                    <td className="px-4 py-3 align-top text-nhan">{NHAN_TRANG_THAI[document.trangThai]}</td>
+          <The khongDem>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[46rem] border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-ke-mo">
+                    <th className="nhan-hoa px-4 py-3 font-semibold">Số hiệu</th>
+                    <th className="nhan-hoa px-4 py-3 font-semibold">Trích yếu</th>
+                    <th className="nhan-hoa px-4 py-3 font-semibold">Cơ quan</th>
+                    <th className="nhan-hoa px-4 py-3 text-right font-semibold">Điều</th>
+                    <th className="nhan-hoa px-4 py-3 font-semibold">Hiệu lực</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {data.items.map((vb) => (
+                    <tr
+                      key={vb.id}
+                      className="group border-b border-ke-mo transition-colors duration-[--nhip] last:border-0 hover:bg-khay/60"
+                    >
+                      <td className="px-4 py-3.5 align-top">
+                        <Link
+                          href={`/documents/${vb.id}`}
+                          className="so-hieu text-but-xanh underline-offset-4 group-hover:underline"
+                        >
+                          {vb.soHieu ?? "Không có số hiệu"}
+                        </Link>
+                        <span className="mt-1.5 block text-xs text-nhan">
+                          {NHAN_LOAI[vb.loaiVanBan]}
+                        </span>
+                      </td>
+                      <td className="max-w-md px-4 py-3.5 align-top">
+                        <Link href={`/documents/${vb.id}`} className="block">
+                          <span className="line-clamp-2 leading-relaxed">
+                            {vb.trichYeu ?? vb.soHieu ?? "Chưa có trích yếu"}
+                          </span>
+                        </Link>
+                        {vb.coCanhBao ? (
+                          <Nhan className="mt-2">Có cảnh báo khi bóc tách</Nhan>
+                        ) : null}
+                      </td>
+                      <td className="max-w-[13rem] px-4 py-3.5 align-top leading-relaxed text-nhan">
+                        {chuanHoaTenCoQuan(vb.coQuan)}
+                      </td>
+                      <td className="so-hieu px-4 py-3.5 text-right align-top text-nhan">
+                        {vb.soDieu}
+                      </td>
+                      <td className="px-4 py-3.5 align-top text-nhan">
+                        {NHAN_TRANG_THAI[vb.trangThai]}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </The>
         ) : null}
+
         {data.total > data.items.length ? (
-          <p className="mt-3 text-xs text-nhan">Đang hiển thị 20 văn bản mới nhất.</p>
+          <p className="text-xs text-nhan">
+            Đang hiển thị {data.items.length} văn bản mới nhất trên tổng số {data.total}.
+          </p>
         ) : null}
       </div>
-    </div>
+    </KhungTrang>
   );
 }

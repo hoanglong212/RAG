@@ -1,10 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+/**
+ * Trang tra cứu — màn hình chính.
+ *
+ * KHOẢNH KHẮC CHỮ KÝ, giờ chạy trên dữ liệu thật: /api/chat gửi sự kiện
+ * `citations` TRƯỚC rồi mới tới `token`. Ngay khi nguồn về, trục văn bản nạp
+ * cây của văn bản được trích, cuộn tới đúng Điều và đóng dấu đỏ — trong lúc
+ * câu trả lời còn chưa có chữ nào. Chỗ đến có trước, lời giải thích tới sau.
+ *
+ * Trích dẫn KHÔNG điều hướng sang trang khác nữa. Rời trang là mất câu trả
+ * lời, mà việc của người dùng là đối chiếu câu trả lời với văn bản gốc — hai
+ * thứ đó phải nhìn thấy cùng lúc.
+ */
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { ChatStatus, Citation, DocumentDetail, StatsResponse } from "@/types/contract";
+import { CauTraLoi } from "@/components/cau-tra-loi";
 import { ChipTrichDan } from "@/components/chip-trich-dan";
+import { MatDoc } from "@/components/mat-doc";
 import { OHoi } from "@/components/o-hoi";
+import { TrucVanBan } from "@/components/truc-van-ban";
 import { DangTai, KhongTimThay, TrangThaiLoi, TrangThaiRong } from "@/components/trang-thai";
-import type { ChatStatus, Citation, StatsResponse } from "@/types/contract";
+import { cn } from "@/lib/utils";
 
 type Pha = "rong" | "dangTim" | "coNguon" | "xong" | "khongTimThay" | "loi";
 
@@ -19,16 +36,42 @@ export default function TrangTraCuu() {
   const [pha, setPha] = useState<Pha>("rong");
   const [answer, setAnswer] = useState("");
   const [citations, setCitations] = useState<Citation[]>([]);
+  const [dangChon, setDangChon] = useState<Citation | null>(null);
   const [topScore, setTopScore] = useState(0);
   const [nguong, setNguong] = useState(0.35);
   const [soVanBan, setSoVanBan] = useState(0);
   const [dangChay, setDangChay] = useState(false);
+  const [matDocMo, setMatDocMo] = useState(false);
+
+  /** Cây văn bản của trích dẫn đang chọn, nạp theo nhu cầu và nhớ lại. */
+  const [vanBan, setVanBan] = useState<DocumentDetail | null>(null);
+  const kho = useRef(new Map<string, DocumentDetail>());
 
   useEffect(() => {
     fetch("/api/stats")
-      .then((response) => response.json())
-      .then((data: StatsResponse) => setSoVanBan(data.tongVanBan))
+      .then((r) => r.json())
+      .then((d: StatsResponse) => setSoVanBan(d.tongVanBan))
       .catch(() => undefined);
+  }, []);
+
+  /** Nạp cây cho trục và mặt đọc. Trục phải hiện được sớm nhất có thể. */
+  const moTrichDan = useCallback(async (td: Citation, moTam = false) => {
+    setDangChon(td);
+    if (moTam) setMatDocMo(true);
+    const daCo = kho.current.get(td.documentId);
+    if (daCo) {
+      setVanBan(daCo);
+      return;
+    }
+    try {
+      const r = await fetch(`/api/documents/${encodeURIComponent(td.documentId)}`);
+      if (!r.ok) return;
+      const chiTiet = (await r.json()) as DocumentDetail;
+      kho.current.set(td.documentId, chiTiet);
+      setVanBan((hienTai) => (td.documentId === chiTiet.id ? chiTiet : hienTai));
+    } catch {
+      /* Không nạp được cây thì câu trả lời vẫn dùng được, chỉ mất trục. */
+    }
   }, []);
 
   const traCuu = useCallback(async () => {
@@ -37,6 +80,10 @@ export default function TrangTraCuu() {
     setPha("dangTim");
     setAnswer("");
     setCitations([]);
+    setDangChon(null);
+    setVanBan(null);
+    setMatDocMo(false);
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -48,12 +95,12 @@ export default function TrangTraCuu() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      while (true) {
+      for (;;) {
         const { value, done } = await reader.read();
         buffer += decoder.decode(value, { stream: !done });
         const frames = buffer.split("\n\n");
         buffer = frames.pop() ?? "";
-        for (const frame of frames) handleEvent(frame);
+        for (const frame of frames) xuLySuKien(frame);
         if (done) break;
       }
     } catch {
@@ -61,70 +108,170 @@ export default function TrangTraCuu() {
     } finally {
       setDangChay(false);
     }
-  }, [cauHoi]);
 
-  function handleEvent(frame: string) {
-    const event = frame.match(/^event:\s*(.+)$/m)?.[1];
-    const raw = frame.match(/^data:\s*(.+)$/m)?.[1];
-    if (!event || !raw) return;
-    const data = JSON.parse(raw) as Record<string, unknown>;
-    if (event === "citations") {
-      const next = (data.citations ?? []) as Citation[];
-      setCitations(next);
-      if (next.length > 0) setPha("coNguon");
-    } else if (event === "token") {
-      setPha("xong");
-      setAnswer((current) => current + String(data.text ?? ""));
-    } else if (event === "done") {
-      const status = data.status as ChatStatus;
-      setTopScore(Number(data.topScore ?? 0));
-      setNguong(Number(data.nguong ?? 0.35));
-      setPha(status === "ok" ? "xong" : status === "khong_tim_thay" ? "khongTimThay" : "loi");
+    function xuLySuKien(frame: string) {
+      const event = frame.match(/^event:\s*(.+)$/m)?.[1];
+      const raw = frame.match(/^data:\s*(.+)$/m)?.[1];
+      if (!event || !raw) return;
+      const data = JSON.parse(raw) as Record<string, unknown>;
+
+      if (event === "citations") {
+        const next = (data.citations ?? []) as Citation[];
+        setCitations(next);
+        if (next.length > 0) {
+          setPha("coNguon");
+          // Nguồn về trước: trục nạp cây và đóng dấu ngay, chữ chưa có.
+          void moTrichDan(next[0]);
+        }
+      } else if (event === "token") {
+        setPha("xong");
+        setAnswer((cu) => cu + String(data.text ?? ""));
+      } else if (event === "done") {
+        const status = data.status as ChatStatus;
+        setTopScore(Number(data.topScore ?? 0));
+        setNguong(Number(data.nguong ?? 0.35));
+        setPha(status === "ok" ? "xong" : status === "khong_tim_thay" ? "khongTimThay" : "loi");
+      }
     }
-  }
+  }, [cauHoi, moTrichDan]);
+
+  const coNguon = (pha === "coNguon" || pha === "xong") && citations.length > 0;
+  const soDangChon = dangChon ? citations.findIndex((c) => c.chunkId === dangChon.chunkId) + 1 : 0;
 
   return (
-    <main className="h-full overflow-y-auto px-5 py-4">
-      <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col">
-        <OHoi giaTri={cauHoi} onDoi={setCauHoi} onTraCuu={traCuu} dangChay={dangChay} />
-
-        <div className="mt-6 flex-1">
-          {pha === "rong" ? <TrangThaiRong cauHoiGoiY={CAU_HOI_GOI_Y} onChonCauHoi={setCauHoi} /> : null}
-          {pha === "dangTim" ? <DangTai /> : null}
-          {pha === "khongTimThay" ? (
-            <KhongTimThay topScore={topScore} nguong={nguong} soVanBan={soVanBan} />
-          ) : null}
-          {pha === "loi" ? <TrangThaiLoi onThuLai={traCuu} /> : null}
-
-          {(pha === "coNguon" || pha === "xong") && citations.length > 0 ? (
-            <div className="flex flex-col gap-6">
-              <section>
-                <h2 className="nhan-hoa mb-2">Nguồn ({citations.length})</h2>
-                <ul className="flex flex-col gap-1.5">
-                  {citations.map((citation, index) => (
-                    <li key={citation.chunkId}>
-                      <ChipTrichDan
-                        trichDan={citation}
-                        soThuTu={index + 1}
-                        onChon={() => {
-                          window.location.href = `/documents/${citation.documentId}?node=${citation.nodeId}`;
-                        }}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </section>
-
-              <section>
-                <h2 className="nhan-hoa mb-2">Trả lời</h2>
-                <p className="whitespace-pre-wrap text-[0.9375rem] leading-relaxed">
-                  {answer || "Đang soạn câu trả lời…"}
-                </p>
-              </section>
-            </div>
-          ) : null}
+    <div className="flex h-full">
+      {/* ---------- Cột trái: trục văn bản ---------- */}
+      {vanBan ? (
+        <TrucVanBan
+          soHieu={vanBan.soHieu}
+          tree={vanBan.tree}
+          nodeIdDangNeo={dangChon?.nodeId ?? null}
+          onChon={(nodeId) => {
+            const td = citations.find((c) => c.nodeId === nodeId);
+            if (td) void moTrichDan(td, true);
+          }}
+          className="shrink-0"
+        />
+      ) : (
+        <div className="hidden w-14 shrink-0 flex-col px-2 pt-4 lg:flex lg:w-52 lg:px-3 xl:w-72">
+          <p className="nhan-hoa text-center lg:text-left">
+            <span className="lg:hidden">Trục</span>
+            <span className="hidden lg:inline">Trục văn bản</span>
+          </p>
+          <p className="mt-2 hidden text-[0.8125rem] leading-relaxed text-nhan lg:block">
+            Khi có câu trả lời, trục dựng cây Chương — Điều của văn bản được trích và
+            cuộn tới đúng chỗ.
+          </p>
         </div>
+      )}
+
+      {/* ---------- Cột giữa: hỏi và đáp ---------- */}
+      <main className="flex min-w-0 flex-1 flex-col overflow-y-auto px-4 py-5 sm:px-6">
+        <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
+          <OHoi giaTri={cauHoi} onDoi={setCauHoi} onTraCuu={traCuu} dangChay={dangChay} />
+
+          <div className="mt-7 flex-1">
+            {pha === "rong" ? (
+              <TrangThaiRong cauHoiGoiY={CAU_HOI_GOI_Y} onChonCauHoi={setCauHoi} />
+            ) : null}
+            {pha === "dangTim" ? <DangTai /> : null}
+            {pha === "khongTimThay" ? (
+              <KhongTimThay topScore={topScore} nguong={nguong} soVanBan={soVanBan} />
+            ) : null}
+            {pha === "loi" ? <TrangThaiLoi onThuLai={traCuu} /> : null}
+
+            {coNguon ? (
+              <div className="flex flex-col gap-7">
+                {/* Nguồn đứng TRÊN câu trả lời, đúng thứ tự chúng về. */}
+                <section>
+                  <h2 className="nhan-hoa mb-2.5">Nguồn ({citations.length})</h2>
+                  <ul className="flex flex-col gap-1.5">
+                    {citations.map((td, i) => (
+                      <li key={td.chunkId}>
+                        <ChipTrichDan
+                          trichDan={td}
+                          soThuTu={i + 1}
+                          dangChon={dangChon?.chunkId === td.chunkId}
+                          onChon={(c) => void moTrichDan(c, true)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <section>
+                  <h2 className="nhan-hoa mb-2.5">Trả lời</h2>
+                  {answer ? (
+                    <CauTraLoi
+                      noiDung={answer}
+                      soTrichDan={citations.length}
+                      dangChon={soDangChon || undefined}
+                      dangViet={dangChay}
+                      onChonSo={(so) => {
+                        const td = citations[so - 1];
+                        if (td) void moTrichDan(td, true);
+                      }}
+                    />
+                  ) : (
+                    <p className="text-sm text-nhan">Đang soạn câu trả lời…</p>
+                  )}
+                </section>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </main>
+
+      {/* ---------- Cột phải: mặt đọc ----------
+          Từ 1280px là cột thứ ba cố định; hẹp hơn thì thành tấm trượt. */}
+      {matDocMo ? (
+        <button
+          type="button"
+          aria-label="Đóng văn bản gốc"
+          onClick={() => setMatDocMo(false)}
+          className="fixed inset-0 z-30 bg-muc-in/25 xl:hidden"
+        />
+      ) : null}
+
+      <div
+        className={cn(
+          "fixed inset-y-0 right-0 z-40 w-full max-w-xl shadow-noi",
+          "transition-transform duration-[--nhip-cham] [transition-timing-function:var(--duong-cong)]",
+          "xl:static xl:w-[32rem] xl:max-w-none xl:shrink-0 xl:translate-x-0 xl:shadow-none 2xl:w-[38rem]",
+          matDocMo ? "translate-x-0" : "translate-x-full",
+        )}
+      >
+        {vanBan && dangChon ? (
+          <div className="flex h-full flex-col bg-giay">
+            <div className="flex shrink-0 items-baseline justify-between gap-3 px-5 pt-4">
+              <div className="min-w-0">
+                <p className="so-hieu truncate text-nhan">{dangChon.soHieu}</p>
+                <p className="mt-0.5 truncate text-[0.8125rem] text-nhan">
+                  {dangChon.breadcrumb}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMatDocMo(false)}
+                className="shrink-0 rounded-[--bo] px-2 py-1 text-sm text-but-xanh xl:hidden"
+              >
+                Đóng
+              </button>
+            </div>
+            <MatDoc
+              tree={vanBan.tree}
+              nodeIdDangNeo={dangChon.nodeId}
+              className="min-h-0 flex-1"
+            />
+          </div>
+        ) : (
+          <div className="mat-doc flex h-full items-center justify-center px-10">
+            <p className="max-w-[22ch] text-center text-sm leading-relaxed text-nhan">
+              Bấm một nguồn để mở văn bản gốc tại đúng Khoản được trích dẫn.
+            </p>
+          </div>
+        )}
       </div>
-    </main>
+    </div>
   );
 }

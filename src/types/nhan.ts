@@ -7,6 +7,23 @@
  */
 import type { LoaiVanBan, NodeType, ParseWarning, TrangThaiHieuLuc } from './contract';
 
+/**
+ * Parser trả tên cơ quan đúng như in trong văn bản: "CHÍNH PHỦ", "BỘ Y TẾ".
+ * Chữ hoa toàn phần nén dấu tiếng Việt lại và rất khó đọc, nên giao diện đưa
+ * về dạng câu. Chỉ đổi lúc hiển thị — dữ liệu gốc giữ nguyên.
+ */
+export function chuanHoaTenCoQuan(ten: string | null): string {
+  if (!ten) return "Không rõ cơ quan";
+  const sach = ten.trim().replace(/\s+/g, " ");
+  // Đã có chữ thường nghĩa là parser đọc đúng dạng, không đụng vào.
+  if (/[a-zàáâãèéêìíòóôõùúýăđĩũơưạ-ỹ]/.test(sach)) return sach;
+  return sach
+    .toLocaleLowerCase("vi")
+    .split(" ")
+    .map((tu, i) => (i === 0 || tu.length > 3 ? tu.charAt(0).toLocaleUpperCase("vi") + tu.slice(1) : tu))
+    .join(" ");
+}
+
 export const NHAN_LOAI: Record<LoaiVanBan, string> = {
   nghi_dinh: 'Nghị định',
   thong_tu: 'Thông tư',

@@ -8,7 +8,10 @@
  * hệ thống vận hành. Lỗi không xin lỗi và không mơ hồ về chuyện đã xảy ra.
  */
 
+import { Nut, The } from "@/components/kit/co-ban";
 import { cn } from "@/lib/utils";
+
+const soVN = (n: number) => n.toFixed(2).replace(".", ",");
 
 /* ------------------------------------------------------------------ */
 
@@ -20,24 +23,33 @@ export interface TrangThaiRongProps {
 /** Màn hình trống là lời mời hành động, không phải thông báo buồn. */
 export function TrangThaiRong({ cauHoiGoiY, onChonCauHoi }: TrangThaiRongProps) {
   return (
-    <div className="mx-auto max-w-xl py-10">
-      <h2 className="text-lg font-semibold">Hỏi một câu, nhận về đúng Điều</h2>
-      <p className="mt-2 text-sm text-nhan">
-        Mỗi câu trả lời đều kèm neo tới Điều, Khoản trong văn bản gốc để bạn tự kiểm
-        chứng. Thử một trong ba câu dưới đây:
+    <div className="py-2">
+      <h2 className="text-base font-semibold">Hỏi một câu, nhận về đúng Điều</h2>
+      <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-nhan">
+        Mỗi câu trả lời đều neo tới Điều, Khoản trong văn bản gốc để bạn tự kiểm chứng.
+        Nếu không đủ căn cứ, hệ thống nói thẳng là không tìm thấy chứ không đoán.
       </p>
-      <ul className="mt-5 flex flex-col gap-2">
+
+      <p className="nhan-hoa mt-6">Thử một câu</p>
+      <ul className="mt-2 flex flex-col gap-1.5">
         {cauHoiGoiY.map((cau) => (
           <li key={cau}>
             <button
               type="button"
               onClick={() => onChonCauHoi(cau)}
               className={cn(
-                "w-full rounded-[--bo] bg-khay/70 px-3.5 py-3 text-left text-sm",
-                "transition-colors duration-[--nhip] hover:bg-khay-sau",
+                "group flex w-full items-center gap-3 rounded-[--bo] bg-giay px-3.5 py-3",
+                "text-left text-sm shadow-the",
+                "transition-shadow duration-[--nhip] hover:shadow-noi",
               )}
             >
-              {cau}
+              <span className="flex-1">{cau}</span>
+              <span
+                aria-hidden
+                className="shrink-0 text-nhan transition-transform duration-[--nhip] group-hover:translate-x-0.5"
+              >
+                →
+              </span>
             </button>
           </li>
         ))}
@@ -54,17 +66,22 @@ export function TrangThaiRong({ cauHoiGoiY, onChonCauHoi }: TrangThaiRongProps) 
  */
 export function DangTai() {
   return (
-    <div className="py-8" role="status" aria-live="polite">
-      <p className="text-sm text-nhan">Đang tìm trong kho văn bản…</p>
-      <div className="mt-4 flex flex-col gap-2.5">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="h-3 animate-pulse rounded-[--bo] bg-khay-sau"
-            style={{ width: `${88 - i * 17}%`, animationDelay: `${i * 120}ms` }}
-          />
-        ))}
-      </div>
+    <div className="flex flex-col gap-6" role="status" aria-live="polite">
+      <section>
+        <p className="nhan-hoa mb-2.5">Đang tìm trong kho văn bản…</p>
+        <div className="flex flex-col gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="animate-pulse rounded-[--bo] bg-giay px-3 py-3 shadow-the"
+              style={{ animationDelay: `${i * 140}ms` }}
+            >
+              <span className="block h-2.5 w-32 rounded-[--bo] bg-khay-sau" />
+              <span className="mt-2.5 block h-2.5 w-full rounded-[--bo] bg-khay-sau" />
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
@@ -85,19 +102,36 @@ export interface KhongTimThayProps {
  * nghĩa là hệ thống không khẳng định gì.
  */
 export function KhongTimThay({ topScore, nguong, soVanBan }: KhongTimThayProps) {
-  const soVN = (n: number) => n.toFixed(2).replace(".", ",");
+  const tyLe = nguong > 0 ? Math.min(100, (topScore / nguong) * 100) : 0;
+
   return (
-    <section className="rounded-[--bo-lon] bg-khay/70 px-5 py-5">
-      <h2 className="text-base font-semibold">Không tìm thấy trong bộ tài liệu</h2>
-      <p className="mt-2 text-sm leading-relaxed text-nhan">
-        Đã tìm trong {soVanBan} văn bản. Đoạn gần nhất chỉ đạt {soVN(topScore)}, dưới
-        ngưỡng tin cậy {soVN(nguong)} — chưa đủ căn cứ để trích dẫn, nên hệ thống không
-        đưa ra câu trả lời.
-      </p>
-      <p className="mt-3 text-sm leading-relaxed text-nhan">
+    <The className="flex flex-col gap-4">
+      <div>
+        <h2 className="text-base font-semibold">Không tìm thấy trong bộ tài liệu</h2>
+        <p className="mt-1.5 text-sm leading-relaxed text-nhan">
+          {soVanBan > 0 ? `Đã tìm trong ${soVanBan} văn bản. ` : ""}
+          Đoạn gần nhất chỉ đạt {soVN(topScore)}, dưới ngưỡng tin cậy {soVN(nguong)} — chưa
+          đủ căn cứ để trích dẫn, nên hệ thống không đưa ra câu trả lời.
+        </p>
+      </div>
+
+      {/* Khoảng cách tới ngưỡng, hiện thành hình để thấy còn thiếu bao nhiêu. */}
+      <div className="flex items-center gap-3">
+        <span aria-hidden className="h-1.5 flex-1 overflow-hidden rounded-full bg-khay-sau">
+          <span
+            className="block h-full rounded-full bg-nhan/60"
+            style={{ width: `${Math.max(2, tyLe)}%` }}
+          />
+        </span>
+        <span className="so-hieu shrink-0 text-xs tabular-nums text-nhan">
+          {soVN(topScore)} / {soVN(nguong)}
+        </span>
+      </div>
+
+      <p className="text-sm leading-relaxed text-nhan">
         Thử hỏi lại bằng từ ngữ có trong văn bản, hoặc nêu rõ số hiệu văn bản cần tra.
       </p>
-    </section>
+    </The>
   );
 }
 
@@ -110,24 +144,20 @@ export interface TrangThaiLoiProps {
 /** Hạ tầng hỏng. Nói thẳng chuyện gì đã xảy ra, không xin lỗi. */
 export function TrangThaiLoi({ onThuLai }: TrangThaiLoiProps) {
   return (
-    <section className="rounded-[--bo-lon] bg-khay/70 px-5 py-5">
+    <div
+      role="alert"
+      className="rounded-[--bo-lon] bg-giay py-4 pl-4 pr-5 shadow-the [border-left:3px_solid_var(--muc-in)]"
+    >
       <h2 className="text-base font-semibold">Không gửi được câu hỏi</h2>
-      <p className="mt-2 text-sm leading-relaxed text-nhan">
-        Máy chủ tra cứu không phản hồi. Câu hỏi của bạn chưa được xử lý và không có gì
-        bị mất.
+      <p className="mt-1.5 text-sm leading-relaxed text-nhan">
+        Máy chủ tra cứu không phản hồi. Câu hỏi của bạn chưa được xử lý và không có gì bị
+        mất.
       </p>
       {onThuLai ? (
-        <button
-          type="button"
-          onClick={onThuLai}
-          className={cn(
-            "mt-4 rounded-[--bo] bg-but-xanh px-3.5 py-2 text-sm font-medium text-giay",
-            "transition-colors duration-[--nhip] hover:bg-but-xanh-sau",
-          )}
-        >
+        <Nut kieu="phu" className="mt-3.5" onClick={onThuLai}>
           Tra cứu lại
-        </button>
+        </Nut>
       ) : null}
-    </section>
+    </div>
   );
 }

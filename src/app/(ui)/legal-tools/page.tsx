@@ -1,106 +1,376 @@
 "use client";
 
+/**
+ * Bộ công cụ pháp lý — bốn dụng cụ độc lập, mỗi cái một thẻ.
+ *
+ * Kết quả luôn mở ra ngay dưới dụng cụ sinh ra nó, không dồn xuống cuối trang,
+ * để người dùng không phải nhớ mình vừa bấm cái nào.
+ *
+ * Trạng thái hiệu lực KHÔNG tô đỏ khi hết hiệu lực — đỏ là dấu chứng thực của
+ * trích dẫn. Ở đây phân biệt bằng chữ và sức nặng.
+ */
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChipTrichDan } from "@/components/chip-trich-dan";
+import { KhungTrang, Nhan, Nut, The, TieuDeMuc } from "@/components/kit/co-ban";
+import { ONhap, OChon, OVanBan } from "@/components/kit/truong";
+import { BaoLoi } from "@/components/kit/trang-thai-kit";
 import type { DocumentSummary } from "@/types/contract";
 import { NHAN_CHU_DE_TIN } from "@/types/nhan-news";
-import type { CompareChange, CoverageRow, PenaltyResult, TimelineDocument, TimelineRelation } from "@/types/platform";
+import type {
+  CompareChange,
+  CoverageRow,
+  PenaltyResult,
+  TimelineDocument,
+  TimelineRelation,
+} from "@/types/platform";
 
-interface TimelineResponse { at: string; document: TimelineDocument; relations: TimelineRelation[] }
-interface CompareResponse { summary: { added: number; removed: number; changed: number }; changes: CompareChange[] }
+interface TimelineResponse {
+  at: string;
+  document: TimelineDocument;
+  relations: TimelineRelation[];
+}
+interface CompareResponse {
+  summary: { added: number; removed: number; changed: number };
+  changes: CompareChange[];
+}
 
 export default function TrangCongCuPhapLy() {
   const router = useRouter();
   const [docs, setDocs] = useState<DocumentSummary[]>([]);
-  const [coverage, setCoverage] = useState<CoverageRow[]>([]);
-  const [timelineId, setTimelineId] = useState("");
-  const [at, setAt] = useState(new Date().toISOString().slice(0, 10));
-  const [timeline, setTimeline] = useState<TimelineResponse | null>(null);
-  const [left, setLeft] = useState("");
-  const [right, setRight] = useState("");
-  const [comparison, setComparison] = useState<CompareResponse | null>(null);
-  const [scenario, setScenario] = useState("");
-  const [penalties, setPenalties] = useState<PenaltyResult[]>([]);
-  const [penaltyNotice, setPenaltyNotice] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
+  const [phuSong, setPhuSong] = useState<CoverageRow[]>([]);
+  const [idThoiDiem, setIdThoiDiem] = useState("");
+  const [moc, setMoc] = useState(new Date().toISOString().slice(0, 10));
+  const [thoiDiem, setThoiDiem] = useState<TimelineResponse | null>(null);
+  const [trai, setTrai] = useState("");
+  const [phai, setPhai] = useState("");
+  const [soSanh, setSoSanh] = useState<CompareResponse | null>(null);
+  const [tinhHuong, setTinhHuong] = useState("");
+  const [mucPhat, setMucPhat] = useState<PenaltyResult[]>([]);
+  const [daTinh, setDaTinh] = useState(false);
+  const [ghiChuPhat, setGhiChuPhat] = useState("");
+  const [loi, setLoi] = useState<string | null>(null);
 
   useEffect(() => {
     void Promise.all([
       fetch("/api/documents?pageSize=100").then((r) => r.json()),
       fetch("/api/coverage").then((r) => r.json()),
-    ]).then(([documentData, coverageData]) => {
-      const items = (documentData as { items: DocumentSummary[] }).items;
-      setDocs(items); setCoverage(coverageData as CoverageRow[]);
-      setTimelineId(items[0]?.id ?? ""); setLeft(items[0]?.id ?? ""); setRight(items[1]?.id ?? "");
-    }).catch((error: unknown) => setMessage(readError(error)));
+    ])
+      .then(([d, c]) => {
+        const items = (d as { items: DocumentSummary[] }).items;
+        setDocs(items);
+        setPhuSong(c as CoverageRow[]);
+        setIdThoiDiem(items[0]?.id ?? "");
+        setTrai(items[0]?.id ?? "");
+        setPhai(items[1]?.id ?? "");
+      })
+      .catch((e: unknown) => setLoi(docLoi(e)));
   }, []);
 
-  async function loadTimeline() {
-    try { setTimeline(await getJson<TimelineResponse>(`/api/legal/timeline?documentId=${timelineId}&at=${at}`)); }
-    catch (error) { setMessage(readError(error)); }
-  }
-
-  async function compare() {
-    try { setComparison(await getJson<CompareResponse>(`/api/legal/compare?left=${left}&right=${right}`)); }
-    catch (error) { setMessage(readError(error)); }
-  }
-
-  async function calculate() {
-    try {
-      const result = await postJson<{ results: PenaltyResult[]; disclaimer: string }>("/api/penalties", { scenario });
-      setPenalties(result.results); setPenaltyNotice(result.disclaimer);
-    } catch (error) { setMessage(readError(error)); }
-  }
-
   return (
-    <div className="h-full overflow-y-auto px-6 py-5">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="text-lg font-semibold">Bộ công cụ pháp lý</h1>
-        <p className="mt-1 text-sm text-nhan">Tra cứu theo thời điểm, so sánh phiên bản, đọc mức phạt từ căn cứ và kiểm tra độ phủ corpus.</p>
-        {message ? <p className="mt-3 rounded-[--bo] bg-khay-sau px-3 py-2 text-sm text-dau-do">{message}</p> : null}
+    <KhungTrang
+      tieuDe="Bộ công cụ pháp lý"
+      moTa="Tra hiệu lực tại một thời điểm, so sánh hai phiên bản, đọc khoảng tiền phạt từ căn cứ, và xem corpus đang phủ tới đâu."
+      rong="rong"
+    >
+      <div className="flex flex-col gap-3">
+        {loi ? <BaoLoi moTa={loi} /> : null}
 
-        <section className="mt-5 rounded-[--bo-lon] bg-giay p-4">
-          <h2 className="text-base font-semibold">Hiệu lực tại một thời điểm</h2>
-          <div className="mt-3 grid gap-2 md:grid-cols-[1fr_11rem_auto]">
-            <DocumentSelect value={timelineId} onChange={setTimelineId} docs={docs} />
-            <input type="date" value={at} onChange={(e) => setAt(e.target.value)} className="rounded-[--bo] bg-khay px-3 py-2 text-sm" />
-            <button onClick={() => void loadTimeline()} className="rounded-[--bo] bg-but-xanh px-4 py-2 text-sm font-medium text-giay">Kiểm tra</button>
+        {/* ---------- Hiệu lực tại một thời điểm ---------- */}
+        <The className="flex flex-col gap-4">
+          <TieuDeMuc phu="Văn bản này có hiệu lực vào ngày đã chọn hay không">
+            Hiệu lực tại một thời điểm
+          </TieuDeMuc>
+          <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_11rem_auto]">
+            <ChonVanBan value={idThoiDiem} onChange={setIdThoiDiem} docs={docs} />
+            <ONhap type="date" value={moc} onChange={(e) => setMoc(e.target.value)} />
+            <Nut
+              onClick={() =>
+                void layJson<TimelineResponse>(
+                  `/api/legal/timeline?documentId=${idThoiDiem}&at=${moc}`,
+                )
+                  .then(setThoiDiem)
+                  .catch((e: unknown) => setLoi(docLoi(e)))
+              }
+            >
+              Kiểm tra
+            </Nut>
           </div>
-          {timeline ? <div className="mt-4 border-t border-ke-mo pt-4">
-            <p className="text-sm font-semibold">{timeline.document.soHieu ?? "Không số hiệu"}: <span className={timeline.document.activeAt ? "text-but-xanh" : "text-dau-do"}>{timeline.document.activeAt ? "Có hiệu lực tại thời điểm đã chọn" : "Không có hiệu lực tại thời điểm đã chọn"}</span></p>
-            <p className="mt-1 text-sm text-nhan">{timeline.document.trichYeu}</p>
-            {timeline.relations.length ? <div className="mt-3"><h3 className="nhan-hoa">Quan hệ pháp lý</h3><ul className="mt-2 space-y-2">{timeline.relations.map((relation) => <li key={relation.id} className="rounded-[--bo] bg-khay px-3 py-2 text-sm"><span className="font-medium">{relation.type.replaceAll("_", " ")}</span> · {relation.document.soHieu} {relation.effectiveFrom ? `từ ${relation.effectiveFrom}` : ""}<a href={relation.sourceUrl} target="_blank" rel="noreferrer" className="ml-2 text-but-xanh hover:underline">Nguồn</a></li>)}</ul></div> : <p className="mt-3 text-sm text-nhan">Chưa có quan hệ sửa đổi/thay thế được xác minh trong corpus.</p>}
-          </div> : null}
-        </section>
 
-        <section className="mt-4 rounded-[--bo-lon] bg-giay p-4">
-          <h2 className="text-base font-semibold">So sánh hai văn bản</h2>
-          <p className="mt-1 text-xs text-nhan">So sánh các node cùng loại và số thứ tự; kết quả là hỗ trợ rà soát, không thay thế văn bản hợp nhất.</p>
-          <div className="mt-3 grid gap-2 md:grid-cols-[1fr_1fr_auto]"><DocumentSelect value={left} onChange={setLeft} docs={docs} /><DocumentSelect value={right} onChange={setRight} docs={docs} /><button onClick={() => void compare()} className="rounded-[--bo] bg-but-xanh px-4 py-2 text-sm font-medium text-giay">So sánh</button></div>
-          {comparison ? <div className="mt-4"><div className="flex flex-wrap gap-2 text-sm"><Badge text={`${comparison.summary.changed} thay đổi`} /><Badge text={`${comparison.summary.added} bổ sung`} /><Badge text={`${comparison.summary.removed} loại bỏ`} /></div><div className="mt-3 max-h-[32rem] space-y-2 overflow-y-auto">{comparison.changes.map((change) => <details key={`${change.kind}-${change.key}`} className="rounded-[--bo] bg-khay p-3"><summary className="cursor-pointer text-sm font-medium">{change.kind === "changed" ? "Thay đổi" : change.kind === "added" ? "Bổ sung" : "Loại bỏ"} · {change.breadcrumb}</summary><div className="mt-3 grid gap-3 md:grid-cols-2"><TextBlock title="Văn bản trái" text={change.left} /><TextBlock title="Văn bản phải" text={change.right} /></div></details>)}</div></div> : null}
-        </section>
+          {thoiDiem ? (
+            <div className="border-t border-ke-mo pt-4">
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="so-hieu text-muc-in">
+                  {thoiDiem.document.soHieu ?? "Không có số hiệu"}
+                </span>
+                <span
+                  className={
+                    thoiDiem.document.activeAt
+                      ? "text-sm font-semibold text-muc-in"
+                      : "text-sm font-semibold text-nhan"
+                  }
+                >
+                  {thoiDiem.document.activeAt
+                    ? "Có hiệu lực tại thời điểm đã chọn"
+                    : "Không có hiệu lực tại thời điểm đã chọn"}
+                </span>
+              </div>
+              {thoiDiem.document.trichYeu ? (
+                <p className="mt-1.5 text-sm leading-relaxed text-nhan">
+                  {thoiDiem.document.trichYeu}
+                </p>
+              ) : null}
 
-        <section className="mt-4 rounded-[--bo-lon] bg-giay p-4">
-          <h2 className="text-base font-semibold">Máy đọc khoảng tiền phạt</h2>
-          <textarea rows={4} value={scenario} onChange={(e) => setScenario(e.target.value)} className="mt-3 w-full rounded-[--bo] bg-khay px-3 py-2 text-sm" placeholder="Ví dụ: Người đi xe máy vượt đèn đỏ…" />
-          <button disabled={scenario.trim().length < 10} onClick={() => void calculate()} className="mt-2 rounded-[--bo] bg-but-xanh px-4 py-2 text-sm font-medium text-giay disabled:opacity-50">Tìm mức phạt có căn cứ</button>
-          {penalties.length ? <div className="mt-4 space-y-3">{penalties.map((penalty) => <div key={penalty.ruleId} className="rounded-[--bo] bg-khay p-3"><p className="text-sm font-semibold">{penalty.label}</p><p className="so-hieu mt-1 text-sm text-nhan">{penalty.amountFrom !== null && penalty.amountTo !== null ? `${money(penalty.amountFrom)} – ${money(penalty.amountTo)}` : "Căn cứ hiện tại không chứa khoảng tiền để máy đọc tự động"}</p>{penalty.evidence ? <div className="mt-2"><ChipTrichDan trichDan={penalty.evidence} soThuTu={1} onChon={() => router.push(`/documents/${penalty.evidence?.documentId}?node=${penalty.evidence?.nodeId}`)} /></div> : null}</div>)}<p className="text-xs text-nhan">{penaltyNotice}</p></div> : scenario && penalties.length === 0 ? <p className="mt-3 text-sm text-nhan">Chưa nhận diện được hành vi trong bộ quy tắc có kiểm chứng.</p> : null}
-        </section>
+              {thoiDiem.relations.length > 0 ? (
+                <div className="mt-4">
+                  <p className="nhan-hoa">Quan hệ pháp lý</p>
+                  <ul className="mt-2 flex flex-col gap-1.5">
+                    {thoiDiem.relations.map((q) => (
+                      <li
+                        key={q.id}
+                        className="flex flex-wrap items-baseline gap-x-2 rounded-[--bo] bg-khay px-3.5 py-2.5 text-sm"
+                      >
+                        <span className="font-medium">{q.type.replaceAll("_", " ")}</span>
+                        <span className="so-hieu text-nhan">{q.document.soHieu}</span>
+                        {q.effectiveFrom ? (
+                          <span className="text-xs text-nhan">từ {q.effectiveFrom}</span>
+                        ) : null}
+                        <a
+                          href={q.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="ml-auto text-xs text-but-xanh underline-offset-4 hover:underline"
+                        >
+                          Nguồn
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="mt-3 text-sm text-nhan">
+                  Chưa có quan hệ sửa đổi hay thay thế nào được xác minh trong corpus.
+                </p>
+              )}
+            </div>
+          ) : null}
+        </The>
 
-        <section className="mt-4 rounded-[--bo-lon] bg-giay p-4">
-          <h2 className="text-base font-semibold">Ma trận phạm vi hỗ trợ</h2>
-          <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead className="text-nhan"><tr><th className="px-3 py-2">Chủ đề</th><th className="px-3 py-2 text-right">Văn bản</th><th className="px-3 py-2 text-right">Chunk</th><th className="px-3 py-2 text-right">Đã xác minh</th><th className="px-3 py-2 text-right">Cảnh báo</th><th className="px-3 py-2">Cập nhật</th></tr></thead><tbody>{coverage.map((row) => <tr key={row.topic} className="border-t border-ke-mo"><td className="px-3 py-2 font-medium">{NHAN_CHU_DE_TIN[row.topic]}</td><td className="so-hieu px-3 py-2 text-right">{row.documents}</td><td className="so-hieu px-3 py-2 text-right">{row.chunks}</td><td className="so-hieu px-3 py-2 text-right">{row.verifiedDocuments}</td><td className="so-hieu px-3 py-2 text-right">{row.warningDocuments}</td><td className="px-3 py-2 text-xs text-nhan">{row.lastVerifiedAt ? new Date(row.lastVerifiedAt).toLocaleDateString("vi-VN") : "Chưa có"}</td></tr>)}</tbody></table></div>
-        </section>
+        {/* ---------- So sánh hai văn bản ---------- */}
+        <The className="flex flex-col gap-4">
+          <TieuDeMuc phu="So các node cùng loại và cùng số thứ tự. Đây là hỗ trợ rà soát, không thay thế văn bản hợp nhất.">
+            So sánh hai văn bản
+          </TieuDeMuc>
+          <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+            <ChonVanBan value={trai} onChange={setTrai} docs={docs} />
+            <ChonVanBan value={phai} onChange={setPhai} docs={docs} />
+            <Nut
+              onClick={() =>
+                void layJson<CompareResponse>(`/api/legal/compare?left=${trai}&right=${phai}`)
+                  .then(setSoSanh)
+                  .catch((e: unknown) => setLoi(docLoi(e)))
+              }
+            >
+              So sánh
+            </Nut>
+          </div>
+
+          {soSanh ? (
+            <div className="border-t border-ke-mo pt-4">
+              <div className="flex flex-wrap gap-1.5">
+                <Nhan dam>{soSanh.summary.changed} thay đổi</Nhan>
+                <Nhan>{soSanh.summary.added} bổ sung</Nhan>
+                <Nhan>{soSanh.summary.removed} loại bỏ</Nhan>
+              </div>
+              <div className="mt-3 flex max-h-[32rem] flex-col gap-1.5 overflow-y-auto">
+                {soSanh.changes.map((t) => (
+                  <details
+                    key={`${t.kind}-${t.key}`}
+                    className="group rounded-[--bo] bg-khay px-3.5 py-2.5"
+                  >
+                    <summary className="cursor-pointer list-none text-sm font-medium marker:content-none">
+                      <span className="text-nhan group-open:text-muc-in">
+                        {t.kind === "changed" ? "Thay đổi" : t.kind === "added" ? "Bổ sung" : "Loại bỏ"}
+                      </span>
+                      <span className="ml-2">{t.breadcrumb}</span>
+                    </summary>
+                    <div className="mt-3 grid gap-4 md:grid-cols-2">
+                      <KhoiChu tieuDe="Văn bản trái" chu={t.left} />
+                      <KhoiChu tieuDe="Văn bản phải" chu={t.right} />
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </The>
+
+        {/* ---------- Khoảng tiền phạt ---------- */}
+        <The className="flex flex-col gap-4">
+          <TieuDeMuc phu="Chỉ đọc khoảng tiền có sẵn trong căn cứ, không tự suy ra con số">
+            Máy đọc khoảng tiền phạt
+          </TieuDeMuc>
+          <OVanBan
+            rows={4}
+            value={tinhHuong}
+            onChange={(e) => setTinhHuong(e.target.value)}
+            placeholder="Ví dụ: Người đi xe máy vượt đèn đỏ…"
+          />
+          <div className="flex justify-end">
+            <Nut
+              disabled={tinhHuong.trim().length < 10}
+              onClick={() =>
+                void guiJson<{ results: PenaltyResult[]; disclaimer: string }>("/api/penalties", {
+                  scenario: tinhHuong,
+                })
+                  .then((kq) => {
+                    setMucPhat(kq.results);
+                    setGhiChuPhat(kq.disclaimer);
+                    setDaTinh(true);
+                  })
+                  .catch((e: unknown) => setLoi(docLoi(e)))
+              }
+            >
+              Tìm mức phạt có căn cứ
+            </Nut>
+          </div>
+
+          {mucPhat.length > 0 ? (
+            <div className="flex flex-col gap-2 border-t border-ke-mo pt-4">
+              {mucPhat.map((p) => (
+                <div key={p.ruleId} className="rounded-[--bo] bg-khay p-3.5">
+                  <p className="text-sm font-semibold">{p.label}</p>
+                  <p className="so-hieu mt-1 text-sm text-nhan">
+                    {p.amountFrom !== null && p.amountTo !== null
+                      ? `${tien(p.amountFrom)} – ${tien(p.amountTo)}`
+                      : "Căn cứ không chứa khoảng tiền để máy đọc tự động"}
+                  </p>
+                  {p.evidence ? (
+                    <div className="mt-2.5">
+                      <ChipTrichDan
+                        trichDan={p.evidence}
+                        soThuTu={1}
+                        onChon={(c) => router.push(`/documents/${c.documentId}?node=${c.nodeId}`)}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+              <p className="text-xs leading-relaxed text-nhan">{ghiChuPhat}</p>
+            </div>
+          ) : daTinh ? (
+            <p className="border-t border-ke-mo pt-4 text-sm text-nhan">
+              Chưa nhận diện được hành vi nào trong bộ quy tắc đã kiểm chứng. Thử mô tả sát
+              với từ ngữ trong nghị định xử phạt.
+            </p>
+          ) : null}
+        </The>
+
+        {/* ---------- Ma trận phạm vi ---------- */}
+        <The khongDem>
+          <div className="p-4 sm:p-5">
+            <TieuDeMuc phu="Corpus đang phủ tới đâu ở từng chủ đề">
+              Ma trận phạm vi hỗ trợ
+            </TieuDeMuc>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[42rem] text-left text-sm">
+              <thead>
+                <tr className="border-y border-ke-mo">
+                  <th className="nhan-hoa px-4 py-2.5 font-semibold sm:px-5">Chủ đề</th>
+                  <th className="nhan-hoa px-4 py-2.5 text-right font-semibold">Văn bản</th>
+                  <th className="nhan-hoa px-4 py-2.5 text-right font-semibold">Chunk</th>
+                  <th className="nhan-hoa px-4 py-2.5 text-right font-semibold">Đã xác minh</th>
+                  <th className="nhan-hoa px-4 py-2.5 text-right font-semibold">Cảnh báo</th>
+                  <th className="nhan-hoa px-4 py-2.5 font-semibold sm:px-5">Cập nhật</th>
+                </tr>
+              </thead>
+              <tbody>
+                {phuSong.map((h) => (
+                  <tr key={h.topic} className="border-b border-ke-mo last:border-0">
+                    <td className="px-4 py-2.5 font-medium sm:px-5">
+                      {NHAN_CHU_DE_TIN[h.topic]}
+                    </td>
+                    <td className="so-hieu px-4 py-2.5 text-right tabular-nums">{h.documents}</td>
+                    <td className="so-hieu px-4 py-2.5 text-right tabular-nums text-nhan">
+                      {h.chunks}
+                    </td>
+                    <td className="so-hieu px-4 py-2.5 text-right tabular-nums text-nhan">
+                      {h.verifiedDocuments}
+                    </td>
+                    <td className="so-hieu px-4 py-2.5 text-right tabular-nums text-nhan">
+                      {h.warningDocuments}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-nhan sm:px-5">
+                      {h.lastVerifiedAt
+                        ? new Date(h.lastVerifiedAt).toLocaleDateString("vi-VN")
+                        : "Chưa có"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </The>
       </div>
+    </KhungTrang>
+  );
+}
+
+function ChonVanBan({
+  value,
+  onChange,
+  docs,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  docs: DocumentSummary[];
+}) {
+  return (
+    <OChon value={value} onChange={(e) => onChange(e.target.value)} aria-label="Chọn văn bản">
+      <option value="">Chọn văn bản</option>
+      {docs.map((d) => (
+        <option key={d.id} value={d.id}>
+          {d.soHieu ?? "Không có số hiệu"} — {d.trichYeu}
+        </option>
+      ))}
+    </OChon>
+  );
+}
+
+function KhoiChu({ tieuDe, chu }: { tieuDe: string; chu: string | null }) {
+  return (
+    <div className="min-w-0">
+      <p className="nhan-hoa">{tieuDe}</p>
+      <p className="mt-1.5 max-h-56 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-nhan">
+        {chu ?? "—"}
+      </p>
     </div>
   );
 }
 
-function DocumentSelect({ value, onChange, docs }: { value: string; onChange: (value: string) => void; docs: DocumentSummary[] }) { return <select value={value} onChange={(e) => onChange(e.target.value)} className="min-w-0 rounded-[--bo] bg-khay px-3 py-2 text-sm"><option value="">Chọn văn bản</option>{docs.map((doc) => <option key={doc.id} value={doc.id}>{doc.soHieu ?? "Không số hiệu"} — {doc.trichYeu}</option>)}</select>; }
-function Badge({ text }: { text: string }) { return <span className="rounded-[--bo] bg-khay px-2 py-1 text-nhan">{text}</span>; }
-function TextBlock({ title, text }: { title: string; text: string | null }) { return <div><p className="nhan-hoa">{title}</p><p className="mt-1 max-h-56 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-nhan">{text ?? "—"}</p></div>; }
-function money(value: number) { return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(value); }
-async function getJson<T>(url: string): Promise<T> { const response = await fetch(url); const data = await response.json(); if (!response.ok) throw new Error(data.error ?? "Không đọc được dữ liệu."); return data as T; }
-async function postJson<T>(url: string, body: unknown): Promise<T> { const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }); const data = await response.json(); if (!response.ok) throw new Error(data.error ?? "Không xử lý được yêu cầu."); return data as T; }
-function readError(error: unknown) { return error instanceof Error ? error.message : "Có lỗi xảy ra."; }
+const tien = (v: number) =>
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(v);
+
+async function layJson<T>(url: string): Promise<T> {
+  const r = await fetch(url);
+  const d = (await r.json()) as T & { error?: string };
+  if (!r.ok) throw new Error(d.error ?? "Không đọc được dữ liệu.");
+  return d;
+}
+async function guiJson<T>(url: string, body: unknown): Promise<T> {
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const d = (await r.json()) as T & { error?: string };
+  if (!r.ok) throw new Error(d.error ?? "Không xử lý được yêu cầu.");
+  return d;
+}
+const docLoi = (e: unknown) => (e instanceof Error ? e.message : "Có lỗi xảy ra.");

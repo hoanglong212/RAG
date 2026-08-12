@@ -77,6 +77,16 @@
   --dong-body: 1.7;
   --dong-tieu-de: 1.3;
 
+  /* ---------- Độ nổi ---------- */
+
+  /**
+   * Thẻ giấy sáng hơn nền khay nên đã tự nổi lên; bóng chỉ để bắt mép, cố ý
+   * gần như không thấy. Không dùng bóng lớn — sản phẩm này là dụng cụ, không
+   * phải một chồng thẻ bay lơ lửng.
+   */
+  --do-noi: 0 1px 2px rgb(20 24 31 / 0.05), 0 1px 1px rgb(20 24 31 / 0.03);
+  --do-noi-cao: 0 12px 28px -8px rgb(20 24 31 / 0.18);
+
   /* ---------- Hình khối ---------- */
 
   /** Bo góc khác 0 là cách chủ động rời khỏi thẩm mỹ ấn phẩm in. */
