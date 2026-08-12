@@ -1,7 +1,33 @@
-import type { ChunkParse } from "../parser";
+import type { ChunkParse, DocNodeParse } from "../parser";
 
 export const FIXED_CHUNK_TOKENS = 512;
 export const FIXED_CHUNK_OVERLAP = 64;
+
+/**
+ * Tao corpus canonical tu cac node da nhan dang, moi noi dung chi xuat hien mot lan.
+ * Fixed va structural nhờ vậy so sanh tren cung phan than van ban phap ly; fixed
+ * khong bi chen them header/can-cu ma structural khong chunk.
+ */
+export function buildFixedCorpusText(nodes: DocNodeParse[]): string {
+  return [...nodes]
+    .sort((left, right) => left.order_index - right.order_index)
+    .map((node) => {
+      const ordinal = node.so_thu_tu ?? "";
+      let heading = "";
+      if (node.node_type === "chuong") heading = `Chương ${ordinal}`.trim();
+      if (node.node_type === "muc") heading = `Mục ${ordinal}`.trim();
+      if (node.node_type === "dieu") heading = `Điều ${ordinal}`.trim();
+      if (node.node_type === "khoan") heading = ordinal === "" ? "" : `${ordinal}.`;
+      if (node.node_type === "diem") heading = ordinal === "" ? "" : `${ordinal})`;
+      if (node.node_type === "phu_luc") heading = node.tieu_de ?? `PHỤ LỤC ${ordinal}`.trim();
+      if (node.node_type !== "phu_luc" && node.tieu_de) {
+        heading = `${heading}${heading === "" ? "" : ". "}${node.tieu_de}`;
+      }
+      return [heading, node.noi_dung].filter((part) => part.trim() !== "").join("\n");
+    })
+    .filter((part) => part !== "")
+    .join("\n");
+}
 
 /** Baseline de so sanh voi structural chunking: cua so 512 tu, chong lan 64 tu. */
 export function createFixedChunks(

@@ -77,9 +77,9 @@ npm run ingest
 Mỗi tài liệu được parse một lần thành `doc_nodes`. Pipeline đồng thời sinh:
 
 - `structural`: theo Điều/Khoản/Điểm, tối đa 800 token, bắt buộc có `node_id`;
-- `fixed`: cửa sổ 512 token, chồng lấn 64 token, luôn để `node_id = null`.
+- `fixed`: dựng một lần thân văn bản canonical từ các node đã nhận dạng, rồi cắt cửa sổ 512 token với chồng lấn 64 token; luôn để `node_id = null`.
 
-Flag `--require-structural` loại khỏi corpus nghiệm thu những trang mà parser không tạo được structural chunk. Nhờ vậy cả hai strategy đều chạy trên đúng cùng 50 `document_id`; hệ thống không dựng node giả cho văn bản thiếu cấu trúc.
+Flag `--require-structural` loại khỏi corpus nghiệm thu những trang mà parser không tạo được structural chunk. Nhờ vậy cả hai strategy đều chạy trên đúng cùng 50 `document_id` và cùng phần thân pháp lý; header/căn cứ trước Điều không bị đưa riêng vào fixed. Hệ thống không dựng node giả cho văn bản thiếu cấu trúc.
 
 ## SQL nghiệm thu Phase 2
 
@@ -98,9 +98,9 @@ SELECT min(vector_dims(embedding)), max(vector_dims(embedding)) FROM chunks;
 Snapshot đã kiểm chứng ngày 2026-08-12:
 
 - `documents`: 50 `hoan_tat`;
-- `chunks`: 328 fixed trên 50 văn bản, 1.663 structural trên 50 văn bản;
-- tổng token đếm theo khoảng trắng: 159.741 fixed (có tính phần chồng lấn) và 120.109 structural;
-- fixed bỏ phần chồng lấn còn 141.949 token duy nhất; structural chỉ tính nội dung parser gắn được vào node Điều/Phụ lục nên phần đầu trước Điều không được đưa vào chunk;
+- `chunks`: 305 fixed trên 50 văn bản, 1.663 structural trên 50 văn bản;
+- tổng token đếm theo khoảng trắng: 143.761 fixed (có tính phần chồng lấn) và 120.109 structural;
+- fixed bỏ phần chồng lấn còn 127.441 token duy nhất, bằng 106,1% structural; phần chênh nhỏ là nhãn/tựa node được giữ trong corpus fixed;
 - `doc_nodes`: 3.379;
 - vector: tất cả 768 chiều;
 - ràng buộc node: 0 structural thiếu node, 0 fixed có node.

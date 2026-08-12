@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildFixedCorpusText,
   createFixedChunks,
   FIXED_CHUNK_OVERLAP,
   FIXED_CHUNK_TOKENS,
 } from "./fixed";
+import type { DocNodeParse } from "../parser";
 
 describe("createFixedChunks", () => {
   it("cat baseline 512 token, overlap 64 va khong gan node cau truc", () => {
@@ -27,6 +29,37 @@ describe("createFixedChunks", () => {
   it("tu choi overlap khong nho hon kich thuoc chunk", () => {
     expect(() => createFixedChunks("mot hai ba", "Mẫu", 3, 3)).toThrow(
       "Overlap fixed chunk phai tu 0 den nho hon kich thuoc chunk.",
+    );
+  });
+
+  it("dung corpus canonical theo thu tu node va khong lay phan dau ngoai cau truc", () => {
+    const nodes: DocNodeParse[] = [
+      {
+        key: "dieu:1/khoan:1",
+        parent_key: "dieu:1",
+        node_type: "khoan",
+        so_thu_tu: "1",
+        tieu_de: null,
+        noi_dung: "Nội dung khoản.",
+        breadcrumb: "Điều 1 > Khoản 1",
+        order_index: 1,
+        depth: 1,
+      },
+      {
+        key: "dieu:1",
+        parent_key: null,
+        node_type: "dieu",
+        so_thu_tu: "1",
+        tieu_de: "Phạm vi",
+        noi_dung: "Nội dung mở đầu.",
+        breadcrumb: "Điều 1",
+        order_index: 0,
+        depth: 0,
+      },
+    ];
+
+    expect(buildFixedCorpusText(nodes)).toBe(
+      "Điều 1. Phạm vi\nNội dung mở đầu.\n1.\nNội dung khoản.",
     );
   });
 });

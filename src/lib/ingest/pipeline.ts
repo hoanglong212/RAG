@@ -12,7 +12,7 @@ import {
   type MetadataVanBan,
 } from "../parser";
 import { extractDocument, type ExtractedDocument, type SourceDocument } from "./extract";
-import { createFixedChunks } from "./fixed";
+import { buildFixedCorpusText, createFixedChunks } from "./fixed";
 
 export interface PersistedChunk extends ChunkParse {
   strategy: "structural" | "fixed";
@@ -71,7 +71,8 @@ export async function ingestDocument(
     });
     const parsed = parseVanBan(extracted.text, { tenFile: safeName });
     const documentLabel = parsed.metadata.so_hieu ?? safeName;
-    const fixedChunks = createFixedChunks(extracted.text, documentLabel);
+    const canonicalBody = buildFixedCorpusText(parsed.nodes);
+    const fixedChunks = createFixedChunks(canonicalBody || extracted.text, documentLabel);
     const chunks = [
       ...parsed.chunks.map((chunk) => ({ ...chunk, strategy: "structural" as const })),
       ...fixedChunks.map((chunk) => ({
