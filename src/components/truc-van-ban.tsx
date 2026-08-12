@@ -20,6 +20,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { DocNode } from "@/types/contract";
 import { NHAN_NODE } from "@/types/nhan";
+import { ConDau } from "@/components/kit/con-dau";
 import { cn } from "@/lib/utils";
 
 /** Tổng số ký tự của node và toàn bộ con cháu. */
@@ -110,7 +111,7 @@ export function TrucVanBan({
       aria-label="Trục văn bản"
       className={cn("flex w-14 flex-col bg-khay lg:w-52 xl:w-72", className)}
     >
-      <div className="shrink-0 px-2 pb-2 pt-3 lg:px-3">
+      <div className="ke-quoc-hieu mx-2 shrink-0 pb-2.5 pt-3.5 lg:mx-3">
         <p className="nhan-hoa text-center lg:text-left">
           <span className="lg:hidden" title={soHieu ?? "Trục văn bản"}>
             Trục
@@ -118,7 +119,7 @@ export function TrucVanBan({
           <span className="hidden lg:inline">Trục văn bản</span>
         </p>
         <p
-          className="so-hieu mt-1 hidden truncate text-muc-in lg:block"
+          className="so-hieu mt-1.5 hidden truncate text-[0.9375rem] font-medium text-muc-in lg:block"
           title={soHieu ?? undefined}
         >
           {soHieu ?? "Không có số hiệu"}
@@ -129,17 +130,19 @@ export function TrucVanBan({
         {hang.map((h) => {
           if (h.kieu === "nhom") {
             return (
-              <li key={h.node.id} className="px-2 pb-1 pt-4 lg:px-3">
-                {/* Chế độ hẹp: ranh giới Chương thành một vạch ngăn. */}
-                <div
-                  aria-hidden
-                  className="mx-auto h-px w-6 bg-nhan/50 lg:hidden"
-                />
-                <p className="nhan-hoa hidden lg:block">
-                  {NHAN_NODE[h.node.type]} {h.node.soThuTu}
+              <li
+                key={h.node.id}
+                className="mt-5 border-t-2 border-muc-in/25 px-2 pb-1.5 pt-2.5 first:mt-0 lg:px-3"
+              >
+                {/* Chế độ hẹp: ranh giới Chương thu thành một vạch ngăn. */}
+                <div aria-hidden className="mx-auto h-px w-6 bg-muc-in/30 lg:hidden" />
+                <p className="hidden font-semibold text-muc-in lg:block">
+                  <span className="nhan-hoa !text-muc-in">
+                    {NHAN_NODE[h.node.type]} {h.node.soThuTu}
+                  </span>
                 </p>
                 {h.node.tieuDe ? (
-                  <p className="mt-0.5 hidden text-[0.8125rem] leading-snug text-nhan xl:block">
+                  <p className="mt-1 hidden text-[0.8125rem] leading-snug text-nhan xl:block">
                     {h.node.tieuDe}
                   </p>
                 ) : null}
@@ -160,10 +163,10 @@ export function TrucVanBan({
                 aria-current={dangNeo ? "true" : undefined}
                 title={`Điều ${h.node.soThuTu}${h.node.tieuDe ? ` — ${h.node.tieuDe}` : ""}`}
                 className={cn(
-                  "group flex w-full items-start gap-2.5 py-1 text-left",
+                  "group relative flex w-full items-start gap-3 py-1.5 text-left",
                   "justify-center px-2 lg:justify-start lg:pl-3 lg:pr-2",
                   "transition-colors duration-[--nhip]",
-                  dangNeo ? "bg-khay-sau" : "hover:bg-khay-sau",
+                  dangNeo ? "bg-neo-vang" : "hover:bg-khay-sau",
                 )}
               >
                 {/* Vạch mật độ: cao tỉ lệ với độ dài Điều. */}
@@ -171,37 +174,32 @@ export function TrucVanBan({
                   aria-hidden
                   style={{ height: `${cao}px` }}
                   className={cn(
-                    "mt-1 w-[3px] shrink-0 rounded-[1px] transition-colors duration-[--nhip]",
-                    dangNeo ? "bg-dau-do" : "bg-nhan/70 group-hover:bg-but-xanh",
+                    "mt-1 w-1 shrink-0 rounded-[1px] transition-colors duration-[--nhip]",
+                    dangNeo ? "bg-dau-do" : "bg-muc-in/30 group-hover:bg-but-xanh",
                   )}
                 />
-                {/* Chế độ hẹp: dấu chứng thực đứng cạnh vạch, vì không có chữ. */}
-                {dangNeo ? (
-                  <span
-                    aria-hidden
-                    className="mt-2 size-1.5 shrink-0 rounded-full bg-dau-do lg:hidden"
-                  />
-                ) : null}
+                {/* Chế độ hẹp: con dấu thu nhỏ đứng cạnh vạch, vì không có chữ. */}
+                {dangNeo ? <ConDau co={12} className="mt-1.5 lg:hidden" /> : null}
 
-                <span className="hidden min-w-0 flex-1 py-0.5 lg:block">
-                  <span
-                    className={cn(
-                      "block text-[0.8125rem] font-medium",
-                      dangNeo ? "text-dau-do" : "text-muc-in",
-                    )}
-                  >
-                    Điều {h.node.soThuTu}
-                    {dangNeo ? (
-                      // Dấu chứng thực. Chỉ xuất hiện ở đúng chỗ có trích dẫn.
-                      <span aria-label="Đang trích dẫn" className="ml-1.5 text-dau-do">
-                        ●
+                <span className="hidden min-w-0 flex-1 items-baseline py-0.5 lg:flex lg:gap-2">
+                  <span className="min-w-0 flex-1">
+                    <span
+                      className={cn(
+                        "block text-[0.875rem] font-semibold",
+                        dangNeo ? "text-dau-do" : "text-muc-in",
+                      )}
+                    >
+                      Điều <span className="font-ma tabular-nums">{h.node.soThuTu}</span>
+                    </span>
+                    {h.node.tieuDe ? (
+                      <span className="mt-0.5 hidden text-xs leading-snug text-nhan xl:block">
+                        {h.node.tieuDe}
                       </span>
                     ) : null}
                   </span>
-                  {h.node.tieuDe ? (
-                    <span className="mt-0.5 hidden text-xs leading-snug text-nhan xl:block">
-                      {h.node.tieuDe}
-                    </span>
+                  {/* Dấu chứng thực. Chỉ xuất hiện ở đúng chỗ có trích dẫn. */}
+                  {dangNeo ? (
+                    <ConDau co={20} dangDong className="mt-0.5 shrink-0" />
                   ) : null}
                 </span>
               </button>

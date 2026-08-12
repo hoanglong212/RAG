@@ -9,6 +9,7 @@
  */
 
 import { Nut, The } from "@/components/kit/co-ban";
+import { ConDau } from "@/components/kit/con-dau";
 import { cn } from "@/lib/utils";
 
 const soVN = (n: number) => n.toFixed(2).replace(".", ",");
@@ -24,13 +25,28 @@ export interface TrangThaiRongProps {
 export function TrangThaiRong({ cauHoiGoiY, onChonCauHoi }: TrangThaiRongProps) {
   return (
     <div className="py-2">
-      <h2 className="text-base font-semibold">Hỏi một câu, nhận về đúng Điều</h2>
-      <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-nhan">
-        Mỗi câu trả lời đều neo tới Điều, Khoản trong văn bản gốc để bạn tự kiểm chứng.
-        Nếu không đủ căn cứ, hệ thống nói thẳng là không tìm thấy chứ không đoán.
-      </p>
+      {/*
+        Màn hình mở màn là chỗ duy nhất được phép to tiếng. Con dấu ở đây
+        KHÔNG phá kỷ luật màu: nó đứng cạnh chính lời hứa về trích dẫn, và
+        lời hứa đó là nghĩa của màu đỏ trong sản phẩm này.
+      */}
+      <div className="flex items-start gap-4">
+        <ConDau co={44} className="mt-1 hidden sm:block" />
+        <div className="min-w-0">
+          <h2 className="chu-trung-bay text-[1.75rem] sm:text-[2.125rem]">
+            Hỏi một câu.
+            <br />
+            Nhận về đúng Điều.
+          </h2>
+          <p className="mt-3 max-w-lg text-[0.9375rem] leading-relaxed text-nhan">
+            Mỗi câu trả lời đều đóng dấu về Điều, Khoản trong văn bản gốc để bạn tự kiểm
+            chứng. Không đủ căn cứ thì hệ thống nói thẳng là không tìm thấy, chứ không
+            đoán.
+          </p>
+        </div>
+      </div>
 
-      <p className="nhan-hoa mt-6">Thử một câu</p>
+      <p className="nhan-hoa mt-8">Thử một câu</p>
       <ul className="mt-2 flex flex-col gap-1.5">
         {cauHoiGoiY.map((cau) => (
           <li key={cau}>

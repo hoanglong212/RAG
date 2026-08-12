@@ -1,19 +1,20 @@
 "use client";
 
 /**
- * Thanh điều hướng.
+ * Thanh điều hướng — dải mực đen ở đỉnh màn hình.
  *
- * Tám mục dàn hàng ngang như trước là quá nhiều để quét bằng mắt, và khi hẹp
- * thì chúng xuống dòng làm thanh trên cao gấp đôi. Ở đây chia hai nhóm theo
- * việc người dùng làm — tra cứu và tra soát bên trái, vận hành hệ thống đẩy
- * sang phải — và cuộn ngang thay vì xuống dòng.
+ * Nền tối là chủ ý, và nó không phải bẫy thẩm mỹ "nền gần đen + một màu chói":
+ * thân trang vẫn là giấy sáng. Dải mực này đóng vai trò cái gáy của công văn —
+ * nó cho sản phẩm một mép cứng ở trên, và làm ba tầng nền bên dưới (bàn, khay,
+ * giấy) đọc ra được thành ba tầng thật thay vì ba sắc xám na ná nhau.
  *
- * Mục đang mở được nhấc khỏi khay: nền giấy + bóng nhẹ. Cùng một phép ẩn dụ
- * với toàn bộ sản phẩm — dụng cụ đang cầm thì nổi lên khỏi khay đựng.
+ * Mục đang mở được NHẤC HẲN khỏi dải mực thành một thẻ giấy trắng. Cùng phép
+ * ẩn dụ với toàn bộ sản phẩm: dụng cụ đang cầm thì rời khỏi khay đựng.
  */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ConDau } from "./con-dau";
 import { cn } from "@/lib/utils";
 
 const CHINH = [
@@ -40,11 +41,11 @@ function Muc({ href, nhan, mo }: { href: string; nhan: string; mo: boolean }) {
       href={href}
       aria-current={mo ? "page" : undefined}
       className={cn(
-        "shrink-0 rounded-[--bo] px-2.5 py-1.5 text-[0.8125rem] font-medium",
-        "transition-[background-color,color,box-shadow] duration-[--nhip]",
+        "shrink-0 rounded-[--bo] px-3 py-1.5 text-[0.8125rem] font-medium",
+        "transition-[background-color,color] duration-[--nhip]",
         mo
-          ? "bg-giay text-muc-in shadow-the"
-          : "text-nhan hover:bg-khay-sau hover:text-muc-in",
+          ? "bg-giay text-muc-in shadow-vua"
+          : "text-giay/60 hover:bg-giay/10 hover:text-giay",
       )}
     >
       {nhan}
@@ -56,25 +57,27 @@ export function DieuHuong() {
   const duongDan = usePathname();
 
   return (
-    <header className="flex shrink-0 items-center gap-3 px-3 py-2 sm:px-4">
-      <Link href="/" className="group flex shrink-0 items-center gap-2 pr-1">
-        {/* Dấu mực: hình vuông xoay, gợi con dấu đóng lệch trên công văn. */}
-        <span
-          aria-hidden
-          className="size-2.5 rotate-45 rounded-[1px] bg-muc-in transition-transform duration-[--nhip-cham] group-hover:rotate-[135deg]"
-        />
-        <span className="text-sm font-semibold tracking-[-0.01em]">Tra cứu văn bản</span>
+    <header className="flex shrink-0 items-center gap-3 bg-muc-in px-3 py-2.5 sm:px-4">
+      <Link
+        href="/"
+        className="group flex shrink-0 items-center gap-2.5 pr-2"
+        aria-label="Trang tra cứu"
+      >
+        <ConDau co={22} className="transition-transform duration-[--nhip-cham] group-hover:rotate-[5deg]" />
+        <span className="hidden text-sm font-semibold tracking-[-0.01em] text-giay sm:block">
+          Tra cứu văn bản
+        </span>
       </Link>
 
       <nav
         aria-label="Điều hướng chính"
-        className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]{display:none}"
+        className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]"
       >
         {CHINH.map((m) => (
           <Muc key={m.href} href={m.href} nhan={m.nhan} mo={dangMo(duongDan, m.href)} />
         ))}
 
-        <span aria-hidden className="mx-1.5 h-4 w-px shrink-0 bg-ke-mo" />
+        <span aria-hidden className="mx-2 h-4 w-px shrink-0 bg-giay/20" />
 
         {HE_THONG.map((m) => (
           <Muc key={m.href} href={m.href} nhan={m.nhan} mo={dangMo(duongDan, m.href)} />

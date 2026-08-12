@@ -9,6 +9,7 @@
 import { useEffect, useRef } from "react";
 import type { DocNode } from "@/types/contract";
 import { NHAN_NODE } from "@/types/nhan";
+import { ConDau } from "@/components/kit/con-dau";
 import { cn } from "@/lib/utils";
 
 function NodeVanBan({
@@ -76,11 +77,19 @@ function NodeVanBan({
       id={`node-${node.id}`}
       ref={dangNeo ? refNeo : undefined}
       className={cn(
-        "scroll-mt-6 transition-colors duration-[--nhip-cham]",
-        // Nền vàng nhạt + kẻ đỏ: cùng hệ nghĩa với chấm đỏ trên chip trích dẫn.
-        dangNeo && "-mx-3 border-l-2 border-dau-do bg-neo-vang px-3 py-1",
+        "relative scroll-mt-6 transition-colors duration-[--nhip-cham]",
+        // Nền vàng nhạt + kẻ đỏ: cùng hệ nghĩa với con dấu trên chip trích dẫn.
+        dangNeo && "-mx-4 border-l-[3px] border-dau-do bg-neo-vang px-4 py-2",
       )}
     >
+      {/* Con dấu đóng đè lên mép đoạn được trích, như dấu giáp lai trên giấy. */}
+      {dangNeo ? (
+        <ConDau
+          co={34}
+          dangDong
+          className="absolute -right-1 -top-3 z-10 sm:-right-3"
+        />
+      ) : null}
       {noiDung}
       {node.children.map((con) => (
         <NodeVanBan

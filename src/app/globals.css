@@ -14,13 +14,17 @@
  */
 @theme inline {
   --color-muc-in: var(--muc-in);
+  --color-muc-mo: var(--muc-mo);
+  --color-ban: var(--ban);
   --color-giay: var(--giay);
   --color-khay: var(--khay);
   --color-khay-sau: var(--khay-sau);
   --color-dau-do: var(--dau-do);
+  --color-dau-do-loang: var(--dau-do-loang);
   --color-neo-vang: var(--neo-vang);
   --color-but-xanh: var(--but-xanh);
   --color-but-xanh-sau: var(--but-xanh-sau);
+  --color-but-xanh-nhat: var(--but-xanh-nhat);
   --color-nhan: var(--nhan);
   --color-ke-mo: var(--ke-mo);
 
@@ -34,6 +38,7 @@
   --radius-xl: var(--bo-lon);
 
   --shadow-the: var(--do-noi);
+  --shadow-vua: var(--do-noi-vua);
   --shadow-noi: var(--do-noi-cao);
 
   /* Ánh xạ sang tên của shadcn/ui. */
@@ -69,7 +74,7 @@
   }
 
   body {
-    @apply bg-khay text-muc-in;
+    @apply bg-ban text-muc-in;
     text-rendering: optimizeLegibility;
   }
 
@@ -90,17 +95,34 @@
     outline-offset: 2px;
     border-radius: var(--bo);
   }
+
+  ::selection {
+    background: var(--neo-vang);
+    color: var(--muc-in);
+  }
 }
 
 @layer components {
   /**
-   * Mặt đọc — vùng duy nhất trong sản phẩm dùng serif.
-   * Đặt ở đây chứ không rải class vào component để ranh giới
-   * dụng cụ / tài liệu chỉ có một chỗ định nghĩa.
+   * Mặt đọc — vùng duy nhất trong sản phẩm dùng serif, và vùng duy nhất có
+   * vân giấy. Vân là những dòng kẻ ngang cực mờ, gợi giấy kẻ ngang mà không
+   * đọc ra thành dòng kẻ; đủ để mắt phân biệt "tờ giấy" với "một hộp trắng
+   * nữa". Đây là chỗ khái niệm dụng cụ/tài liệu thành vật chất.
+   *
+   * KHÔNG dùng feTurbulence: `opacity` trên phần tử đã lọc bị bỏ qua ở một
+   * số trình duyệt, và khi đó nhiễu vẽ ở cường độ đầy — cả mặt đọc thành
+   * đen kịt. Vân kẻ bằng gradient thì xác định được, không có đường hỏng.
    */
   .mat-doc {
     @apply bg-giay font-doc text-muc-in;
     line-height: var(--dong-body);
+    background-image: repeating-linear-gradient(
+      180deg,
+      rgb(16 20 27 / 0.016) 0px,
+      rgb(16 20 27 / 0.016) 1px,
+      transparent 1px,
+      transparent 5px
+    );
   }
 
   /** Số hiệu văn bản: mã định danh, không phải văn xuôi. */
@@ -122,5 +144,68 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
     line-height: 1.4;
+  }
+
+  /**
+   * Chữ trưng bày. Dùng cho con số lớn và tiêu đề mở màn — chỗ duy nhất
+   * được phép to. Không có tương phản cỡ chữ thì mọi thứ đều 13px và mắt
+   * không có chỗ bám.
+   */
+  .chu-trung-bay {
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  /**
+   * Dải quốc hiệu: hai vạch song song dày mỏng, lấy từ đường kẻ dưới phần
+   * tiêu ngữ của công văn giấy.
+   */
+  .ke-quoc-hieu {
+    border-bottom: 3px solid var(--muc-in);
+    box-shadow: 0 5px 0 -4px var(--muc-in);
+  }
+}
+
+@layer utilities {
+  /** Động tác đóng dấu: xoay nhẹ và nện xuống. */
+  @keyframes dong-dau {
+    0% {
+      opacity: 0;
+      transform: rotate(-18deg) scale(1.6);
+    }
+    60% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+      transform: rotate(-7deg) scale(1);
+    }
+  }
+
+  .dong-dau {
+    animation: dong-dau var(--nhip-cham) var(--duong-cong-dong-dau) both;
+  }
+
+  @keyframes hien-len {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .hien-len {
+    animation: hien-len var(--nhip-cham) var(--duong-cong) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dong-dau,
+    .hien-len {
+      animation: none;
+    }
   }
 }

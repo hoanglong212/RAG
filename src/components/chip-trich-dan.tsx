@@ -11,6 +11,7 @@
  */
 
 import type { Citation } from "@/types/contract";
+import { ConDau } from "@/components/kit/con-dau";
 import { cn } from "@/lib/utils";
 
 /** "Chương II > Điều 8 > Khoản 3" → "Điều 8 · Khoản 3". */
@@ -48,13 +49,10 @@ export function ChipTrichDan({
         dangChon && "shadow-noi [box-shadow:inset_0_0_0_1px_var(--dau-do),var(--do-noi)]",
       )}
     >
-      <span
-        aria-hidden
-        className="mt-[7px] size-1.5 shrink-0 rounded-full bg-dau-do"
-      />
+      {/* Con dấu mang luôn số thứ tự, nên không cần lặp lại "[n]" bằng chữ. */}
+      <ConDau co={26} soThuTu={soThuTu} dangDong={dangChon} className="mt-0.5" />
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline gap-2">
-          <span className="text-[0.8125rem] font-semibold text-dau-do">[{soThuTu}]</span>
           <span className="so-hieu truncate text-nhan">{trichDan.soHieu}</span>
           <span className="so-hieu ml-auto shrink-0 text-xs tabular-nums text-nhan">
             {trichDan.score.toFixed(2).replace(".", ",")}

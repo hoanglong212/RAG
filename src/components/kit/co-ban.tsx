@@ -150,12 +150,18 @@ export function KhungTrang({
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className={cn("mx-auto px-4 pb-16 pt-6 sm:px-6", beRong)}>
-        <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+      <div className={cn("mx-auto px-4 pb-16 pt-7 sm:px-6", beRong)}>
+        {/*
+          Đầu trang mượn cách bày của công văn giấy: khối tiêu đề, rồi một dải
+          kẻ dày mỏng song song đóng lại phần tiêu ngữ. Cỡ chữ ở đây cố tình
+          lớn hẳn so với phần thân — không có tương phản cỡ chữ thì cả trang
+          đều 13px và mắt không có chỗ bám.
+        */}
+        <header className="ke-quoc-hieu flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pb-4">
           <div className="min-w-0">
-            <h1 className="text-xl font-semibold tracking-[-0.01em]">{tieuDe}</h1>
+            <h1 className="chu-trung-bay text-[1.75rem] sm:text-[2rem]">{tieuDe}</h1>
             {moTa ? (
-              <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-nhan">{moTa}</p>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-nhan">{moTa}</p>
             ) : null}
           </div>
           {hanhDong ? (
@@ -181,11 +187,14 @@ export function OSoLieu({
   phu?: string;
 }) {
   return (
-    <The className="flex flex-col justify-between gap-3">
+    <The className="flex flex-col justify-between gap-4">
       <p className="nhan-hoa">{nhan}</p>
       <div>
-        <p className="so-hieu text-2xl leading-none text-muc-in">{giaTri}</p>
-        {phu ? <p className="mt-1.5 text-xs leading-relaxed text-nhan">{phu}</p> : null}
+        {/* Con số là thứ người ta tới đây để đọc, nên nó được cỡ chữ lớn nhất trang. */}
+        <p className="chu-trung-bay font-ma text-[2.25rem] tabular-nums text-muc-in">
+          {giaTri}
+        </p>
+        {phu ? <p className="mt-2 text-xs leading-relaxed text-nhan">{phu}</p> : null}
       </div>
     </The>
   );
