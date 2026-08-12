@@ -16,13 +16,12 @@ export const runtime = "nodejs";
 
 const querySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
   loai: z
     .enum(["nghi_dinh", "thong_tu", "quyet_dinh", "luat", "nghi_quyet", "cong_van", "khac"])
     .optional(),
   coQuan: z.string().trim().min(1).optional(),
 });
-
-const PAGE_SIZE = 20;
 
 export async function GET(request: Request) {
   const params = Object.fromEntries(new URL(request.url).searchParams.entries());
@@ -59,8 +58,8 @@ export async function GET(request: Request) {
         .where(where)
         .groupBy(documents.id)
         .orderBy(desc(documents.created_at))
-        .limit(PAGE_SIZE)
-        .offset((parsed.data.page - 1) * PAGE_SIZE),
+        .limit(parsed.data.pageSize)
+        .offset((parsed.data.page - 1) * parsed.data.pageSize),
       db.select({ value: count() }).from(documents).where(where),
     ]);
 

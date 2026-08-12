@@ -15,10 +15,13 @@ const BANG_CAN_CO = [
   "document_relations",
   "documents",
   "lan_chay_eval",
+  "legal_cases",
   "news_articles",
   "news_sources",
   "news_sync_runs",
   "truy_van",
+  "user_profiles",
+  "watchlists",
 ];
 
 const COT_D1_CAN_CO: Record<string, string[]> = {
@@ -90,7 +93,7 @@ async function main(): Promise<void> {
       console.error(`✗ Thiếu bảng: ${thieu.join(", ")}. Chạy: npm run db:migrate`);
       loi += 1;
     } else {
-      console.log(`✓ Đủ ${BANG_CAN_CO.length} bảng sau quyết định D1`);
+      console.log(`✓ Đủ ${BANG_CAN_CO.length} bảng bắt buộc của schema hiện tại`);
     }
 
     const cot = await sql<{ table_name: string; column_name: string }[]>`
@@ -108,7 +111,7 @@ async function main(): Promise<void> {
 
     const idx = await sql<{ indexname: string; indexdef: string }[]>`
       SELECT indexname, indexdef FROM pg_indexes
-      WHERE schemaname = 'public' AND tablename IN ('chunks', 'doc_nodes', 'documents', 'truy_van')
+      WHERE schemaname = 'public' AND tablename IN ('chunks', 'doc_nodes', 'documents', 'truy_van', 'legal_cases', 'watchlists')
       ORDER BY indexname`;
     console.log(`\nIndex (${idx.length}):`);
     for (const i of idx) console.log(`  ${i.indexname}`);
@@ -119,6 +122,8 @@ async function main(): Promise<void> {
       "chunks_strategy_idx",
       "doc_nodes_document_order_idx",
       "doc_nodes_parent_id_idx",
+      "legal_cases_user_updated_idx",
+      "watchlists_user_idx",
     ]) {
       if (!idx.some((i) => i.indexname === can)) {
         console.error(`✗ Thiếu index ${can}`);
@@ -166,7 +171,7 @@ async function main(): Promise<void> {
     console.error(`\n${loi} vấn đề cần xử lý.`);
     process.exit(1);
   }
-  console.log("\n✓ Database khớp quyết định D1 và sẵn sàng tiếp tục Phase 2.");
+  console.log("\n✓ Database khớp schema hiện tại và sẵn sàng phục vụ nền tảng.");
 }
 
 main().catch((e: unknown) => {

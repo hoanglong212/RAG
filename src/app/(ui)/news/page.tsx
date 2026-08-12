@@ -17,6 +17,15 @@ interface NewsSource {
   name: string;
 }
 
+interface RelatedArticle {
+  id: string;
+  title: string;
+  summary: string | null;
+  url: string;
+  publishedAt: string | null;
+  source: NewsSource;
+}
+
 export default function TrangTinTuc() {
   const router = useRouter();
   const [data, setData] = useState<NewsResponse>({ items: [], total: 0 });
@@ -32,6 +41,7 @@ export default function TrangTinTuc() {
   const [loading, setLoading] = useState(true);
   const [checkingId, setCheckingId] = useState<string | null>(null);
   const [check, setCheck] = useState<{ articleId: string; result: LegalCheckResult } | null>(null);
+  const [related, setRelated] = useState<{ articleId: string; items: RelatedArticle[] } | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -78,6 +88,20 @@ export default function TrangTinTuc() {
       setCheck({ articleId, result: result as LegalCheckResult });
     } catch (error) {
       setLoi(error instanceof Error ? error.message : "Không đối chiếu được bài tin.");
+    } finally {
+      setCheckingId(null);
+    }
+  }
+
+  async function timTinLienQuan(articleId: string) {
+    setCheckingId(articleId);
+    try {
+      const response = await fetch(`/api/news/${encodeURIComponent(articleId)}/related`);
+      const result = (await response.json()) as RelatedArticle[] | { error?: string };
+      if (!response.ok) throw new Error("error" in result ? result.error : "Không tìm được tin liên quan.");
+      setRelated({ articleId, items: result as RelatedArticle[] });
+    } catch (error) {
+      setLoi(error instanceof Error ? error.message : "Không tìm được tin liên quan.");
     } finally {
       setCheckingId(null);
     }
@@ -151,12 +175,36 @@ export default function TrangTinTuc() {
                 <button
                   type="button"
                   disabled={checkingId === article.id}
+                  onClick={() => void timTinLienQuan(article.id)}
+                  className="ml-auto rounded-[--bo] border border-ke-mo px-3 py-1.5 text-xs font-medium text-nhan disabled:opacity-50"
+                >
+                  So sánh nhiều nguồn
+                </button>
+                <button
+                  type="button"
+                  disabled={checkingId === article.id}
                   onClick={() => void doiChieu(article.id)}
-                  className="ml-auto rounded-[--bo] border border-but-xanh/30 px-3 py-1.5 text-xs font-medium text-but-xanh disabled:opacity-50"
+                  className="rounded-[--bo] border border-but-xanh/30 px-3 py-1.5 text-xs font-medium text-but-xanh disabled:opacity-50"
                 >
                   {checkingId === article.id ? "Đang đối chiếu…" : "Đối chiếu pháp luật"}
                 </button>
               </div>
+
+              {related?.articleId === article.id ? (
+                <section className="mt-4 border-t border-ke-mo pt-4">
+                  <h3 className="nhan-hoa">Tin cùng chủ đề hoặc từ khóa</h3>
+                  {related.items.length > 0 ? (
+                    <div className="mt-2 grid gap-2 md:grid-cols-2">
+                      {related.items.map((item) => (
+                        <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="rounded-[--bo] bg-khay p-3 hover:bg-khay-sau">
+                          <span className="block text-xs font-medium text-nhan">{item.source.name}</span>
+                          <span className="mt-1 block text-sm font-medium leading-snug">{item.title}</span>
+                        </a>
+                      ))}
+                    </div>
+                  ) : <p className="mt-2 text-sm text-nhan">Chưa có bài từ nguồn khác đủ gần.</p>}
+                </section>
+              ) : null}
 
               {check?.articleId === article.id ? (
                 <section className="mt-4 border-t border-ke-mo pt-4">

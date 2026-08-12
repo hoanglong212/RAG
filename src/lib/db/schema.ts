@@ -324,6 +324,52 @@ export const news_sync_runs = pgTable("news_sync_runs", {
   finished_at: timestamp("finished_at", { withTimezone: true }),
 });
 
+/** Hồ sơ người dùng tối giản, gắn với cookie thiết bị ở bản MVP. */
+export const user_profiles = pgTable("user_profiles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  display_name: text("display_name").notNull().default("Người dùng"),
+  email: text("email"),
+  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Một hồ sơ tình huống đã lưu cùng kết quả đối chiếu tại thời điểm phân tích. */
+export const legal_cases = pgTable(
+  "legal_cases",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    user_id: uuid("user_id")
+      .notNull()
+      .references(() => user_profiles.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    scenario: text("scenario").notNull(),
+    topic: text("topic"),
+    status: text("status").notNull().default("draft"),
+    analysis: jsonb("analysis"),
+    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("legal_cases_user_updated_idx").on(t.user_id, t.updated_at.desc())],
+);
+
+/** Chủ đề/văn bản người dùng theo dõi; cảnh báo được tính từ dữ liệu mới nhất. */
+export const watchlists = pgTable(
+  "watchlists",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    user_id: uuid("user_id")
+      .notNull()
+      .references(() => user_profiles.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    topics: text("topics").array().notNull().default(sql`'{}'::text[]`),
+    document_ids: uuid("document_ids").array().notNull().default(sql`'{}'::uuid[]`),
+    last_seen_at: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("watchlists_user_idx").on(t.user_id)],
+);
+
 export type Document = typeof documents.$inferSelect;
 export type DocumentMoi = typeof documents.$inferInsert;
 export type DocumentRelation = typeof document_relations.$inferSelect;
@@ -337,3 +383,6 @@ export type LanChayEvalMoi = typeof lan_chay_eval.$inferInsert;
 export type NewsSource = typeof news_sources.$inferSelect;
 export type NewsArticle = typeof news_articles.$inferSelect;
 export type NewsSyncRun = typeof news_sync_runs.$inferSelect;
+export type UserProfile = typeof user_profiles.$inferSelect;
+export type LegalCase = typeof legal_cases.$inferSelect;
+export type Watchlist = typeof watchlists.$inferSelect;

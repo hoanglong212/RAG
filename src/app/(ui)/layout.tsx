@@ -13,7 +13,10 @@ const DIEU_HUONG = [
   { href: "/documents", nhan: "Kho văn bản" },
   { href: "/news", nhan: "Tin tức" },
   { href: "/legal-check", nhan: "Kiểm tra tình huống" },
+  { href: "/legal-tools", nhan: "Công cụ" },
+  { href: "/workspace", nhan: "Hồ sơ" },
   { href: "/dashboard", nhan: "Đo lường" },
+  { href: "/admin", nhan: "Quản trị" },
 ] as const;
 
 export default function KhungGiaoDien({
