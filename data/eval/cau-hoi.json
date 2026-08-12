@@ -1,1 +1,286 @@
-[]
+{
+  "schemaVersion": 1,
+  "description": "Bộ 40 câu hỏi vàng cho corpus pháp luật an toàn thực phẩm: 15 trực tiếp, 15 diễn đạt lại, 10 nhắc số hiệu văn bản.",
+  "questions": [
+    {
+      "id": "D01",
+      "group": "direct",
+      "question": "Bảo đảm an toàn thực phẩm là trách nhiệm của những ai?",
+      "source": { "soHieu": "55/2010/QH12", "dieu": 3, "khoan": 1 },
+      "answerText": "Bảo đảm an toàn thực phẩm là trách nhiệm của mọi tổ chức, cá nhân sản xuất, kinh doanh thực phẩm."
+    },
+    {
+      "id": "D02",
+      "group": "direct",
+      "question": "Cơ sở kinh doanh dịch vụ ăn uống phải có dụng cụ thu gom, chứa đựng rác thải, chất thải như thế nào?",
+      "source": { "soHieu": "55/2010/QH12", "dieu": 28, "khoan": 3 },
+      "answerText": "Có dụng cụ thu gom, chứa đựng rác thải, chất thải bảo đảm vệ sinh."
+    },
+    {
+      "id": "D03",
+      "group": "direct",
+      "question": "Giấy chứng nhận cơ sở đủ điều kiện an toàn thực phẩm có hiệu lực trong thời gian bao lâu?",
+      "source": { "soHieu": "55/2010/QH12", "dieu": 37, "khoan": 1 },
+      "answerText": "Giấy chứng nhận cơ sở đủ điều kiện an toàn thực phẩm có hiệu lực trong thời gian 03 năm."
+    },
+    {
+      "id": "D04",
+      "group": "direct",
+      "question": "Thực phẩm ghi “Hạn sử dụng” hoặc “Sử dụng đến ngày” có được bán khi đã quá thời hạn không?",
+      "source": { "soHieu": "38/2012/NĐ-CP", "dieu": 17, "khoan": 2 },
+      "answerText": "không được phép bán ra thị trường khi đã quá thời hạn này."
+    },
+    {
+      "id": "D05",
+      "group": "direct",
+      "question": "Thực phẩm bao gói sẵn phải ghi nhãn theo quy định nào?",
+      "source": { "soHieu": "38/2012/NĐ-CP", "dieu": 18, "khoan": 1 },
+      "answerText": "Các thực phẩm bao gói sẵn phải bắt buộc ghi nhãn theo quy định của pháp luật về ghi nhãn thực phẩm."
+    },
+    {
+      "id": "D06",
+      "group": "direct",
+      "question": "Nguồn nước sạch dùng để vệ sinh tại cơ sở phải được kiểm tra chất lượng, vệ sinh ít nhất bao lâu một lần?",
+      "source": { "soHieu": "16/2012/TT-BYT", "dieu": 4, "khoan": 3 },
+      "answerText": "phải được kiểm tra chất lượng, vệ sinh ít nhất 1 lần/năm."
+    },
+    {
+      "id": "D07",
+      "group": "direct",
+      "question": "Cơ sở sản xuất phải tổng vệ sinh ít nhất bao lâu một lần?",
+      "source": { "soHieu": "16/2012/TT-BYT", "dieu": 7, "khoan": 5 },
+      "answerText": "phải tổng vệ sinh cơ sở ít nhất 1 lần/Quý."
+    },
+    {
+      "id": "D08",
+      "group": "direct",
+      "question": "Chất lượng nguồn nước cấp cho cơ sở nuôi cá tra phải bảo đảm theo đâu?",
+      "source": { "soHieu": "44/2010/TT-BNNPTNT", "dieu": 3, "khoan": 3 },
+      "answerText": "Chất lượng nguồn nước cấp phải đảm bảo theo quy định tại phụ lục 1 của Thông tư này."
+    },
+    {
+      "id": "D09",
+      "group": "direct",
+      "question": "Khu vực sơ chế, bảo quản tôm nguyên liệu sau thu hoạch phải bố trí thế nào so với khu vực nuôi tôm?",
+      "source": { "soHieu": "45/2010/TT-BNNPTNT", "dieu": 4, "khoan": 4 },
+      "answerText": "phải cách ly với khu vực nuôi tôm."
+    },
+    {
+      "id": "D10",
+      "group": "direct",
+      "question": "Nội dung kiểm tra đối với người lao động bao gồm loại phiếu nào?",
+      "source": { "soHieu": "47/2010/TT-BCT", "dieu": 7, "khoan": 4 },
+      "answerText": "Phiếu khám sức khỏe đối với người lao động theo quy định của pháp luật;"
+    },
+    {
+      "id": "D11",
+      "group": "direct",
+      "question": "Phòng thử nghiệm phải đáp ứng yêu cầu kỹ thuật tại tiêu chuẩn nào?",
+      "source": { "soHieu": "54/2011/TT-BNNPTNT", "dieu": 5, "khoan": 1 },
+      "answerText": "TCVN ISO/IEC 17025:2007"
+    },
+    {
+      "id": "D12",
+      "group": "direct",
+      "question": "Đơn vị lấy mẫu giám sát thủy sản sau thu hoạch phải được trang bị những gì?",
+      "source": { "soHieu": "61/2012/TT-BNNPTNT", "dieu": 6, "khoan": 2 },
+      "answerText": "Được trang bị đầy đủ dụng cụ, trang thiết bị phục vụ lấy mẫu, bảo quản mẫu giám sát thủy sản sau thu hoạch."
+    },
+    {
+      "id": "D13",
+      "group": "direct",
+      "question": "Sản phẩm sau mỗi công đoạn phải được dán nhãn hoặc định dạng nhằm mục đích gì?",
+      "source": { "soHieu": "74/2011/TT-BNNPTNT", "dieu": 6, "khoan": 3 },
+      "answerText": "để dễ dàng truy xuất nguồn gốc."
+    },
+    {
+      "id": "D14",
+      "group": "direct",
+      "question": "Hành vi sử dụng chất, hóa chất quá thời hạn sử dụng hoặc không có thời hạn sử dụng bị phạt bao nhiêu?",
+      "source": { "soHieu": "115/2018/NĐ-CP", "dieu": 6, "khoan": 1 },
+      "answerText": "Phạt tiền từ 10.000.000 đồng đến 20.000.000 đồng"
+    },
+    {
+      "id": "D15",
+      "group": "direct",
+      "question": "Người trực tiếp chế biến thức ăn đang mắc những bệnh nào thì thuộc hành vi vi phạm được sửa đổi?",
+      "source": { "soHieu": "124/2021/NĐ-CP", "dieu": 1, "khoan": 7 },
+      "answerText": "tả, lỵ, thương hàn, viêm gan A, E, viêm da nhiễm trùng, lao phổi, tiêu chảy cấp"
+    },
+    {
+      "id": "P01",
+      "group": "paraphrase",
+      "question": "Việc điều hành an toàn đồ ăn cần được tổ chức giữa các cấp và các ngành theo nguyên tắc nào?",
+      "source": { "soHieu": "55/2010/QH12", "dieu": 3, "khoan": 5 },
+      "answerText": "phải bảo đảm phân công, phân cấp rõ ràng và phối hợp liên ngành."
+    },
+    {
+      "id": "P02",
+      "group": "paraphrase",
+      "question": "Muốn công bố công dụng của một thành phần tạo chức năng thì cần loại bằng chứng gì?",
+      "source": { "soHieu": "55/2010/QH12", "dieu": 14, "khoan": 2 },
+      "answerText": "Có thông tin, tài liệu khoa học chứng minh về tác dụng của thành phần tạo nên chức năng đã công bố."
+    },
+    {
+      "id": "P03",
+      "group": "paraphrase",
+      "question": "Khi cơ quan quản lý cần đánh giá rủi ro, những đối tượng nào trong chuỗi thực phẩm có thể được xem xét?",
+      "source": { "soHieu": "55/2010/QH12", "dieu": 49, "khoan": 4 },
+      "answerText": "Thực phẩm, cơ sở sản xuất, kinh doanh thực phẩm được phân tích nguy cơ theo yêu cầu quản lý."
+    },
+    {
+      "id": "P04",
+      "group": "paraphrase",
+      "question": "Một mặt hàng hay một cơ sở kinh doanh thực phẩm nên chịu sự quản lý của bao nhiêu đầu mối nhà nước?",
+      "source": { "soHieu": "38/2012/NĐ-CP", "dieu": 19, "khoan": 5 },
+      "answerText": "một sản phẩm, một cơ sở sản xuất, kinh doanh chỉ chịu sự quản lý của một cơ quan quản lý nhà nước."
+    },
+    {
+      "id": "P05",
+      "group": "paraphrase",
+      "question": "Cơ quan trung ương nào chịu trách nhiệm thống nhất quản lý nhà nước về an toàn đồ ăn?",
+      "source": { "soHieu": "38/2012/NĐ-CP", "dieu": 20, "khoan": 1 },
+      "answerText": "Bộ Y tế chịu trách nhiệm trước Chính phủ thực hiện thống nhất quản lý nhà nước về an toàn thực phẩm."
+    },
+    {
+      "id": "P06",
+      "group": "paraphrase",
+      "question": "Với một lỗi hành chính về an toàn đồ ăn, chế tài chính áp dụng cho người hoặc đơn vị vi phạm là gì?",
+      "source": { "soHieu": "115/2018/NĐ-CP", "dieu": 2, "khoan": 1 },
+      "answerText": "hình thức xử phạt chính là phạt tiền."
+    },
+    {
+      "id": "P07",
+      "group": "paraphrase",
+      "question": "Một chiến sĩ công an đang làm nhiệm vụ được phép xử phạt tối đa cá nhân và tổ chức ở mức nào?",
+      "source": { "soHieu": "115/2018/NĐ-CP", "dieu": 30, "khoan": 1 },
+      "answerText": "Phạt tiền đến 500.000 đồng đối với cá nhân và phạt tiền đến 1.000.000 đồng đối với tổ chức."
+    },
+    {
+      "id": "P08",
+      "group": "paraphrase",
+      "question": "Ai là người đứng đầu việc hướng dẫn và kiểm tra thực thi nghị định xử phạt an toàn thực phẩm?",
+      "source": { "soHieu": "115/2018/NĐ-CP", "dieu": 39, "khoan": 1 },
+      "answerText": "Bộ trưởng Bộ Y tế có trách nhiệm chủ trì hướng dẫn, tổ chức và kiểm tra việc thi hành Nghị định này."
+    },
+    {
+      "id": "P09",
+      "group": "paraphrase",
+      "question": "Nếu tự tay trộn chất lạ vào thủy sản thì mức tiền phạt được sửa thành bao nhiêu?",
+      "source": { "soHieu": "124/2021/NĐ-CP", "dieu": 1, "khoan": 5 },
+      "answerText": "Phạt tiền từ 3.000.000 đồng đến 5.000.000 đồng đối với hành vi trực tiếp đưa tạp chất vào thủy sản"
+    },
+    {
+      "id": "P10",
+      "group": "paraphrase",
+      "question": "Đổi hoặc bớt thành phần so với tiêu chuẩn đã công bố có thể bị tính tiền phạt theo bao nhiêu lần giá trị hàng đã bán?",
+      "source": { "soHieu": "124/2021/NĐ-CP", "dieu": 1, "khoan": 12, "diem": "b" },
+      "answerText": "Phạt tiền từ 02 lần đến 03 lần tổng giá trị sản phẩm thực phẩm vi phạm đã tiêu thụ"
+    },
+    {
+      "id": "P11",
+      "group": "paraphrase",
+      "question": "Kết quả cuối cùng của quá trình mô tả một mối rủi ro được gọi là gì?",
+      "source": { "soHieu": "02/2013/TT-BNNPTNT", "dieu": 3, "khoan": 12 },
+      "answerText": "Ước tính nguy cơ: là kết quả của quá trình mô tả nguy cơ."
+    },
+    {
+      "id": "P12",
+      "group": "paraphrase",
+      "question": "Kế hoạch ứng phó cho từng dạng sự cố cần nêu cụ thể những thành phần nào?",
+      "source": { "soHieu": "02/2013/TT-BNNPTNT", "dieu": 27, "khoan": 2 },
+      "answerText": "nêu rõ các bước triển khai và nguồn lực thực hiện;"
+    },
+    {
+      "id": "P13",
+      "group": "paraphrase",
+      "question": "Khi cấp lại chứng nhận an toàn thực phẩm, ngày hết hạn có được kéo dài so với giấy cũ không?",
+      "source": { "soHieu": "55/2011/TT-BNNPTNT", "dieu": 20, "khoan": 3 },
+      "answerText": "trùng với thời hạn hết hiệu lực của Giấy chứng nhận ATTP cũ."
+    },
+    {
+      "id": "P14",
+      "group": "paraphrase",
+      "question": "Nguy cơ mất an toàn từ quốc gia và nơi làm ra sản phẩm được dùng làm căn cứ cho quyết định chuyên môn nào?",
+      "source": { "soHieu": "68/2010/TT-BNNPTNT", "dieu": 2, "khoan": 2 },
+      "answerText": "Tình hình thực tế về nguy cơ gây mất an toàn thực phẩm từ nơi sản xuất, nước sản xuất;"
+    },
+    {
+      "id": "P15",
+      "group": "paraphrase",
+      "question": "Đề án tuyến tỉnh đặt ra mục tiêu năng lực nào liên quan đến ngộ độc và bệnh lây qua đồ ăn?",
+      "source": { "soHieu": "79/2008/NĐ-CP", "dieu": 1, "khoan": 1 },
+      "answerText": "kiểm soát chất lượng an toàn vệ sinh thực phẩm, phòng chống ngộ độc thực phẩm và các bệnh truyền qua thực phẩm"
+    },
+    {
+      "id": "I01",
+      "group": "identifier",
+      "question": "Theo Nghị định 115/2018/NĐ-CP, Điều 12 quy định biện pháp khắc phục hậu quả nào?",
+      "source": { "soHieu": "115/2018/NĐ-CP", "dieu": 12, "khoan": 3 },
+      "answerText": "Buộc thay đổi mục đích sử dụng hoặc tái chế thực phẩm hoặc buộc tiêu hủy thực phẩm"
+    },
+    {
+      "id": "I02",
+      "group": "identifier",
+      "question": "Theo Nghị định 115/2018/NĐ-CP, Tổ trưởng Tổ nghiệp vụ Cảnh sát biển có quyền phạt tối đa bao nhiêu?",
+      "source": { "soHieu": "115/2018/NĐ-CP", "dieu": 32, "khoan": 2 },
+      "answerText": "Phạt tiền đến 5.000.000 đồng đối với cá nhân và phạt tiền đến 10.000.000 đồng đối với tổ chức."
+    },
+    {
+      "id": "I03",
+      "group": "identifier",
+      "question": "Nghị định 115/2018/NĐ-CP thay thế văn bản nào về xử phạt vi phạm hành chính an toàn thực phẩm?",
+      "source": { "soHieu": "115/2018/NĐ-CP", "dieu": 36, "khoan": 2 },
+      "answerText": "Nghị định số 178/2013/NĐ-CP ngày 14 tháng 11 năm 2013"
+    },
+    {
+      "id": "I04",
+      "group": "identifier",
+      "question": "Nghị định 124/2021/NĐ-CP sửa hành vi vận chuyển chung thực phẩm với loại hàng hóa nào?",
+      "source": { "soHieu": "124/2021/NĐ-CP", "dieu": 1, "khoan": 4 },
+      "answerText": "cùng các loại hàng hóa khác có nguy cơ gây ô nhiễm thực phẩm."
+    },
+    {
+      "id": "I05",
+      "group": "identifier",
+      "question": "Theo điểm i khoản 12 Điều 1 Nghị định 124/2021/NĐ-CP, thiếu tài liệu nào cho nhân sự là vi phạm?",
+      "source": { "soHieu": "124/2021/NĐ-CP", "dieu": 1, "khoan": 12, "diem": "i" },
+      "answerText": "Không có bản mô tả công việc cho nhân sự chủ chốt, nhân sự có trách nhiệm và các nhóm nhân sự"
+    },
+    {
+      "id": "I06",
+      "group": "identifier",
+      "question": "Khoản 7 Điều 2 Nghị định 124/2021/NĐ-CP sửa mức phạt mở đầu của Điều 32 thành bao nhiêu?",
+      "source": { "soHieu": "124/2021/NĐ-CP", "dieu": 2, "khoan": 7 },
+      "answerText": "Phạt tiền từ 20.000.000 đồng đến 30.000.000 đồng"
+    },
+    {
+      "id": "I07",
+      "group": "identifier",
+      "question": "Khoản 2 Điều 3 Nghị định 124/2021/NĐ-CP bãi bỏ những quy định nào của Nghị định 115/2018/NĐ-CP?",
+      "source": { "soHieu": "124/2021/NĐ-CP", "dieu": 3, "khoan": 2 },
+      "answerText": "điểm a khoản 2 Điều 9, điểm d khoản 10 Điều 22, điểm b khoản 5 Điều 24"
+    },
+    {
+      "id": "I08",
+      "group": "identifier",
+      "question": "Theo Thông tư 55/2011/TT-BNNPTNT, giấy chứng nhận và chứng thư được đánh số theo phụ lục nào?",
+      "source": { "soHieu": "55/2011/TT-BNNPTNT", "dieu": 27, "khoan": 2 },
+      "answerText": "được đánh số theo quy định tại Phụ lục 12"
+    },
+    {
+      "id": "I09",
+      "group": "identifier",
+      "question": "Khoản 1 Điều 11 Thông tư 75/2011/TT-BNNPTNT liệt kê hành vi quảng cáo nào liên quan đến hiệu lực xác nhận?",
+      "source": { "soHieu": "75/2011/TT-BNNPTNT", "dieu": 11, "khoan": 1 },
+      "answerText": "quảng cáo sản phẩm thực phẩm đã được xác nhận nhưng hết hiệu lực;"
+    },
+    {
+      "id": "I10",
+      "group": "identifier",
+      "question": "Theo Nghị định 91/2012/NĐ-CP, Kiểm soát viên thị trường đang thi hành công vụ được phạt tiền đến bao nhiêu?",
+      "source": { "soHieu": "91/2012/NĐ-CP", "dieu": 35, "khoan": 1 },
+      "answerText": "Phạt tiền đến 200.000 đồng."
+    }
+  ]
+}

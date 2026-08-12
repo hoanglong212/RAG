@@ -46,3 +46,12 @@
 - Added secret-safe `GROQ_API_KEY` auto-detection with the OpenAI-compatible Groq Chat Completions endpoint and production model `llama-3.3-70b-versatile`; explicit `LLM_*` settings still override the defaults.
 - Live `/api/chat` acceptance for the maximum fine under `115/2018/NĐ-CP` emitted citations first, streamed the grounded Vietnamese answer with citation `[2]`, then emitted `done` with `status: ok` in 1,325 ms.
 - Automated verification: 55 tests, TypeScript strict check, ESLint, and production build pass.
+
+## 2026-08-12 — D10 evaluation
+
+- Added a 40-question gold set grounded in 15 corpus documents, with the required split: 15 direct, 15 paraphrased, and 10 exact-identifier questions. Every answer passage resolves to at least one real chunk under both `fixed` and `structural`, so the comparison does not reuse strategy-specific UUIDs as ground truth.
+- Replaced the eval stub with a reproducible E1–E3 runner, per-group metrics, `cau_hoi_eval` synchronization, `lan_chay_eval` persistence, `--validate-only`, and targeted `--replace`. Added live `GET /api/eval/runs` and `POST /api/eval/run` routes.
+- Fixed a hybrid-ranking defect found by the first live run: exact identifiers previously boosted every chunk in a document and equal-weight RRF displaced correct vector hits. Full-text now extracts and boosts matching Điều/Khoản/Điểm, excludes broad identifier-only fallbacks when semantic terms exist, and uses query-aware weighted RRF.
+- Final live matrix on the same 40 questions: E1 fixed/vector `Recall@5 62.5%`, `Recall@10 65.0%`, `MRR 46.0%`; E2 structural/vector `80.0%`, `85.0%`, `65.4%`; E3 structural/hybrid `80.0%`, `87.5%`, `59.2%`.
+- Interpretation: structural chunking is the main gain (`+17.5` points Recall@5). Hybrid keeps overall Recall@5 flat, raises Recall@10 by `2.5` points, and raises the exact-identifier subgroup from `90%` to `100%`; its lower MRR means it is not a universal ranking improvement and should be presented with that trade-off.
+- The set was prepared by Codex after explicit user authorization. A domain-owner review is still recommended before treating it as an independent held-out benchmark in the final report.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildTsQuery, extractLegalIdentifier } from "./fulltext";
-import { reciprocalRankFusion } from "./hybrid";
+import { buildTsQuery, extractLegalIdentifier, extractLegalLocator } from "./fulltext";
+import { lexicalWeightForQuestion, reciprocalRankFusion } from "./hybrid";
 import type { RetrievalResult } from "./vector";
 
 function result(chunkId: string, score: number): RetrievalResult {
@@ -36,5 +36,25 @@ describe("hybrid retrieval", () => {
     expect(buildTsQuery(question)).toContain("muc:*");
     expect(buildTsQuery(question)).toContain("toi:*");
     expect(buildTsQuery(question)).not.toContain("bao:*");
+  });
+
+  it("tách Điều, Khoản, Điểm để boost đúng node thay vì toàn văn bản", () => {
+    expect(extractLegalLocator("Theo điểm i khoản 12 Điều 1 Nghị định 124/2021/NĐ-CP")).toEqual({
+      dieu: 1,
+      khoan: 12,
+      diem: "i",
+    });
+  });
+
+  it("cho phép full-text bổ sung mà không lấn át trục vector", () => {
+    const vector = [result("vector-top", 0.9), result("shared", 0.8)];
+    const fulltext = [result("lexical-only", 0.9), result("shared", 0.8)];
+    const fused = reciprocalRankFusion([vector, fulltext], 3, 60, [1, 0.2]);
+    expect(fused.map((item) => item.chunkId)).toEqual(["shared", "vector-top", "lexical-only"]);
+  });
+
+  it("tăng trọng số lexical khi câu hỏi có số hiệu pháp lý chính xác", () => {
+    expect(lexicalWeightForQuestion("Mức phạt là bao nhiêu?")).toBe(0.05);
+    expect(lexicalWeightForQuestion("Theo 115/2018/NĐ-CP, mức phạt là bao nhiêu?")).toBe(0.2);
   });
 });

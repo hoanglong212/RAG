@@ -14,8 +14,15 @@ interface FulltextRow {
 
 const STOP_WORDS = new Set([
   "bao", "bang", "cac", "cho", "cua", "duoc", "gi", "la", "nhieu",
-  "dinh", "nghi", "nhung", "quy", "so", "the", "theo", "thi", "trong", "ve", "va",
+  "dieu", "diem", "dinh", "khoan", "nao", "nghi", "nhung", "quy", "so",
+  "the", "theo", "thi", "thong", "trong", "tu", "van", "ve", "va",
 ]);
+
+export interface LegalLocator {
+  dieu: number | null;
+  khoan: number | null;
+  diem: string | null;
+}
 
 /** Tạo OR-query an toàn; số hiệu được xử lý thêm bằng exact match ở SQL. */
 export function buildTsQuery(question: string): string {
@@ -33,6 +40,19 @@ export function extractLegalIdentifier(question: string): string | null {
   return question.match(/\b\d{1,4}\/\d{4}\/[A-ZĐ0-9]+(?:-[A-ZĐ0-9]+)*\b/i)?.[0] ?? null;
 }
 
+export function extractLegalLocator(question: string): LegalLocator {
+  const plain = question
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/gi, "d")
+    .toLowerCase();
+  return {
+    dieu: readNumber(plain, /\bdieu\s+(\d+)\b/),
+    khoan: readNumber(plain, /\bkhoan\s+(\d+)\b/),
+    diem: plain.match(/\bdiem\s+([a-z])\b/)?.[1] ?? null,
+  };
+}
+
 /** Full-text tiếng Việt dùng simple + f_unaccent, cộng boost cho số hiệu chính xác. */
 export async function fulltextSearch(
   question: string,
@@ -40,7 +60,10 @@ export async function fulltextSearch(
   sql: postgres.Sql,
 ): Promise<RetrievalResult[]> {
   const legalIdentifier = extractLegalIdentifier(question);
-  const semanticQuestion = legalIdentifier ? question.replace(legalIdentifier, " ") : question;
+  const locator = extractLegalLocator(question);
+  const semanticQuestion = (legalIdentifier ? question.replace(legalIdentifier, " ") : question)
+    .replace(/\b(?:điều|khoản)\s+\d+\b/gi, " ")
+    .replace(/\bđiểm\s+[a-z]\b/gi, " ");
   const tsQuery = buildTsQuery(semanticQuestion);
   const strictTsQuery = tsQuery.replaceAll(" | ", " & ");
   if (tsQuery === "" && legalIdentifier === null) return [];
@@ -72,7 +95,14 @@ export async function fulltextSearch(
                   AND f_unaccent(coalesce(d.so_hieu, '')) = f_unaccent(${legalIdentifier}::text)
                    THEN 0.5
                  ELSE 0
-               END AS raw_score
+               END AS raw_score,
+             CASE
+               WHEN ${locator.dieu}::int IS NOT NULL AND c.dieu_so = ${locator.dieu}
+                AND (${locator.khoan}::int IS NULL OR c.khoan_so = ${locator.khoan})
+                AND (${locator.diem}::text IS NULL OR c.diem = ${locator.diem})
+                 THEN 2
+               ELSE 0
+             END AS locator_score
       FROM chunks c
       JOIN documents d ON d.id = c.document_id
       CROSS JOIN query
@@ -80,6 +110,8 @@ export async function fulltextSearch(
         AND (
           (query.value IS NOT NULL AND c.tsv @@ query.value)
           OR (
+            query.value IS NULL
+            AND
             ${legalIdentifier}::text IS NOT NULL
             AND f_unaccent(coalesce(d.so_hieu, '')) = f_unaccent(${legalIdentifier}::text)
           )
@@ -91,9 +123,9 @@ export async function fulltextSearch(
            so_hieu,
            breadcrumb,
            content,
-           (raw_score / (1 + raw_score))::float8 AS score
+           ((raw_score + locator_score) / (1 + raw_score + locator_score))::float8 AS score
     FROM ranked
-    ORDER BY raw_score DESC, chunk_id
+    ORDER BY raw_score + locator_score DESC, chunk_id
     LIMIT ${options.topK}
   `) as unknown as FulltextRow[];
 
@@ -107,4 +139,9 @@ export async function fulltextSearch(
     score: Number(row.score),
     fulltextScore: Number(row.score),
   }));
+}
+
+function readNumber(value: string, pattern: RegExp): number | null {
+  const match = value.match(pattern)?.[1];
+  return match === undefined ? null : Number(match);
 }
