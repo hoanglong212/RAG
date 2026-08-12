@@ -12,6 +12,7 @@ import { Nut, The } from "@/components/kit/co-ban";
 import { ConDau } from "@/components/kit/con-dau";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, BookOpenCheck, Layers3, Quote } from "lucide-react";
+import type { ResearchProgress } from "@/types/research";
 
 const soVN = (n: number) => n.toFixed(2).replace(".", ",");
 
@@ -137,11 +138,30 @@ export function TrangThaiRong({
  * Đang tra cứu. Thứ tự các dòng phản ánh đúng thứ tự sự kiện của /api/chat:
  * nguồn về trước, câu trả lời chảy ra sau.
  */
-export function DangTai() {
+export function DangTai({
+  researchMode = false,
+  progress,
+}: {
+  researchMode?: boolean;
+  progress?: ResearchProgress | null;
+}) {
+  const stages: ResearchProgress["stage"][] = ["corpus", "web", "cross_check", "synthesis"];
+  const labels = ["Kho nội bộ", "Nguồn web", "Đối chiếu", "Tổng hợp"];
+  const current = progress ? stages.indexOf(progress.stage) : 0;
   return (
     <div className="flex flex-col gap-6" role="status" aria-live="polite">
       <section>
-        <p className="nhan-hoa mb-2.5">Đang tìm trong kho văn bản…</p>
+        <p className="nhan-hoa mb-2.5">{progress?.label ?? "Đang tìm trong kho văn bản…"}</p>
+        {researchMode ? (
+          <ol className="mb-4 grid grid-cols-4 gap-1.5" aria-label="Tiến trình nghiên cứu">
+            {labels.map((label, index) => (
+              <li key={label} className="min-w-0">
+                <span className={cn("block h-1 rounded-full", index <= current ? "bg-but-xanh" : "bg-khay-sau")} />
+                <span className={cn("mt-1.5 block truncate text-[0.625rem] font-medium", index <= current ? "text-muc-in" : "text-nhan")}>{label}</span>
+              </li>
+            ))}
+          </ol>
+        ) : null}
         <div className="flex flex-col gap-1.5">
           {[0, 1, 2].map((i) => (
             <div
@@ -174,7 +194,12 @@ export interface KhongTimThayProps {
  * Không có chấm đỏ nào ở màn hình này, và đó là chủ ý: vắng dấu chứng thực
  * nghĩa là hệ thống không khẳng định gì.
  */
-export function KhongTimThay({ topScore, nguong, soVanBan }: KhongTimThayProps) {
+export function KhongTimThay({
+  topScore,
+  nguong,
+  soVanBan,
+  researchMode = false,
+}: KhongTimThayProps & { researchMode?: boolean }) {
   const tyLe = nguong > 0 ? Math.min(100, (topScore / nguong) * 100) : 0;
 
   return (
@@ -182,14 +207,18 @@ export function KhongTimThay({ topScore, nguong, soVanBan }: KhongTimThayProps) 
       <div>
         <h2 className="text-base font-semibold">Không tìm thấy trong bộ tài liệu</h2>
         <p className="mt-1.5 text-sm leading-relaxed text-nhan">
-          {soVanBan > 0 ? `Đã tìm trong ${soVanBan} văn bản. ` : ""}
-          Đoạn gần nhất chỉ đạt {soVN(topScore)}, dưới ngưỡng tin cậy {soVN(nguong)} — chưa
-          đủ căn cứ để trích dẫn, nên hệ thống không đưa ra câu trả lời.
+          {researchMode ? (
+            "Đã đối chiếu kho nội bộ và các nguồn pháp luật được phép trên web nhưng chưa thu được đủ căn cứ có thể kiểm chứng. Hệ thống không dùng kiến thức ghi nhớ để đoán câu trả lời."
+          ) : (
+            <>{soVanBan > 0 ? `Đã tìm trong ${soVanBan} văn bản. ` : ""}
+            Đoạn gần nhất chỉ đạt {soVN(topScore)}, dưới ngưỡng tin cậy {soVN(nguong)} — chưa
+            đủ căn cứ để trích dẫn, nên hệ thống không đưa ra câu trả lời.</>
+          )}
         </p>
       </div>
 
       {/* Khoảng cách tới ngưỡng, hiện thành hình để thấy còn thiếu bao nhiêu. */}
-      <div className="flex items-center gap-3">
+      {!researchMode ? <div className="flex items-center gap-3">
         <span aria-hidden className="h-1.5 flex-1 overflow-hidden rounded-full bg-khay-sau">
           <span
             className="block h-full rounded-full bg-nhan/60"
@@ -199,7 +228,7 @@ export function KhongTimThay({ topScore, nguong, soVanBan }: KhongTimThayProps) 
         <span className="so-hieu shrink-0 text-xs tabular-nums text-nhan">
           {soVN(topScore)} / {soVN(nguong)}
         </span>
-      </div>
+      </div> : null}
 
       <p className="text-sm leading-relaxed text-nhan">
         Thử hỏi lại bằng từ ngữ có trong văn bản, hoặc nêu rõ số hiệu văn bản cần tra.
@@ -212,10 +241,11 @@ export function KhongTimThay({ topScore, nguong, soVanBan }: KhongTimThayProps) 
 
 export interface TrangThaiLoiProps {
   onThuLai?: () => void;
+  message?: string;
 }
 
 /** Hạ tầng hỏng. Nói thẳng chuyện gì đã xảy ra, không xin lỗi. */
-export function TrangThaiLoi({ onThuLai }: TrangThaiLoiProps) {
+export function TrangThaiLoi({ onThuLai, message }: TrangThaiLoiProps) {
   return (
     <div
       role="alert"
@@ -223,8 +253,7 @@ export function TrangThaiLoi({ onThuLai }: TrangThaiLoiProps) {
     >
       <h2 className="text-base font-semibold">Không gửi được câu hỏi</h2>
       <p className="mt-1.5 text-sm leading-relaxed text-nhan">
-        Máy chủ tra cứu không phản hồi. Câu hỏi của bạn chưa được xử lý và không có gì bị
-        mất.
+        {message ?? "Máy chủ tra cứu không phản hồi. Câu hỏi của bạn chưa được xử lý và không có gì bị mất."}
       </p>
       {onThuLai ? (
         <Nut kieu="phu" className="mt-3.5" onClick={onThuLai}>

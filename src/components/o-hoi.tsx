@@ -11,7 +11,7 @@
  */
 
 import { useId } from "react";
-import { ArrowRight, Search, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, Search, Sparkles } from "lucide-react";
 import { Nut } from "@/components/kit/co-ban";
 import { cn } from "@/lib/utils";
 
@@ -20,9 +20,18 @@ export interface OHoiProps {
   onDoi: (giaTri: string) => void;
   onTraCuu: () => void;
   dangChay?: boolean;
+  cheDo?: "corpus" | "research";
+  onDoiCheDo?: (cheDo: "corpus" | "research") => void;
 }
 
-export function OHoi({ giaTri, onDoi, onTraCuu, dangChay = false }: OHoiProps) {
+export function OHoi({
+  giaTri,
+  onDoi,
+  onTraCuu,
+  dangChay = false,
+  cheDo = "corpus",
+  onDoiCheDo,
+}: OHoiProps) {
   const id = useId();
   const rong = giaTri.trim().length === 0;
 
@@ -37,15 +46,43 @@ export function OHoi({ giaTri, onDoi, onTraCuu, dangChay = false }: OHoiProps) {
         "transition-[box-shadow,transform] duration-[--nhip] focus-within:-translate-y-px focus-within:shadow-noi",
       )}
     >
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="flex items-center gap-2 text-xs font-semibold text-but-xanh">
           <Search className="size-4" strokeWidth={1.8} />
-          Tra cứu trên toàn bộ kho văn bản
+          {cheDo === "research" ? "Nghiên cứu ngoài kho dữ liệu" : "Tra cứu trên toàn bộ kho văn bản"}
         </span>
         <span className="hidden items-center gap-1.5 text-[0.6875rem] font-medium text-nhan sm:flex">
           <Sparkles className="size-3.5" strokeWidth={1.7} />
           Có dẫn nguồn
         </span>
+      </div>
+      <div className="grid grid-cols-2 gap-1 rounded-[--bo] bg-khay p-1" aria-label="Chế độ tra cứu">
+        <button
+          type="button"
+          aria-pressed={cheDo === "corpus"}
+          disabled={dangChay}
+          onClick={() => onDoiCheDo?.("corpus")}
+          className={cn(
+            "flex min-h-10 items-center justify-center gap-2 rounded-[--bo] px-3 text-xs font-semibold transition-[background-color,color,box-shadow]",
+            cheDo === "corpus" ? "bg-giay text-muc-in shadow-the" : "text-nhan hover:text-muc-in",
+          )}
+        >
+          <BookOpen className="size-4" strokeWidth={1.8} />
+          Kho văn bản
+        </button>
+        <button
+          type="button"
+          aria-pressed={cheDo === "research"}
+          disabled={dangChay}
+          onClick={() => onDoiCheDo?.("research")}
+          className={cn(
+            "flex min-h-10 items-center justify-center gap-2 rounded-[--bo] px-3 text-xs font-semibold transition-[background-color,color,box-shadow]",
+            cheDo === "research" ? "bg-but-xanh text-giay shadow-vua" : "text-nhan hover:text-muc-in",
+          )}
+        >
+          <Sparkles className="size-4" strokeWidth={1.8} />
+          Nghiên cứu sâu
+        </button>
       </div>
       <label htmlFor={id} className="sr-only">
         Câu hỏi
@@ -74,7 +111,7 @@ export function OHoi({ giaTri, onDoi, onTraCuu, dangChay = false }: OHoiProps) {
           <kbd className="font-ma">Shift + Enter</kbd> xuống dòng
         </p>
         <Nut type="submit" disabled={rong || dangChay} className="ml-auto min-w-32">
-          {dangChay ? "Đang tra cứu…" : "Tra cứu"}
+          {dangChay ? (cheDo === "research" ? "Đang nghiên cứu…" : "Đang tra cứu…") : (cheDo === "research" ? "Nghiên cứu" : "Tra cứu")}
           {!dangChay ? <ArrowRight className="size-4" strokeWidth={1.9} /> : null}
         </Nut>
       </div>

@@ -20,6 +20,8 @@ import { HangSoLieu, KhungTrang, OSoLieu, The, TieuDeMuc } from "@/components/ki
 import { BieuDoNho, CotDoc, CotDocLon, CotNgang } from "@/components/kit/bieu-do";
 import { BaoLoi, TrongRong, XuongSoLieu } from "@/components/kit/trang-thai-kit";
 import { NHAN_LOAI, chuanHoaTenCoQuan } from "@/types/nhan";
+import { NHAN_CHU_DE_TIN } from "@/types/nhan-news";
+import type { CoverageRow } from "@/types/platform";
 
 const phanTram = (v: number) => `${Math.round(v * 100)}%`;
 const soVN = (v: number) => v.toFixed(2).replace(".", ",");
@@ -27,6 +29,8 @@ const soVN = (v: number) => v.toFixed(2).replace(".", ",");
 export default function TrangDoLuong() {
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [lanChay, setLanChay] = useState<EvalRun[]>([]);
+  /** Chuyển từ trang Công cụ sang: đây là báo cáo độ phủ, không phải dụng cụ. */
+  const [phuSong, setPhuSong] = useState<CoverageRow[]>([]);
   const [loi, setLoi] = useState<string | null>(null);
   const [dangTai, setDangTai] = useState(true);
 
@@ -34,12 +38,14 @@ export default function TrangDoLuong() {
     setDangTai(true);
     setLoi(null);
     try {
-      const [s, e] = await Promise.all([
+      const [s, e, p] = await Promise.all([
         fetch("/api/stats").then(docJson<StatsResponse>),
         fetch("/api/eval/runs").then(docJson<EvalRun[]>),
+        fetch("/api/coverage").then(docJson<CoverageRow[]>),
       ]);
       setStats(s);
       setLanChay(e);
+      setPhuSong(p);
     } catch (err) {
       setLoi(err instanceof Error ? err.message : "Không đọc được số liệu.");
     } finally {
@@ -146,6 +152,60 @@ export default function TrangDoLuong() {
                 </div>
               </The>
             </div>
+
+            {phuSong.length > 0 ? (
+              <The khongDem>
+                <div className="p-4 sm:p-5">
+                  <TieuDeMuc phu="Corpus đang phủ tới đâu ở từng chủ đề">
+                    Ma trận phạm vi hỗ trợ
+                  </TieuDeMuc>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[42rem] text-left text-sm">
+                    <thead>
+                      <tr className="border-y border-ke-mo">
+                        <th className="nhan-hoa px-4 py-2.5 font-semibold sm:px-5">Chủ đề</th>
+                        <th className="nhan-hoa px-4 py-2.5 text-right font-semibold">Văn bản</th>
+                        <th className="nhan-hoa px-4 py-2.5 text-right font-semibold">Đoạn</th>
+                        <th className="nhan-hoa px-4 py-2.5 text-right font-semibold">
+                          Đã xác minh
+                        </th>
+                        <th className="nhan-hoa px-4 py-2.5 text-right font-semibold">
+                          Cảnh báo
+                        </th>
+                        <th className="nhan-hoa px-4 py-2.5 font-semibold sm:px-5">Cập nhật</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {phuSong.map((h) => (
+                        <tr key={h.topic} className="border-b border-ke-mo last:border-0">
+                          <td className="px-4 py-2.5 font-medium sm:px-5">
+                            {NHAN_CHU_DE_TIN[h.topic]}
+                          </td>
+                          <td className="so-hieu px-4 py-2.5 text-right tabular-nums">
+                            {h.documents}
+                          </td>
+                          <td className="so-hieu px-4 py-2.5 text-right tabular-nums text-nhan">
+                            {h.chunks}
+                          </td>
+                          <td className="so-hieu px-4 py-2.5 text-right tabular-nums text-nhan">
+                            {h.verifiedDocuments}
+                          </td>
+                          <td className="so-hieu px-4 py-2.5 text-right tabular-nums text-nhan">
+                            {h.warningDocuments}
+                          </td>
+                          <td className="px-4 py-2.5 text-xs text-nhan sm:px-5">
+                            {h.lastVerifiedAt
+                              ? new Date(h.lastVerifiedAt).toLocaleDateString("vi-VN")
+                              : "Chưa có"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </The>
+            ) : null}
           </section>
 
           {/* ============ KHU B ============ */}

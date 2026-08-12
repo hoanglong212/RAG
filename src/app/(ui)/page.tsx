@@ -15,8 +15,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChatStatus, Citation, DocumentDetail, StatsResponse } from "@/types/contract";
+import type { ResearchProgress, ResearchSource } from "@/types/research";
 import { CauTraLoi } from "@/components/cau-tra-loi";
 import { ChipTrichDan } from "@/components/chip-trich-dan";
+import { NguonNghienCuu } from "@/components/nguon-nghien-cuu";
 import { MatDoc } from "@/components/mat-doc";
 import { OHoi } from "@/components/o-hoi";
 import { TrucVanBan } from "@/components/truc-van-ban";
@@ -75,6 +77,10 @@ export default function TrangTraCuu() {
   const [soChunk, setSoChunk] = useState(0);
   const [dangChay, setDangChay] = useState(false);
   const [matDocMo, setMatDocMo] = useState(false);
+  const [cheDo, setCheDo] = useState<"corpus" | "research">("corpus");
+  const [researchSources, setResearchSources] = useState<ResearchSource[]>([]);
+  const [researchProgress, setResearchProgress] = useState<ResearchProgress | null>(null);
+  const [researchError, setResearchError] = useState<string | null>(null);
 
   /** Cây văn bản của trích dẫn đang chọn, nạp theo nhu cầu và nhớ lại. */
   const [vanBan, setVanBan] = useState<DocumentDetail | null>(null);
@@ -116,12 +122,15 @@ export default function TrangTraCuu() {
     setPha("dangTim");
     setAnswer("");
     setCitations([]);
+    setResearchSources([]);
+    setResearchProgress(null);
+    setResearchError(null);
     setDangChon(null);
     setVanBan(null);
     setMatDocMo(false);
 
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch(cheDo === "research" ? "/api/research" : "/api/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ question: cauHoi, strategy: "structural", mode: "hybrid" }),
@@ -159,6 +168,17 @@ export default function TrangTraCuu() {
           // Nguồn về trước: trục nạp cây và đóng dấu ngay, chữ chưa có.
           void moTrichDan(next[0]);
         }
+      } else if (event === "research_progress") {
+        setResearchProgress(data as unknown as ResearchProgress);
+      } else if (event === "research_sources") {
+        const next = (data.sources ?? []) as ResearchSource[];
+        const local = next.filter((source) => source.kind === "corpus").map(sourceToCitation);
+        setResearchSources(next);
+        setCitations(local);
+        if (next.length > 0) setPha("coNguon");
+        if (local[0]) void moTrichDan(local[0]);
+      } else if (event === "research_error") {
+        setResearchError(String(data.message ?? "Không thể hoàn tất nghiên cứu sâu."));
       } else if (event === "token") {
         setPha("xong");
         setAnswer((cu) => cu + String(data.text ?? ""));
@@ -169,10 +189,44 @@ export default function TrangTraCuu() {
         setPha(status === "ok" ? "xong" : status === "khong_tim_thay" ? "khongTimThay" : "loi");
       }
     }
-  }, [cauHoi, moTrichDan]);
+  }, [cauHoi, cheDo, moTrichDan]);
 
-  const coNguon = (pha === "coNguon" || pha === "xong") && citations.length > 0;
-  const soDangChon = dangChon ? citations.findIndex((c) => c.chunkId === dangChon.chunkId) + 1 : 0;
+  const sourcesCount = cheDo === "research" ? researchSources.length : citations.length;
+  const coNguon = (pha === "coNguon" || pha === "xong") && sourcesCount > 0;
+  const soDangChon = dangChon
+    ? (cheDo === "research"
+        ? researchSources.findIndex((source) => source.chunkId === dangChon.chunkId)
+        : citations.findIndex((c) => c.chunkId === dangChon.chunkId)) + 1
+    : 0;
+
+  const doiCheDo = (next: "corpus" | "research") => {
+    if (next === cheDo || dangChay) return;
+    setCheDo(next);
+    setPha("rong");
+    setAnswer("");
+    setCitations([]);
+    setResearchSources([]);
+    setResearchProgress(null);
+    setResearchError(null);
+    setDangChon(null);
+    setVanBan(null);
+    setMatDocMo(false);
+  };
+
+  const moNguonTheoSo = (so: number) => {
+    if (cheDo === "corpus") {
+      const citation = citations[so - 1];
+      if (citation) void moTrichDan(citation, true);
+      return;
+    }
+    const source = researchSources[so - 1];
+    if (!source) return;
+    if (source.kind === "corpus") {
+      void moTrichDan(sourceToCitation(source), true);
+    } else if (source.url) {
+      window.open(source.url, "_blank", "noopener,noreferrer");
+    }
+  };
 
   return (
     <div className="flex h-full">
@@ -210,7 +264,14 @@ export default function TrangTraCuu() {
             vanBan ? "max-w-2xl" : "max-w-3xl",
           )}
         >
-          <OHoi giaTri={cauHoi} onDoi={setCauHoi} onTraCuu={traCuu} dangChay={dangChay} />
+          <OHoi
+            giaTri={cauHoi}
+            onDoi={setCauHoi}
+            onTraCuu={traCuu}
+            dangChay={dangChay}
+            cheDo={cheDo}
+            onDoiCheDo={doiCheDo}
+          />
 
           <div className="mt-7 flex-1">
             {pha === "rong" ? (
@@ -221,28 +282,48 @@ export default function TrangTraCuu() {
                 tongChunk={soChunk}
               />
             ) : null}
-            {pha === "dangTim" ? <DangTai /> : null}
-            {pha === "khongTimThay" ? (
-              <KhongTimThay topScore={topScore} nguong={nguong} soVanBan={soVanBan} />
+            {pha === "dangTim" ? (
+              <DangTai researchMode={cheDo === "research"} progress={researchProgress} />
             ) : null}
-            {pha === "loi" ? <TrangThaiLoi onThuLai={traCuu} /> : null}
+            {pha === "khongTimThay" ? (
+              <KhongTimThay
+                topScore={topScore}
+                nguong={nguong}
+                soVanBan={soVanBan}
+                researchMode={cheDo === "research"}
+              />
+            ) : null}
+            {pha === "loi" ? <TrangThaiLoi onThuLai={traCuu} message={researchError ?? undefined} /> : null}
 
             {coNguon ? (
               <div className="flex flex-col gap-7">
                 {/* Nguồn đứng TRÊN câu trả lời, đúng thứ tự chúng về. */}
                 <section>
-                  <h2 className="nhan-hoa mb-2.5">Nguồn ({citations.length})</h2>
+                  <h2 className="nhan-hoa mb-2.5">Nguồn ({sourcesCount})</h2>
                   <ul className="flex flex-col gap-1.5">
-                    {citations.map((td, i) => (
-                      <li key={td.chunkId}>
-                        <ChipTrichDan
-                          trichDan={td}
-                          soThuTu={i + 1}
-                          dangChon={dangChon?.chunkId === td.chunkId}
-                          onChon={(c) => void moTrichDan(c, true)}
-                        />
-                      </li>
-                    ))}
+                    {cheDo === "research"
+                      ? researchSources.map((source, index) => (
+                          <li key={source.id}>
+                            <NguonNghienCuu
+                              source={source}
+                              index={index + 1}
+                              selected={Boolean(source.chunkId && source.chunkId === dangChon?.chunkId)}
+                              onSelect={() => {
+                                if (source.kind === "corpus") void moTrichDan(sourceToCitation(source), true);
+                              }}
+                            />
+                          </li>
+                        ))
+                      : citations.map((td, i) => (
+                          <li key={td.chunkId}>
+                            <ChipTrichDan
+                              trichDan={td}
+                              soThuTu={i + 1}
+                              dangChon={dangChon?.chunkId === td.chunkId}
+                              onChon={(c) => void moTrichDan(c, true)}
+                            />
+                          </li>
+                        ))}
                   </ul>
                 </section>
 
@@ -251,13 +332,10 @@ export default function TrangTraCuu() {
                   {answer ? (
                     <CauTraLoi
                       noiDung={answer}
-                      soTrichDan={citations.length}
+                      soTrichDan={sourcesCount}
                       dangChon={soDangChon || undefined}
                       dangViet={dangChay}
-                      onChonSo={(so) => {
-                        const td = citations[so - 1];
-                        if (td) void moTrichDan(td, true);
-                      }}
+                      onChonSo={moNguonTheoSo}
                     />
                   ) : (
                     <p className="text-sm text-nhan">Đang soạn câu trả lời…</p>
@@ -306,4 +384,16 @@ export default function TrangTraCuu() {
       </div>
     </div>
   );
+}
+
+function sourceToCitation(source: ResearchSource): Citation {
+  return {
+    chunkId: source.chunkId ?? source.id,
+    documentId: source.documentId ?? "",
+    nodeId: source.nodeId ?? "",
+    soHieu: source.soHieu ?? "Văn bản trong kho",
+    breadcrumb: source.breadcrumb ?? source.title,
+    trichDoan: source.excerpt,
+    score: source.score,
+  };
 }

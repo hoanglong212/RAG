@@ -22,6 +22,23 @@ import type { LegalCheckResult } from "@/lib/legal/check";
 import { NEWS_TOPICS, type NewsArticleSummary, type NewsTopic } from "@/types/news";
 import { NHAN_CHU_DE_TIN, NHAN_KET_QUA_PHAP_LY } from "@/types/nhan-news";
 
+/**
+ * "3 giờ trước" đọc nhanh hơn "12/08/2026 09:22" khi cái người đọc muốn biết
+ * là tin này còn mới hay đã cũ. Quá một tuần thì ngày tháng lại rõ hơn.
+ */
+function khoangCachThoiGian(iso: string): string {
+  const giay = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (giay < 60) return "Vừa xong";
+  if (giay < 3600) return `${Math.floor(giay / 60)} phút trước`;
+  if (giay < 86400) return `${Math.floor(giay / 3600)} giờ trước`;
+  if (giay < 604800) return `${Math.floor(giay / 86400)} ngày trước`;
+  return new Date(iso).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 interface NewsResponse {
   items: NewsArticleSummary[];
   total: number;
@@ -198,40 +215,77 @@ export default function TrangTinTuc() {
         {/* ---------- Dòng tin ---------- */}
         <div className="flex flex-col gap-3">
           {data.items.map((bai) => (
-            <The key={bai.id} className="transition-shadow duration-[--nhip] hover:shadow-noi">
-              <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-xs">
-                <span className="font-semibold text-muc-in">{bai.source.name}</span>
-                {bai.publishedAt ? (
-                  <time className="text-nhan" dateTime={bai.publishedAt}>
-                    {new Date(bai.publishedAt).toLocaleString("vi-VN", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </time>
+            <The key={bai.id} className="transition-shadow duration-[--nhip] hover:shadow-vua">
+              <div className="flex flex-col gap-4 sm:flex-row">
+                {/*
+                  Ảnh bài báo dùng thẻ img thường, không phải next/image: nguồn
+                  RSS đổi theo thời gian nên không whitelist trước được domain,
+                  mà cho phép mọi host trong next.config thì mất luôn ý nghĩa
+                  của việc whitelist. Ảnh hỏng thì tự ẩn, không để lại khung vỡ.
+                */}
+                {bai.imageUrl ? (
+                  <a
+                    href={bai.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 overflow-hidden rounded-[--bo] bg-khay sm:w-44"
+                    tabIndex={-1}
+                    aria-hidden
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={bai.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="aspect-[16/10] w-full object-cover transition-transform duration-[--nhip-cham] hover:scale-[1.03]"
+                      onError={(e) => {
+                        const boc = e.currentTarget.closest("a");
+                        if (boc) boc.style.display = "none";
+                      }}
+                    />
+                  </a>
                 ) : null}
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-xs">
+                    <span className="font-semibold text-muc-in">{bai.source.name}</span>
+                    {bai.publishedAt ? (
+                      <time className="text-nhan" dateTime={bai.publishedAt}>
+                        {khoangCachThoiGian(bai.publishedAt)}
+                      </time>
+                    ) : null}
+                  </div>
+
+                  <h2 className="mt-1.5 text-base font-semibold leading-snug">
+                    <a
+                      href={bai.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline-offset-4 transition-colors duration-[--nhip] hover:text-but-xanh hover:underline"
+                    >
+                      {bai.title}
+                    </a>
+                  </h2>
+
+                  {bai.summary ? (
+                    <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-nhan">
+                      {bai.summary}
+                    </p>
+                  ) : null}
+                </div>
               </div>
-
-              <h2 className="mt-2 text-base font-semibold leading-snug">
-                <a
-                  href={bai.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline-offset-4 transition-colors duration-[--nhip] hover:text-but-xanh hover:underline"
-                >
-                  {bai.title}
-                </a>
-              </h2>
-
-              {bai.summary ? (
-                <p className="mt-2 text-sm leading-relaxed text-nhan">{bai.summary}</p>
-              ) : null}
 
               <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
                 {bai.topics.map((t) => (
-                  <Nhan key={t}>{NHAN_CHU_DE_TIN[t]}</Nhan>
+                  <Nhan key={t} dam>
+                    {NHAN_CHU_DE_TIN[t]}
+                  </Nhan>
+                ))}
+                {/* Từ khoá do bộ nạp tin rút ra; hiện tối đa ba cái để hàng
+                    nhãn không dài hơn cả tiêu đề. */}
+                {bai.keywords.slice(0, 3).map((k) => (
+                  <Nhan key={k}>{k}</Nhan>
                 ))}
                 <div className="ml-auto flex flex-wrap items-center gap-1.5">
                   <Nut

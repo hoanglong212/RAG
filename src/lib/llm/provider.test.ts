@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { buildGroundedPrompt, readLlmConfig } from "./provider";
+import { buildGroundedPrompt, buildResearchSynthesisPrompt, readLlmConfig } from "./provider";
 
 const originalEnvironment = { ...process.env };
 
@@ -27,5 +27,19 @@ describe("grounded LLM prompt", () => {
       apiUrl: "https://api.groq.com/openai/v1/chat/completions",
       model: "llama-3.3-70b-versatile",
     });
+  });
+
+  it("giữ loại nguồn trong prompt tổng hợp nghiên cứu sâu", () => {
+    const prompt = buildResearchSynthesisPrompt({
+      question: "Quy định này còn hiệu lực không?",
+      sources: [{
+        index: 1,
+        source: "vbpl.vn — Nghị định 1/2025",
+        sourceType: "Nguồn chính thức",
+        content: "Có hiệu lực từ ngày 01/01/2025.",
+      }],
+    });
+    expect(prompt).toContain("[1] [Nguồn chính thức] vbpl.vn — Nghị định 1/2025");
+    expect(prompt).toContain("Quy định này còn hiệu lực không?");
   });
 });

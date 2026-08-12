@@ -26,9 +26,9 @@ import {
   Newspaper,
   Scale,
   ShieldCheck,
-  Wrench,
   X,
 } from "lucide-react";
+import { KhayCongCu } from "@/components/kit/khay-cong-cu";
 import { cn } from "@/lib/utils";
 
 const CHINH = [
@@ -37,8 +37,9 @@ const CHINH = [
   { href: "/workspace", nhan: "Hồ sơ", moTa: "Theo dõi và tạo biểu mẫu", icon: FolderOpen },
   { href: "/documents", nhan: "Kho văn bản", moTa: "Đọc corpus pháp luật", icon: Library },
   { href: "/news", nhan: "Tin tức", moTa: "Tin mới và căn cứ liên quan", icon: Newspaper },
-  { href: "/legal-tools", nhan: "Công cụ", moTa: "So sánh và dòng thời gian", icon: Wrench },
 ] as const;
+// "Công cụ" không còn là một trang: ba dụng cụ của nó nằm trong KhayCongCu
+// trên chính thanh này. Xem components/cong-cu/bo-cong-cu.tsx.
 
 const HE_THONG = [
   { href: "/dashboard", nhan: "Đo lường", moTa: "Độ phủ và chất lượng", icon: BarChart3 },
@@ -185,12 +186,19 @@ export function DieuHuong() {
           {HE_THONG.map((m) => (
             <Muc key={m.href} href={m.href} nhan={m.nhan} icon={m.icon} mo={dangMo(duongDan, m.href)} />
           ))}
+          <div className="ml-auto">
+            <KhayCongCu />
+          </div>
         </nav>
 
         <div className="ml-auto flex min-w-0 items-center gap-2 xl:hidden">
+          {/* Khay công cụ có mặt ở cả màn hình hẹp — trên cảm ứng nó mở bằng
+              cú bấm, nên không bị mất như một menu chỉ dùng hover. */}
+          <KhayCongCu />
           {/* Tên sản phẩm phải chịu co: không có min-w-0 + truncate thì nó đẩy
-              nút menu ra ngoài mép màn hình 375px. */}
-          <span className="min-w-0 truncate text-sm font-semibold text-giay">
+              nút menu ra ngoài mép màn hình 375px. Dưới 640px thì ẩn hẳn —
+              logo đã nhận diện đủ, và ba nút công cụ cần chỗ hơn. */}
+          <span className="hidden min-w-0 truncate text-sm font-semibold text-giay sm:block">
             Tra cứu văn bản
           </span>
           <button
