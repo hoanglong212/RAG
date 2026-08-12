@@ -192,4 +192,4 @@ Mọi thay đổi contract ghi lại đây, kèm ngày và lý do.
 
 | Ngày | Đổi gì | Lý do | Ai yêu cầu |
 |---|---|---|---|
-| | | | |
+| D1 | Không đổi contract. Sửa schema cho khớp | schema.ts lược mất các trường đã đặc tả ở mục 4 kế hoạch gốc | Track B phát hiện |
