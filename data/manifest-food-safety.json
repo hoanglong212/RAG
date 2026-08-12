@@ -3,7 +3,7 @@
   "collection": "vietnamese-food-safety-law",
   "query": "thực phẩm",
   "source": "https://vanban.chinhphu.vn",
-  "requestedLimit": 50,
+  "requestedLimit": 52,
   "collectedAt": "2026-08-12T05:44:58.664Z",
   "documents": [
     {
@@ -505,6 +505,26 @@
       "characterCount": 2477,
       "structuralChunkCount": 3,
       "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "137210",
+      "title": "Nghị định số 115/2018/NĐ-CP quy định xử phạt vi phạm hành chính về an toàn thực phẩm",
+      "sourceUrl": "https://vbpl.vn/van-ban/chi-tiet/nghi-dinh-so-115-2018-nd-cp-quy-dinh-xu-phat-vi-pham-hanh-chinh-ve-an-toan-thuc-pham--137210?tabs=noi-dung",
+      "fileName": "137210-nghi-dinh-115-2018-nd-cp.txt",
+      "sha256": "c068900a9a992878a4fa31e3e836e51c599bac7b7f81ff7d1f9988d6ec7296d4",
+      "characterCount": 89690,
+      "structuralChunkCount": 189,
+      "collectedAt": "2026-08-12T07:03:31.061Z"
+    },
+    {
+      "docId": "153630",
+      "title": "Nghị định số 124/2021/NĐ-CP sửa đổi, bổ sung Nghị định 115/2018/NĐ-CP và Nghị định 117/2020/NĐ-CP",
+      "sourceUrl": "https://vbpl.vn/van-ban/chi-tiet/nghi-dinh-so-124-2021-nd-cp-sua-doi-bo-sung-mot-so-dieu-cua-nghi-dinh-so-115-2018-nd-cp-ngay-04-thang-9-nam-2018-cua-chinh-phu-quy-dinh-xu-phat-vi-pham-hanh-chinh-ve-an-toan-thuc-pham-va-nghi-dinh-so-117-2020-nd-cp-ngay-28-thang-9-nam-2020-cua-chinh-phu-quy-dinh-xu-phat-vi-pham-hanh-chinh-trong-linh-vuc-y-te--153630?tabs=noi-dung",
+      "fileName": "153630-nghi-dinh-124-2021-nd-cp.txt",
+      "sha256": "573475ad71a0fd1850d079c998d714335560a2d066089b58c609843b9be5cdd3",
+      "characterCount": 73459,
+      "structuralChunkCount": 71,
+      "collectedAt": "2026-08-12T07:03:31.061Z"
     }
   ],
   "skipped": [

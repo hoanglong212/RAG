@@ -30,4 +30,13 @@
 - Added `POST /api/search` and `scripts/thu-tim.ts` so vector, full-text, and hybrid modes can be exercised against the same corpus and chunking strategy.
 - Live smoke acceptance: the query for `55/2010/QH12` returned that document at rank 1 in both vector and hybrid modes.
 - Automated verification: 53 tests, TypeScript strict check, ESLint, and production build pass.
-- Corpus expansion for `115/2018/NĐ-CP` and `124/2021/NĐ-CP` is intentionally pending: the official 115 PDF exposes a corrupted text layer and the official 124 PDF has no text layer. The fail-closed extractor rejected both, preventing OCR-corrupted legal text from entering the evaluation corpus.
+- Initial corpus expansion for `115/2018/NĐ-CP` and `124/2021/NĐ-CP` was blocked because the official 115 PDF exposes a corrupted text layer and the official 124 PDF has no text layer. The fail-closed extractor rejected both; the clean-source resolution is recorded below.
+
+## 2026-08-12 — D7 corpus prerequisite and D9 API handoff
+
+- Recovered clean official HTML text for `115/2018/NĐ-CP` and `124/2021/NĐ-CP` from the Ministry of Justice legal database after their signed PDFs failed extraction quality gates.
+- Added both documents to the reproducible manifest and ingested each into both structural and fixed strategies. Live corpus audit: 52 documents per strategy, 385 fixed chunks, 1,923 structural chunks, no missing embeddings, and all vectors have 768 dimensions.
+- Tightened exact-identifier full-text ranking so the acceptance query about the maximum fine in `115/2018/NĐ-CP` returns Điều 3 Khoản 1 at hybrid rank 1.
+- Added `/api/chat` with the frozen SSE order (`citations`, `token`, `done`), confidence threshold, grounded-only prompt, query logging, and `/api/stats` backed by live PostgreSQL data. `/api/ask` remains a compatibility alias.
+- Live API acceptance covered `/api/stats` and the `khong_tim_thay` SSE path. The successful LLM token path requires `LLM_API_KEY` and `LLM_MODEL`, which are not configured locally.
+- Automated verification: 54 tests, TypeScript strict check, ESLint, and production build pass.

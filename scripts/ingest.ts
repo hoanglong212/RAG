@@ -10,10 +10,12 @@ config({ path: ".env" });
 const rawDirectory = resolve("data/raw");
 
 async function main(): Promise<void> {
+  const selectedFiles = parseSelectedFiles(process.argv.slice(2));
   const entries = await readdir(rawDirectory, { withFileTypes: true });
   const files = entries
     .filter((entry) => entry.isFile() && isSupportedDocumentName(entry.name))
     .map((entry) => entry.name)
+    .filter((fileName) => selectedFiles.size === 0 || selectedFiles.has(fileName))
     .sort((a, b) => a.localeCompare(b, "vi"));
 
   if (files.length === 0) {
@@ -56,6 +58,18 @@ async function main(): Promise<void> {
   console.log(`\nĐã xử lý ${files.length} tệp: ${succeeded} thành công, ${failed} lỗi.`);
   await storage.close();
   if (failed > 0) process.exitCode = 1;
+}
+
+function parseSelectedFiles(args: string[]): Set<string> {
+  const selected = new Set<string>();
+  for (let index = 0; index < args.length; index += 1) {
+    if (args[index] !== "--file") continue;
+    const value = args[index + 1];
+    if (!value || value.startsWith("--")) throw new Error("Thiếu tên tệp sau --file.");
+    selected.add(value);
+    index += 1;
+  }
+  return selected;
 }
 
 function renderProgress(done: number, total: number, label: string): void {

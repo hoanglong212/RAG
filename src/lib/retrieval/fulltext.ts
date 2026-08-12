@@ -13,8 +13,8 @@ interface FulltextRow {
 }
 
 const STOP_WORDS = new Set([
-  "bao", "bang", "cac", "cho", "cua", "duoc", "gi", "la", "muc", "nhieu",
-  "nhung", "quy", "the", "theo", "thi", "toi", "trong", "ve", "va",
+  "bao", "bang", "cac", "cho", "cua", "duoc", "gi", "la", "nhieu",
+  "dinh", "nghi", "nhung", "quy", "so", "the", "theo", "thi", "trong", "ve", "va",
 ]);
 
 /** Tạo OR-query an toàn; số hiệu được xử lý thêm bằng exact match ở SQL. */
@@ -39,8 +39,10 @@ export async function fulltextSearch(
   options: { topK: number; strategy: ChunkStrategy },
   sql: postgres.Sql,
 ): Promise<RetrievalResult[]> {
-  const tsQuery = buildTsQuery(question);
   const legalIdentifier = extractLegalIdentifier(question);
+  const semanticQuestion = legalIdentifier ? question.replace(legalIdentifier, " ") : question;
+  const tsQuery = buildTsQuery(semanticQuestion);
+  const strictTsQuery = tsQuery.replaceAll(" | ", " & ");
   if (tsQuery === "" && legalIdentifier === null) return [];
 
   const rows = (await sql`
@@ -48,35 +50,50 @@ export async function fulltextSearch(
       SELECT CASE
                WHEN ${tsQuery} = '' THEN NULL
                ELSE to_tsquery('simple', ${tsQuery})
-             END AS value
-    )
-    SELECT c.id AS chunk_id,
-           c.document_id,
-           c.node_id,
-           d.so_hieu,
-           c.duong_dan AS breadcrumb,
-           c.noi_dung AS content,
-           least(
-             1,
+             END AS value,
              CASE
-               WHEN ${legalIdentifier}::text IS NOT NULL
-                AND f_unaccent(coalesce(d.so_hieu, '')) = f_unaccent(${legalIdentifier}::text)
-                 THEN 1
-               ELSE coalesce(ts_rank_cd(c.tsv, query.value, 32), 0)
-             END
-           )::float8 AS score
-    FROM chunks c
-    JOIN documents d ON d.id = c.document_id
-    CROSS JOIN query
-    WHERE c.strategy = ${options.strategy}
-      AND (
-        (query.value IS NOT NULL AND c.tsv @@ query.value)
-        OR (
-          ${legalIdentifier}::text IS NOT NULL
-          AND f_unaccent(coalesce(d.so_hieu, '')) = f_unaccent(${legalIdentifier}::text)
+               WHEN ${strictTsQuery} = '' THEN NULL
+               ELSE to_tsquery('simple', ${strictTsQuery})
+             END AS strict_value
+    ), ranked AS (
+      SELECT c.id AS chunk_id,
+             c.document_id,
+             c.node_id,
+             d.so_hieu,
+             c.duong_dan AS breadcrumb,
+             c.noi_dung AS content,
+             coalesce(ts_rank_cd(c.tsv, query.value, 32), 0)
+             + CASE
+                 WHEN query.strict_value IS NOT NULL AND c.tsv @@ query.strict_value THEN 1
+                 ELSE 0
+               END
+             + CASE
+                 WHEN ${legalIdentifier}::text IS NOT NULL
+                  AND f_unaccent(coalesce(d.so_hieu, '')) = f_unaccent(${legalIdentifier}::text)
+                   THEN 0.5
+                 ELSE 0
+               END AS raw_score
+      FROM chunks c
+      JOIN documents d ON d.id = c.document_id
+      CROSS JOIN query
+      WHERE c.strategy = ${options.strategy}
+        AND (
+          (query.value IS NOT NULL AND c.tsv @@ query.value)
+          OR (
+            ${legalIdentifier}::text IS NOT NULL
+            AND f_unaccent(coalesce(d.so_hieu, '')) = f_unaccent(${legalIdentifier}::text)
+          )
         )
-      )
-    ORDER BY score DESC, c.id
+    )
+    SELECT chunk_id,
+           document_id,
+           node_id,
+           so_hieu,
+           breadcrumb,
+           content,
+           (raw_score / (1 + raw_score))::float8 AS score
+    FROM ranked
+    ORDER BY raw_score DESC, chunk_id
     LIMIT ${options.topK}
   `) as unknown as FulltextRow[];
 

@@ -33,6 +33,8 @@ describe("hybrid retrieval", () => {
     expect(extractLegalIdentifier(question)).toBe("115/2018/NĐ-CP");
     expect(buildTsQuery(question)).toContain("115:*");
     expect(buildTsQuery(question)).toContain("phat:*");
+    expect(buildTsQuery(question)).toContain("muc:*");
+    expect(buildTsQuery(question)).toContain("toi:*");
     expect(buildTsQuery(question)).not.toContain("bao:*");
   });
 });
