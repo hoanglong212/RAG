@@ -1,38 +1,11 @@
 {
   "schemaVersion": 1,
   "collection": "vietnamese-food-safety-law",
-  "query": "an toàn thực phẩm",
+  "query": "thực phẩm",
   "source": "https://vanban.chinhphu.vn",
   "requestedLimit": 50,
-  "collectedAt": "2026-08-12T04:37:11.608Z",
+  "collectedAt": "2026-08-12T05:44:58.664Z",
   "documents": [
-    {
-      "docId": "166243",
-      "title": "Thông báo số 105/TB-VPCP của Văn phòng Chính phủ: Kết luận của Phó Thủ tướng Nguyễn Thiện Nhân tại buổi làm việc với Ủy ban nhân dân thành phố Hà Nội về tình hình tiêu thụ gà Bắc Giang tại Hà Nội và Ủy ban nhân dân tỉnh Bắc Giang về việc ngăn chặn việc vận chuyển, kinh doanh gà nhập lậu, không rõ nguồn gốc, không bảo đảm an toàn thực phẩm và tình hình phát triển chăn nuôi gà trên địa bàn tỉnh Bắc Giang",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=166243",
-      "fileName": "166243-thong-bao-so-105-tb-vpcp-cua-van-phong-chinh-phu-ket-luan-cua-pho-thu-tuong-nguy.txt",
-      "sha256": "b67ebb29758cf77b413b4223d8cb6ba8ad8b9e71157f297abc89e76afdf63390",
-      "characterCount": 5826,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "165866",
-      "title": "Thông báo số 70/TB-VPCP của Văn phòng Chính phủ: Kết luận của Phó Thủ tướng Nguyễn Thiện Nhân tại cuộc họp trực tuyến sơ kết 02 tháng triển khai Phương án tăng cường ngăn chặn việc vận chuyển, kinh doanh gà nhập lậu, không rõ nguồn gốc, không bảo đảm an toàn thực phẩm trên địa bàn Hà Nội và 01 tháng triển khai Đề án Phòng ngừa, ngăn chặn vận chuyển và kinh doanh gia cầm, sản phẩm gia cầm nhập khẩu trái phép",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=165866",
-      "fileName": "165866-thong-bao-so-70-tb-vpcp-cua-van-phong-chinh-phu-ket-luan-cua-pho-thu-tuong-nguye.txt",
-      "sha256": "e589fa7cca3ea7e1a57209d6e6f53df586ae9980021332aad08c5707c200bcfe",
-      "characterCount": 8611,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "165582",
-      "title": "Thông báo số 30/TB-VPCP của Văn phòng Chính phủ: Kết luận của Phó Thủ tướng Nguyễn Thiện Nhân tại cuộc họp giao ban trực tuyến với các địa phương về công tác bảo đảm an toàn thực phẩm",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=165582",
-      "fileName": "165582-thong-bao-so-30-tb-vpcp-cua-van-phong-chinh-phu-ket-luan-cua-pho-thu-tuong-nguye.txt",
-      "sha256": "d05b315ec8e2b0a69f2ae84c384433c4783a9108455bb6624dac81123ec2b9fe",
-      "characterCount": 8995,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
     {
       "docId": "166124",
       "title": "Thông tư số 02/2013/TT-BNNPTNT của Bộ Nông nghiệp và Phát triển nông thôn: Quy định phân tích nguy cơ và quản lý an toàn thực phẩm theo chuỗi sản xuất kinh doanh nông lâm thủy sản và muối",
@@ -40,34 +13,8 @@
       "fileName": "166124-thong-tu-so-02-2013-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-quy-di.txt",
       "sha256": "ca20ffd1e4dd9674fa8022f89b978129b937a71417ff7916f240c717e528fa38",
       "characterCount": 33752,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "165257",
-      "title": "Công văn số 10796/VPCP-KTTH của Văn phòng Chính phủ: V/v xây dựng Đề án kiểm soát an toàn thực phẩm đối với hàng hóa nhập khẩu",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=165257",
-      "fileName": "165257-cong-van-so-10796-vpcp-ktth-cua-van-phong-chinh-phu-v-v-xay-dung-de-an-kiem-soat.txt",
-      "sha256": "99dfa70a042c469bef4e8d9c0c399b0ea526eafa8d920121c49f8ae43ef35c1a",
-      "characterCount": 1479,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "165229",
-      "title": "Thông báo số 433/TB-VPCP của Văn phòng Chính phủ: Kết luận của Phó Thủ tướng Nguyễn Thiện Nhân tại cuộc họp sơ kết 01 tháng triển khai phương án ngăn chặn việc vận chuyển, kinh doanh gà nhập lậu, không rõ nguồn gốc, không bảo đảm an toàn thực phẩm trên địa bàn thành phố Hà Nội",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=165229",
-      "fileName": "165229-thong-bao-so-433-tb-vpcp-cua-van-phong-chinh-phu-ket-luan-cua-pho-thu-tuong-nguy.txt",
-      "sha256": "8fea9f86dd605a554fe02d1b4ee42d3fbf189bde6c9e3cbafcb1d83c14e08900",
-      "characterCount": 5474,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "165051",
-      "title": "Công văn số 10360/VPCP-KGVX của Văn phòng Chính phủ: V/v tổ chức \"Chiến dịch cao điểm đảm bảo an toàn thực phẩm\" và \"Tháng hành động vì Chất lượng, vệ sinh an toàn thực phẩm\" năm 2013",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=165051",
-      "fileName": "165051-cong-van-so-10360-vpcp-kgvx-cua-van-phong-chinh-phu-v-v-to-chuc-chien-dich-cao-d.txt",
-      "sha256": "ceb6c9965412cfaa73a219cc961c6b3df2bf1a817bb3a44ce4998082dac11703",
-      "characterCount": 2261,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 125,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "165851",
@@ -76,7 +23,8 @@
       "fileName": "165851-thong-tu-so-30-2012-tt-byt-cua-bo-y-te-quy-dinh-ve-dieu-kien-an-toan-thuc-pham-d.txt",
       "sha256": "756fac34eae34b0ce633ae200e6ae23afbe2e6011a992356dc48a03ea0dce9b6",
       "characterCount": 16642,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 53,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "165850",
@@ -85,7 +33,8 @@
       "fileName": "165850-thong-tu-so-26-2012-tt-byt-cua-bo-y-te-quy-dinh-cap-giay-chung-nhan-co-so-du-die.txt",
       "sha256": "a33c640e5229472cb94961d319896123442d4a035449931d155fd44bd1ad4112",
       "characterCount": 12507,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 32,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "165778",
@@ -94,7 +43,8 @@
       "fileName": "165778-thong-tu-so-61-2012-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-quy-di.txt",
       "sha256": "e01ac33583645f8afda7b38b168aabd89d6c6f4b6c1370eb29187358f0e4ece7",
       "characterCount": 25330,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 78,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "165441",
@@ -103,7 +53,8 @@
       "fileName": "165441-thong-tu-so-19-2012-tt-byt-cua-bo-y-te-huong-dan-viec-cong-bo-hop-quy-va-cong-bo.txt",
       "sha256": "4d190e6b6ef8de6a86e4f75074847566ebad0a44d9c9c349d089cabcdec015be",
       "characterCount": 19043,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 47,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "164403",
@@ -112,7 +63,8 @@
       "fileName": "164403-nghi-dinh-so-91-2012-nd-cp-cua-chinh-phu-quy-dinh-xu-phat-vi-pham-hanh-chinh-ve-.txt",
       "sha256": "7b389c6f6acaccf32dd8705186a7b261954bde2dde66b1694674fd82f5d12908",
       "characterCount": 77682,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 161,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "165530",
@@ -121,16 +73,18 @@
       "fileName": "165530-thong-tu-so-16-2012-tt-byt-cua-bo-y-te-quy-dinh-ve-dieu-kien-an-toan-thuc-pham-d.txt",
       "sha256": "f9d677b4816d527231672bc98cd101011a8a1f5c6162f66c272124a18e525fce",
       "characterCount": 18529,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 54,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
-      "docId": "164089",
-      "title": "Thông báo số 335/TB-VPCP của Văn phòng Chính phủ: Ý kiến kết luận của Phó Thủ tướng Nguyễn Thiện Nhân tại cuộc họp Ban Chỉ đạo liên ngành Trung ương về vệ sinh an toàn thực phẩm ngày 21 tháng 8 năm 2012",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=164089",
-      "fileName": "164089-thong-bao-so-335-tb-vpcp-cua-van-phong-chinh-phu-y-kien-ket-luan-cua-pho-thu-tuo.txt",
-      "sha256": "d6f22bd1e10a4063fdbeb7a35cf7153265a0729d69326c8e811ede80bd0b6ac7",
-      "characterCount": 5008,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "docId": "165363",
+      "title": "Quyết định số 17/2012/QĐ-UBND của UBND Tỉnh An Giang: Ban hành mức trợ cấp cho cán bộ, công chức gốc là y, bác sỹ công tác tại Sở Y tế, Chi Cục An toàn vệ sinh thực phẩm, Chi cục Dân số - Kế hoạch hóa gia đình và Phòng Y tế các huyện, thị xã, thành phố",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=165363",
+      "fileName": "165363-quyet-dinh-so-17-2012-qd-ubnd-cua-ubnd-tinh-an-giang-ban-hanh-muc-tro-cap-cho-ca.txt",
+      "sha256": "24288172656f378dc7fd0c6d68a1fcac4592a6b87be0b51122507b862ad738a7",
+      "characterCount": 2776,
+      "structuralChunkCount": 5,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "163860",
@@ -139,34 +93,8 @@
       "fileName": "163860-thong-tu-so-34-2012-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-quy-di.txt",
       "sha256": "f9db0fbe4c3d58f813c627db84f5778dad261d202292f6b7957d210aa98cc68f",
       "characterCount": 17151,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "162267",
-      "title": "Công văn số 930/TTg-KGVX của Thủ tướng Chính phủ: V/v thay đổi thành viên Ban Chỉ đạo liên ngành Trung ương về vệ sinh an toàn thực phẩm.",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=162267",
-      "fileName": "162267-cong-van-so-930-ttg-kgvx-cua-thu-tuong-chinh-phu-v-v-thay-doi-thanh-vien-ban-chi.txt",
-      "sha256": "a34aa87ad16d07568b6630036a8bd86bfec444ae030cbd38701818f43b3c2111",
-      "characterCount": 1748,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "159781",
-      "title": "Công văn số 3710/VPCP-KGVX của Văn phòng Chính phủ: V/v Đề án \"Triển khai mô hình cải thiện an toàn thực phẩm đối với dịch vụ ăn uống tại các phường, thị trấn của 29 quận, huyện, thị xã thuộc thành phố Hà Nội giai đoạn 2011-2015\".",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=159781",
-      "fileName": "159781-cong-van-so-3710-vpcp-kgvx-cua-van-phong-chinh-phu-v-v-de-an-trien-khai-mo-hinh-.txt",
-      "sha256": "0121cf69343de0b2a457a563187c4084dbe1deb30dd673f8f24c6a7e3cb53d73",
-      "characterCount": 2125,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "159197",
-      "title": "Thông báo số 173/TB-VPCP của Văn phòng Chính phủ: Kết luận của Phó Thủ tướng Nguyễn Thiện Nhân tại cuộc họp giao ban trực tuyến với các địa phương về công tác bảo đảm an toàn thực phẩm ngày 26 tháng 4 năm 2012",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=159197",
-      "fileName": "159197-thong-bao-so-173-tb-vpcp-cua-van-phong-chinh-phu-ket-luan-cua-pho-thu-tuong-nguy.txt",
-      "sha256": "a161db561bd6c0af0ca5734cd8d63266216a43cae411ab7edd3f43bc239835bb",
-      "characterCount": 7837,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 80,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "158155",
@@ -175,34 +103,18 @@
       "fileName": "158155-nghi-dinh-so-38-2012-nd-cp-cua-chinh-phu-quy-dinh-chi-tiet-thi-hanh-mot-so-dieu-.txt",
       "sha256": "8f9128aad68500ab1882a8da37271431a02c93b5b846efa96ff8f8bd10bd9a79",
       "characterCount": 46108,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 97,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
-      "docId": "156313",
-      "title": "Công văn số 329/TTg-KGVX của Thủ tướng Chính phủ: V/v thay đổi thành viên Ban Chỉ đạo liên ngành Trung ương về vệ sinh an toàn thực phẩm",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=156313",
-      "fileName": "156313-cong-van-so-329-ttg-kgvx-cua-thu-tuong-chinh-phu-v-v-thay-doi-thanh-vien-ban-chi.txt",
-      "sha256": "3a9733eaa7dbcc9e57941f2d63e8b3c37f4125ca8b2b871618ae0ee01dcd7b38",
-      "characterCount": 1094,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "156618",
-      "title": "Chỉ thị số 3/CT-UBND của UBND TP Hà Nội: Về việc tăng cường chỉ đạo phát triển chăn nuôi, nuôi thủy sản; phòng, chống dịch bệnh gia súc, gia cầm, thủy sản và bảo đảm an toàn thực phẩm trong sản xuất nông, lâm, thủy sản trên địa bàn thành phố Hà Nội năm 2012",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=156618",
-      "fileName": "156618-chi-thi-so-3-ct-ubnd-cua-ubnd-tp-ha-noi-ve-viec-tang-cuong-chi-dao-phat-trien-ch.txt",
-      "sha256": "74bc7e1bcf81d68b74fe7d73f07745b1c2c5cfaf515697c4655e790c9d1a1f92",
-      "characterCount": 5879,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "153685",
-      "title": "Công văn số 38/VPCP-KGVX của Văn phòng Chính phủ: V/v đề án \"Đẩy mạnh hoạt động truyền thông về an toàn thực phẩm giai đoạn 2012 - 2016\"",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=153685",
-      "fileName": "153685-cong-van-so-38-vpcp-kgvx-cua-van-phong-chinh-phu-v-v-de-an-day-manh-hoat-dong-tr.txt",
-      "sha256": "6de434ce627eb4dfd33e07d18a690e9b07eaf2fff696360bc26c29c8334406b7",
-      "characterCount": 1940,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "docId": "156489",
+      "title": "Thông tư số 02/2012/TT-BNNPTNT của Bộ Nông nghiệp và Phát triển nông thôn: Ban hành Quy chuẩn kỹ thuật quốc gia về điều kiện bảo đảm an toàn thực phẩm đối với cơ sở sản xuất nước mắm, sản phẩm thủy sản dạng mắm và thủy sản khô dùng làm thực phẩm",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=156489",
+      "fileName": "156489-thong-tu-so-02-2012-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-ban-ha.txt",
+      "sha256": "40e590ed4ec7f9eb5187add54966ca202edcb16174d6c443465946b1a14acfa7",
+      "characterCount": 3273,
+      "structuralChunkCount": 5,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "153496",
@@ -211,61 +123,58 @@
       "fileName": "153496-quyet-dinh-so-20-qd-ttg-cua-thu-tuong-chinh-phu-phe-duyet-chien-luoc-quoc-gia-an.txt",
       "sha256": "1489ef285acb1ff1caa217a25cd7802c4659ee958fbf6fa7ff979180a4b724a4",
       "characterCount": 25718,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 28,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
-      "docId": "153687",
-      "title": "Thông báo số 313/TB-VPCP của Văn phòng Chính phủ: Ý kiến kết luận của Phó thủ tướng Nguyễn Thiện Nhân tại cuộc họp Ban Chỉ đạo liên ngành Trung ương về vệ sinh an toàn thực phẩm ngày 19 tháng 12 năm 2011",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=153687",
-      "fileName": "153687-thong-bao-so-313-tb-vpcp-cua-van-phong-chinh-phu-y-kien-ket-luan-cua-pho-thu-tuo.txt",
-      "sha256": "63495941df55486ef3639f56219bbfe8bb4e5c906221fa028e8f3f63e5301871",
-      "characterCount": 9217,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "docId": "154557",
+      "title": "Thông tư số 60/2011/TT-BGDĐT của Bộ Giáo dục và Đào tạo: Ban hành chương trình khung trung cấp chuyên nghiệp các nhóm ngành: Sản xuất, chế biến sợi, vải, giày, da; Chế biến lương thực, thực phẩm và đồ uống.",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=154557",
+      "fileName": "154557-thong-tu-so-60-2011-tt-bgddt-cua-bo-giao-duc-va-dao-tao-ban-hanh-chuong-trinh-kh.txt",
+      "sha256": "207f7a6fba7d0d60f32e57ced9ae45a7e39a41da75c636940d2845217a9044de",
+      "characterCount": 3413,
+      "structuralChunkCount": 3,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
-      "docId": "157393",
-      "title": "Chỉ thị số 21/CT-UBND của UBND TP Hà Nội: Về việc tăng cường công tác phòng, chống dịch bệnh động vật và công tác đảm bảo an toàn thực phẩm dịp Tết Nguyên đán Nhâm Thìn năm 2012 trên địa bàn thành phố Hà Nội",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=157393",
-      "fileName": "157393-chi-thi-so-21-ct-ubnd-cua-ubnd-tp-ha-noi-ve-viec-tang-cuong-cong-tac-phong-chong.txt",
-      "sha256": "682599a9ef533ec3f5c92fce4280552199626210ce2c04538365246a70e44208",
-      "characterCount": 4948,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "docId": "153775",
+      "title": "Thông tư số 75/2011/TT-BNNPTNT của Bộ Nông nghiệp và Phát triển nông thôn: Quy định về đăng ký và xác nhận nội dung quảng cáo thực phẩm thuộc lĩnh vực quản lý của Bộ Nông nghiệp và Phát triển nông thôn",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=153775",
+      "fileName": "153775-thong-tu-so-75-2011-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-quy-di.txt",
+      "sha256": "2650681fc4723d886da333335ebcb7bdde9336986e50fb9ad0bf89eea3748de7",
+      "characterCount": 14159,
+      "structuralChunkCount": 47,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
-      "docId": "153208",
-      "title": "Công văn số 8876/VPCP-KGVX của Văn phòng Chính phủ: V/v Họp Ban Chỉ đạo liên ngành Trung ương về vệ sinh an toàn thực phẩm",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=153208",
-      "fileName": "153208-cong-van-so-8876-vpcp-kgvx-cua-van-phong-chinh-phu-v-v-hop-ban-chi-dao-lien-ngan.txt",
-      "sha256": "685883ef082fe4f17c541833f6dd5ebfa558106eb83c41f34ceec7604b8eabb7",
-      "characterCount": 1221,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "docId": "153812",
+      "title": "Thông tư số 74/2011/TT-BNNPTNT của Bộ Nông nghiệp và Phát triển nông thôn: Quy định về truy xuất nguồn gốc, thu hồi và xử lý thực phẩm nông lâm sản không bảo đảm an toàn",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=153812",
+      "fileName": "153812-thong-tu-so-74-2011-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-quy-di.txt",
+      "sha256": "b1b05f4b17fc87c87026179c74117dc43f82e9285707527336dbe0f7fa236f06",
+      "characterCount": 14738,
+      "structuralChunkCount": 43,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
-      "docId": "151684",
-      "title": "Công văn số 1679/TTg-KGVX của Thủ tướng Chính phủ: V/v thay đổi thành viên Ban Chỉ đạo liên ngành Trung ương về vệ sinh an toàn thực phẩm",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=151684",
-      "fileName": "151684-cong-van-so-1679-ttg-kgvx-cua-thu-tuong-chinh-phu-v-v-thay-doi-thanh-vien-ban-ch.txt",
-      "sha256": "51ec12e4c8deaf81040270571195ba4ce643e920e127397945c9599c3cbc2617",
-      "characterCount": 1108,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "docId": "151912",
+      "title": "Quyết định số 1791/QĐ-TTG của Thủ tướng Chính phủ: Về cơ chế, chính sách hỗ trợ vắc xin tai xanh, vắc xin dịch tả lợn nhằm đẩy mạnh sản xuất chăn nuôi, bảo đảm đủ nguồn cung ứng thực phẩm và bình ổn giá thị trường",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=151912",
+      "fileName": "151912-quyet-dinh-so-1791-qd-ttg-cua-thu-tuong-chinh-phu-ve-co-che-chinh-sach-ho-tro-va.txt",
+      "sha256": "980f1bef133a8bf62d742323847c15988996527fbb8b71d5dcb65916463a0150",
+      "characterCount": 5497,
+      "structuralChunkCount": 11,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
-      "docId": "151653",
-      "title": "Công văn số 221/TB-VPCP của Văn phòng Chính phủ: Ý kiến kết luận của Phó Thủ tướng Nguyễn Thiện Nhân tại cuộc họp Ban Chỉ đạo liên ngành Trung ương về vệ sinh an toàn thực phẩm ngày 09 tháng 8 năm 2011",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=151653",
-      "fileName": "151653-cong-van-so-221-tb-vpcp-cua-van-phong-chinh-phu-y-kien-ket-luan-cua-pho-thu-tuon.txt",
-      "sha256": "90bc4e3a8e8305ecea04e4249b05b3033d332c5287310a4bb5b5b1ae36df6696",
-      "characterCount": 5922,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "151533",
-      "title": "Công văn số 1553/TTg-KTN của Thủ tướng Chính phủ: V/v tăng cường quản lý chất lượng, an toàn thực phẩm đối với sản phẩm chè",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=151533",
-      "fileName": "151533-cong-van-so-1553-ttg-ktn-cua-thu-tuong-chinh-phu-v-v-tang-cuong-quan-ly-chat-luo.txt",
-      "sha256": "fbfeb52711fca234cb7dd406613a6578ff3786809d2b672ea640417a920305b0",
-      "characterCount": 5505,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "docId": "151851",
+      "title": "Quyết định số 31/2011/QĐ-UBND của UBND Tỉnh Thừa Thiên - Huế: Về việc ban hành Quy chế quản lý vùng nuôi tôm tập trung đảm bảo an toàn dịch bệnh và vệ sinh thực phẩm",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=151851",
+      "fileName": "151851-quyet-dinh-so-31-2011-qd-ubnd-cua-ubnd-tinh-thua-thien-hue-ve-viec-ban-hanh-quy-.txt",
+      "sha256": "41c1108ae7ddfb23f2bd50808b60f725a889ea40ccc2472a95ff32c673c56501",
+      "characterCount": 2288,
+      "structuralChunkCount": 1,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "153801",
@@ -274,7 +183,8 @@
       "fileName": "153801-quyet-dinh-so-38-2011-qd-ubnd-cua-ubnd-tinh-an-giang-xu-ly-cac-quy-dinh-ve-quy-c.txt",
       "sha256": "39612272f7bcaa7ef11f30d9362b3cbf117d7b293bde387dc90c9d9525bc023e",
       "characterCount": 7390,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 12,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "153547",
@@ -283,7 +193,8 @@
       "fileName": "153547-thong-tu-so-55-2011-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-kiem-t.txt",
       "sha256": "53adeb45a9d66b16d76b84ef791c473500aab321a9d34ec2602d52e73475e374",
       "characterCount": 55154,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 129,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "153546",
@@ -292,43 +203,28 @@
       "fileName": "153546-thong-tu-so-54-2011-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-yeu-ca.txt",
       "sha256": "9a95c99b4e36d5fb0427153e03689d4a00f039b5d83b3a4c871f35613ccc890e",
       "characterCount": 10999,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 21,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
-      "docId": "101962",
-      "title": "Công văn số 5113/VPCP-KGVX của Văn phòng Chính phủ: V/v xin phép tiếp tục thực hiện các văn bản quy phạm pháp luật liên quan đến quản lý an toàn thực phẩm hiện hành",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=101962",
-      "fileName": "101962-cong-van-so-5113-vpcp-kgvx-cua-van-phong-chinh-phu-v-v-xin-phep-tiep-tuc-thuc-hi.txt",
-      "sha256": "0fb5eb1b1b9048af5774bc4209dc2352e88e84589af492ee66b4f1f596d6904a",
-      "characterCount": 2229,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "docId": "101903",
+      "title": "Quyết định số 1256/QĐ-TTG của Thủ tướng Chính phủ: Về việc phê duyệt Đề án Tăng cường năng lực Chi cục An toàn vệ sinh thực phẩm tuyến tỉnh đến năm 2015",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=101903",
+      "fileName": "101903-quyet-dinh-so-1256-qd-ttg-cua-thu-tuong-chinh-phu-ve-viec-phe-duyet-de-an-tang-c.txt",
+      "sha256": "30bc8ecf90b03e71ed2e5eda10fc1a769fab53489d0c531b94d7170c4fa83e82",
+      "characterCount": 8674,
+      "structuralChunkCount": 10,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
-      "docId": "101710",
-      "title": "Công văn số 1144/TTG-KGVX của Thủ tướng Chính phủ: V/v thay đổi thành viên Ban Chỉ đạo liên ngành Trung ương về vệ sinh an toàn thực phẩm",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=101710",
-      "fileName": "101710-cong-van-so-1144-ttg-kgvx-cua-thu-tuong-chinh-phu-v-v-thay-doi-thanh-vien-ban-ch.txt",
-      "sha256": "db75adfd490edfc938e65bf27a1fe6a49afbd9fb4b3bec2d7b9fe4d4378f2cc0",
-      "characterCount": 1608,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "101234",
-      "title": "Công văn số 4075/VPCP - KGVX của Văn phòng Chính phủ: V/v ban hành Chỉ thị của Thủ tướng Chính phủ về công tác bảo đảm an toàn thực phẩm",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=101234",
-      "fileName": "101234-cong-van-so-4075-vpcp-kgvx-cua-van-phong-chinh-phu-v-v-ban-hanh-chi-thi-cua-thu-.txt",
-      "sha256": "2b393e0f582549ef77d93a8030fb41fd5d3cd189878cd2e5f791705912be4d07",
-      "characterCount": 2055,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "100460",
-      "title": "Thông báo số 115/TB-VPCP của Văn phòng Chính phủ: Kết luận của Phó Thủ tướng Nguyễn Thiện Nhân tại Hội nghị giao ban trực tuyến về công tác bảo đảm an toàn thực phẩm",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=100460",
-      "fileName": "100460-thong-bao-so-115-tb-vpcp-cua-van-phong-chinh-phu-ket-luan-cua-pho-thu-tuong-nguy.txt",
-      "sha256": "ba102ff51142f2296b892bb73b9855e197aacdc4c6417583628ae93b293cdf6e",
-      "characterCount": 6866,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "docId": "100921",
+      "title": "Thông tư số 21/2011/TT-BCT của Bộ Công thương: Quy định về quản lý hoạt động kinh doanh tạm nhập tái xuất thực phẩm đông lạnh",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=100921",
+      "fileName": "100921-thong-tu-so-21-2011-tt-bct-cua-bo-cong-thuong-quy-dinh-ve-quan-ly-hoat-dong-kinh.txt",
+      "sha256": "8d901baf10aa17cc33fd5aad61ef24786cdd4bf9d7439eaedc6b1899253c5c00",
+      "characterCount": 15513,
+      "structuralChunkCount": 33,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "101426",
@@ -337,34 +233,8 @@
       "fileName": "101426-thong-tu-so-13-2011-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-huong-.txt",
       "sha256": "9014980ece9fb9853d34bd0e0aaa85cff6dc52faa459cdb85395e48a741beff1",
       "characterCount": 20792,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "99478",
-      "title": "Công văn số 374/TTG-KGVX của Thủ tướng Chính phủ: V/v thay đổi thành viên Ban Chỉ đạo liên ngành Trung ương về vệ sinh an toàn thực phẩm",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=99478",
-      "fileName": "99478-cong-van-so-374-ttg-kgvx-cua-thu-tuong-chinh-phu-v-v-thay-doi-thanh-vien-ban-chi.txt",
-      "sha256": "33d1628591a99b7b3d7f73a15677cf19810c94179bf0fbd6d09841e63d644db7",
-      "characterCount": 1804,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "99357",
-      "title": "Công văn số 1415/VPCP-KGVX của Văn phòng Chính phủ: V/v tổ chức Lễ phát động \"Tháng hành động vì chất lượng vệ sinh an toàn thực phẩm\" năm 2011.",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=99357",
-      "fileName": "99357-cong-van-so-1415-vpcp-kgvx-cua-van-phong-chinh-phu-v-v-to-chuc-le-phat-dong-than.txt",
-      "sha256": "d168e40e1b306aac7ff2232665813c33e902a3ea4928807ab6c9cab20c85be31",
-      "characterCount": 1619,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "99254",
-      "title": "Thông báo số 27/TB-VPCP của Văn phòng Chính phủ: Ý kiến kết luận của Phó Thủ tướng Nguyễn Thiện Nhân - Trưởng Ban Chỉ đạo liên ngành Trung ương về vệ sinh an toàn thực phẩm tại cuộc họp Ban Chỉ đạo ngày 04 tháng 01 năm 2011",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=99254",
-      "fileName": "99254-thong-bao-so-27-tb-vpcp-cua-van-phong-chinh-phu-y-kien-ket-luan-cua-pho-thu-tuon.txt",
-      "sha256": "4e0d96ff82ca5a1fb7a1b2a4e00997726f40e120f70bdf7b15f877276ebee19c",
-      "characterCount": 5504,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 75,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "99742",
@@ -373,7 +243,8 @@
       "fileName": "99742-thong-tu-so-03-2011-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-quy-di.txt",
       "sha256": "e228086ce9e0ccd0855a1af77ddd731147570f574d580638991d5a098537378c",
       "characterCount": 11842,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 19,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "99144",
@@ -382,7 +253,38 @@
       "fileName": "99144-thong-tu-so-47-2010-tt-bct-cua-bo-cong-thuong-quy-dinh-viec-kiem-tra-chat-luong-.txt",
       "sha256": "e613b9ac4bec9756c1e4f212a6303009858afca18763e89d038f8f9a9e1ece1c",
       "characterCount": 11403,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 52,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "98498",
+      "title": "Thông tư số 68/2010/TT-BNNPTNT của Bộ Nông nghiệp và Phát triển nông thôn: Ban hành “Danh mục chỉ tiêu, mức giới hạn cho phép về an toàn vệ sinh thực phẩm đối với một số sản phẩm thực phẩm có nguồn gốc thực vật nhập khẩu, sản xuất lưu thông trong nước thuộc phạm vi quản lý của Bộ Nông nghiệp và Phát triển nông thôn”",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=98498",
+      "fileName": "98498-thong-tu-so-68-2010-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-ban-ha.txt",
+      "sha256": "170df9542412a2f9e7f204369b99f006a2fa269a37e295165ed7bfe38acac71d",
+      "characterCount": 3234,
+      "structuralChunkCount": 8,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "96698",
+      "title": "Thông tư số 45/2010/TT-BNNPTNT của Bộ Nông nghiệp và Phát triển nông thôn: Quy định điều kiện cơ sở, vùng nuôi tôm sú, tôm chân trắng thâm canh đảm bảo an toàn vệ sinh thực phẩm",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=96698",
+      "fileName": "96698-thong-tu-so-45-2010-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-quy-di.txt",
+      "sha256": "edc93ff090096a0cd81c88654d3dee9397a1d853582fadd5e197ce2dad06a7cc",
+      "characterCount": 10079,
+      "structuralChunkCount": 23,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "96697",
+      "title": "Thông tư số 44/2010/TT-BNNPTNT của Bộ Nông nghiệp và Phát triển nông thôn: Quy định điều kiện cơ sở, vùng nuôi cá tra thâm canh đảm bảo an toàn vệ sinh thực phẩm",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=96697",
+      "fileName": "96697-thong-tu-so-44-2010-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-quy-di.txt",
+      "sha256": "9bfaf96be19aca379d2acc87f017a8ad8e69fff878aeed14c290edfb98f74800",
+      "characterCount": 9919,
+      "structuralChunkCount": 19,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "96032",
@@ -391,7 +293,8 @@
       "fileName": "96032-luat-so-55-2010-qh12-cua-quoc-hoi-luat-an-toan-thuc-pham.txt",
       "sha256": "aad5ad3307a39c56ae71c7d032d064e1ac94eb895372bb9a7e807ef2c2ed54ce",
       "characterCount": 73063,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 264,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "97066",
@@ -400,16 +303,8 @@
       "fileName": "97066-thong-tu-so-37-2010-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-ban-ha.txt",
       "sha256": "769f6d6700b879446d8361e6244585d33513a016ea9e1b2a8032194b24e63172",
       "characterCount": 2188,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "95819",
-      "title": "Chỉ thị số 03/2010/CT-UBND của UBND TP Cần Thơ: Về việc tăng cường các biện pháp bảo đảm vệ sinh an toàn thực phẩm trên địa bàn thành phố Cần Thơ",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=95819",
-      "fileName": "95819-chi-thi-so-03-2010-ct-ubnd-cua-ubnd-tp-can-tho-ve-viec-tang-cuong-cac-bien-phap-.txt",
-      "sha256": "cb85168fb23121c47946cc0806998ed4ac5907abd20f6dca2711cce8aaaeaf60",
-      "characterCount": 9770,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 4,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "94839",
@@ -418,7 +313,168 @@
       "fileName": "94839-quyet-dinh-so-734-qd-ttg-cua-thu-tuong-chinh-phu-phe-duyet-ke-hoach-thuc-hien-ng.txt",
       "sha256": "685274d1fe25e138bfdad7a79810002ce1a416b011fbf5a07185564dfa3d1585",
       "characterCount": 2264,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 1,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97110",
+      "title": "Thông tư số 28/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về phụ gia thực phẩm - Chất điều chỉnh độ acid",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97110",
+      "fileName": "97110-thong-tu-so-28-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-p.txt",
+      "sha256": "aed96a77d019f6578babb3a601a5cea9107b2cd91c36e8c024720d88854254e3",
+      "characterCount": 2255,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97107",
+      "title": "Thông tư số 27/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về phụ gia thực phẩm - Phẩm màu",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97107",
+      "fileName": "97107-thong-tu-so-27-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-p.txt",
+      "sha256": "9f871d2b4dc0e7bc7925bdee9f0443e339102177ecce1938e238ebb9062ea6f2",
+      "characterCount": 2205,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97104",
+      "title": "Thông tư số 26/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về phụ gia thực phẩm - Chất làm rắn chắc",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97104",
+      "fileName": "97104-thong-tu-so-26-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-p.txt",
+      "sha256": "6d285e58819db7c50477287e55e79b64f1bd89a36edc059033549c5f335620a8",
+      "characterCount": 2237,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97103",
+      "title": "Thông tư số 25/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về phụ gia thực phẩm - Chất ngọt tổng hợp",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97103",
+      "fileName": "97103-thong-tu-so-25-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-p.txt",
+      "sha256": "f820d238bb8a74be211f3872b42fee01be8bebe24e60f986b409b593939fc05f",
+      "characterCount": 2231,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97102",
+      "title": "Thông tư số 24/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về phụ gia thực phẩm - Chất chống tạo bọt",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97102",
+      "fileName": "97102-thong-tu-so-24-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-p.txt",
+      "sha256": "6af94a9f0809cfe97a1937181622e77fdb43034b12c23fec500881843206a35f",
+      "characterCount": 2233,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97101",
+      "title": "Thông tư số 23/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về phụ gia thực phẩm - Chất chống oxy hóa",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97101",
+      "fileName": "97101-thong-tu-so-23-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-p.txt",
+      "sha256": "70467cde9d66157b2cb6055af58f864be97f292f4c44201953af576d00f2476d",
+      "characterCount": 2232,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97081",
+      "title": "Thông tư số 22/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về phụ gia thực phẩm - Chất giữ màu",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97081",
+      "fileName": "97081-thong-tu-so-22-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-p.txt",
+      "sha256": "58a48c28e77451f1108e100acc2799bd0ec6969a96c956f8b2ec0117b010f9d6",
+      "characterCount": 2213,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97080",
+      "title": "Thông tư số 21/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về phụ gia thực phẩm - Chất chống đông vón",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97080",
+      "fileName": "97080-thong-tu-so-21-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-p.txt",
+      "sha256": "34bac0ae06c3cb6ed87e164e2763570b35e4464d048672aad86f2ad7fda3b9e2",
+      "characterCount": 2239,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97079",
+      "title": "Thông tư số 20/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về phụ gia thực phẩm - Chất tạo xốp",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97079",
+      "fileName": "97079-thong-tu-so-20-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-p.txt",
+      "sha256": "c0ebcc89bc18a8ba4eb28bd9955b612956bc1311a82d5a490a61a47b2f64633f",
+      "characterCount": 2211,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97078",
+      "title": "Thông tư số 19/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về phụ gia thực phẩm - Chất làm ẩm",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97078",
+      "fileName": "97078-thong-tu-so-19-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-p.txt",
+      "sha256": "be929592c05fcd80ba7d70633c6fb9268a9e42b0177e6f08e9713f3a2d02ef4e",
+      "characterCount": 2210,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97076",
+      "title": "Thông tư số 18/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về phụ gia thực phẩm - Chất điều vị",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97076",
+      "fileName": "97076-thong-tu-so-18-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-p.txt",
+      "sha256": "94987da11ce664daf09168afbb163e9a0ec6252048818c334fc0bab5604d777e",
+      "characterCount": 2210,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97075",
+      "title": "Thông tư số 17/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về các chất được sử dụng để bổ sung calci vào thực phẩm",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97075",
+      "fileName": "97075-thong-tu-so-17-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-c.txt",
+      "sha256": "21eeac5a99308a34172c7ac4a24c0708c895fc9adc218842ff575e1c2144dddb",
+      "characterCount": 2272,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97074",
+      "title": "Thông tư số 16/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về các chất được sử dụng để bổ sung sắt vào thực phẩm",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97074",
+      "fileName": "97074-thong-tu-so-16-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-c.txt",
+      "sha256": "6b9357ea48b2f001ad392858b58cb6574a041f24aace2471433724c07e4ed9a5",
+      "characterCount": 2267,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97073",
+      "title": "Thông tư số 15/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về acid folic được sử dụng để bổ sung vào thực phẩm",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97073",
+      "fileName": "97073-thong-tu-so-15-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-a.txt",
+      "sha256": "02901eb378e7ae48f3160e2ec24ab109a4e668035e693d9b3a50924d5cbe9bef",
+      "characterCount": 2260,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "97072",
+      "title": "Thông tư số 14/2010/TT-BYT của Bộ Y tế: Ban hành Quy chuẩn kỹ thuật quốc gia về các chất được sử dụng để bổ sung kẽm vào thực phẩm",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=97072",
+      "fileName": "97072-thong-tu-so-14-2010-tt-byt-cua-bo-y-te-ban-hanh-quy-chuan-ky-thuat-quoc-gia-ve-c.txt",
+      "sha256": "b6f44a5f22ba9f2106f8f38e7af87071208beb243697e504358c84c9e4d1b5ce",
+      "characterCount": 2263,
+      "structuralChunkCount": 2,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
+    },
+    {
+      "docId": "96236",
+      "title": "Thông tư số 29/2010/TT-BNNPTNT của Bộ Nông nghiệp và Phát triển nông thôn: Ban hành “Danh mục chỉ tiêu, mức giới hạn cho phép về an toàn vệ sinh thực phẩm đối với một số sản phẩm thực phẩm có nguồn gốc động vật nhập khẩu, sản xuất lưu thông trong nước thuộc phạm vi quản lý của Bộ Nông nghiệp và Phát triển nông thôn”",
+      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=96236",
+      "fileName": "96236-thong-tu-so-29-2010-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-ban-ha.txt",
+      "sha256": "45b14198f19265b5f4153ef4c30b3218dc099d0e2416b4e0ab9a5e4365b60219",
+      "characterCount": 3309,
+      "structuralChunkCount": 8,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "96521",
@@ -427,7 +483,8 @@
       "fileName": "96521-quyet-dinh-so-17-2010-qd-ubnd-cua-ubnd-tp-ha-noi-ban-hanh-quy-dinh-tam-thoi-phan.txt",
       "sha256": "3b92f2849dad21236285c9f8e845b4bade6cd4e4267cd988faaf220f28913ecf",
       "characterCount": 2327,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 3,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "94896",
@@ -436,7 +493,8 @@
       "fileName": "94896-thong-tu-so-25-2010-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-huong-.txt",
       "sha256": "c2c9ef41da4dde06e6e598066256cb45aae97add8c1d60b32f82eb3d40f71813",
       "characterCount": 21196,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 79,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     },
     {
       "docId": "94242",
@@ -445,16 +503,8 @@
       "fileName": "94242-quyet-dinh-so-13-2010-qd-ubnd-cua-ubnd-tinh-an-giang-ban-hanh-quy-chuan-ky-thuat.txt",
       "sha256": "38e4c01767757040e4606604f4707559eb533fcf1daf256e6bb877889855d353",
       "characterCount": 2477,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
-    },
-    {
-      "docId": "93859",
-      "title": "Thông tư số 09/2010/TT-BNNPTNT của Bộ Nông nghiệp và Phát triển nông thôn: Ban hành các yêu cầu đảm bảo chất lượng, vệ sinh an toàn thực phẩm trong chế biến sản phẩm cá tra, basa xuất khẩu",
-      "sourceUrl": "https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=93859",
-      "fileName": "93859-thong-tu-so-09-2010-tt-bnnptnt-cua-bo-nong-nghiep-va-phat-trien-nong-thon-ban-ha.txt",
-      "sha256": "d87f7f69c82bf68fdb6de2a69e24987eb02fffa0b3a677481e53cbdb8a7ac29d",
-      "characterCount": 5036,
-      "collectedAt": "2026-08-12T04:37:11.608Z"
+      "structuralChunkCount": 3,
+      "collectedAt": "2026-08-12T05:44:58.664Z"
     }
   ],
   "skipped": [
@@ -467,7 +517,23 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "218837",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "218706",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "218755",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "218330",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "217126",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -479,7 +545,15 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "216799",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "216827",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "216663",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -519,6 +593,18 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "213753",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "213531",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "213398",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "212575",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
@@ -551,6 +637,22 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "211766",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "211413",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "211105",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "211173",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "211064",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
@@ -563,6 +665,14 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "210241",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "210165",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "209533",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
@@ -571,11 +681,35 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "209434",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "209352",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "209107",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "208928",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "208926",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "208925",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "208924",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "208923",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -603,6 +737,10 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "207635",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "207555",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
@@ -619,11 +757,23 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "207324",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "207207",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "206982",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "206842",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "207150",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -640,6 +790,10 @@
     },
     {
       "docId": "205539",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "205568",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -663,6 +817,10 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "204774",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "203990",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
@@ -671,11 +829,23 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "203878",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "203661",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "204026",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
       "docId": "202772",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "204020",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -688,6 +858,10 @@
     },
     {
       "docId": "201250",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "201172",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -707,7 +881,15 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "198848",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "198617",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "197722",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -723,7 +905,15 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "196506",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "195901",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "195836",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -732,6 +922,10 @@
     },
     {
       "docId": "196263",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "195834",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -759,7 +953,19 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "195147",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "195148",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "194690",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "195142",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -767,7 +973,15 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "193928",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "193731",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "196761",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -799,7 +1013,19 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "191947",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "191291",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "191584",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "191239",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -815,6 +1041,10 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "190862",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "190239",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
@@ -824,6 +1054,10 @@
     },
     {
       "docId": "189240",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "188666",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -855,6 +1089,14 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "188206",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "188080",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "186893",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
@@ -867,6 +1109,26 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "185546",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "185387",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "185298",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "186596",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "186015",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "188324",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
@@ -876,6 +1138,10 @@
     },
     {
       "docId": "185730",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "184900",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -895,7 +1161,19 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "183936",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "183319",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "183000",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "182810",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -903,11 +1181,23 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "182813",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "183172",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "182413",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "183161",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "182816",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -935,6 +1225,30 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "180549",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "180491",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "180341",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "181157",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "180184",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "180580",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "179814",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
@@ -943,7 +1257,15 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "179370",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "179234",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "179182",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -956,6 +1278,10 @@
     },
     {
       "docId": "178605",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "178588",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -979,7 +1305,15 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "178185",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "177368",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "177434",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -1011,7 +1345,23 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "172136",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "172444",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "171967",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "171970",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "171996",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -1043,11 +1393,27 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "169820",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "169708",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "169616",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "169415",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
       "docId": "169032",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "169251",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -1059,11 +1425,19 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "167836",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
       "docId": "168167",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
       "docId": "167071",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "167529",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -1075,6 +1449,18 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "167235",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "166243",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "165866",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
       "docId": "167159",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
@@ -1083,16 +1469,136 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "165582",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "165257",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "165229",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
       "docId": "167661",
       "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "167693",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "165051",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "164366",
+      "reason": "Parser không tạo được structural chunk."
     },
     {
       "docId": "167178",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "164089",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "163751",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
       "docId": "167153",
       "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "162267",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "159781",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "159197",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "156313",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "156618",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "153685",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "153687",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "153457",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "157393",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "153208",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "151684",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "151653",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "151533",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "151386",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "101962",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "101710",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "101234",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "100460",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "99478",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "99357",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "99254",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
+      "docId": "98528",
+      "reason": "Parser không tạo được structural chunk."
     },
     {
       "docId": "97135",
@@ -1103,7 +1609,19 @@
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
+      "docId": "95627",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "95819",
+      "reason": "Parser không tạo được structural chunk."
+    },
+    {
       "docId": "94965",
+      "reason": "Toàn văn chỉ có 34 ký tự."
+    },
+    {
+      "docId": "94982",
       "reason": "Toàn văn chỉ có 34 ký tự."
     },
     {
@@ -1114,5 +1632,6 @@
       "docId": "94020",
       "reason": "Toàn văn chỉ có 34 ký tự."
     }
-  ]
+  ],
+  "requireStructural": true
 }

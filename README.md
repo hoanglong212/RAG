@@ -11,7 +11,7 @@ Sao chép `.env.example` thành `.env.local`, khởi động PostgreSQL và embe
 ```bash
 npm run db:migrate
 npm run db:check
-npm run data:collect -- --limit 50
+npm run data:collect -- --query "thực phẩm" --limit 50 --require-structural
 npm run ingest
 npm run dev
 ```

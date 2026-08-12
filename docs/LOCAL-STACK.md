@@ -60,7 +60,7 @@ Kết quả đúng phải có `status=ok` và `dimensions=768`. Service chuẩn 
 Thu thập lại 50 trang toàn văn từ Cổng Thông tin điện tử Chính phủ:
 
 ```powershell
-npm run data:collect -- --limit 50
+npm run data:collect -- --query "thực phẩm" --limit 50 --require-structural
 ```
 
 File thô nằm trong `data/raw` và không commit. `data/manifest-food-safety.json` được commit, chứa URL nguồn, thời điểm thu thập, kích thước và SHA-256 của từng file.
@@ -77,16 +77,20 @@ npm run ingest
 Mỗi tài liệu được parse một lần thành `doc_nodes`. Pipeline đồng thời sinh:
 
 - `structural`: theo Điều/Khoản/Điểm, tối đa 800 token, bắt buộc có `node_id`;
-- `fixed`: baseline liên tục 512 token, luôn để `node_id = null`.
+- `fixed`: cửa sổ 512 token, chồng lấn 64 token, luôn để `node_id = null`.
 
-Văn bản dạng công văn không có Điều vẫn được giữ cảnh báo parser và nạp bằng fixed chunks; hệ thống không dựng node giả.
+Flag `--require-structural` loại khỏi corpus nghiệm thu những trang mà parser không tạo được structural chunk. Nhờ vậy cả hai strategy đều chạy trên đúng cùng 50 `document_id`; hệ thống không dựng node giả cho văn bản thiếu cấu trúc.
 
 ## SQL nghiệm thu Phase 2
 
 ```sql
 SELECT ingest_status, count(*) FROM documents GROUP BY 1;
-SELECT strategy, count(*), min(so_token), max(so_token), count(node_id)
-FROM chunks GROUP BY 1 ORDER BY 1;
+SELECT strategy,
+       count(*) AS n_chunks,
+       count(DISTINCT document_id) AS n_docs,
+       sum(so_token) AS total_tokens,
+       round(avg(so_token)) AS avg_tokens
+FROM chunks GROUP BY strategy ORDER BY strategy;
 SELECT count(*) FROM doc_nodes;
 SELECT min(vector_dims(embedding)), max(vector_dims(embedding)) FROM chunks;
 ```
@@ -94,7 +98,9 @@ SELECT min(vector_dims(embedding)), max(vector_dims(embedding)) FROM chunks;
 Snapshot đã kiểm chứng ngày 2026-08-12:
 
 - `documents`: 50 `hoan_tat`;
-- `chunks`: 296 fixed và 1.427 structural;
-- `doc_nodes`: 2.958;
+- `chunks`: 328 fixed trên 50 văn bản, 1.663 structural trên 50 văn bản;
+- tổng token đếm theo khoảng trắng: 159.741 fixed (có tính phần chồng lấn) và 120.109 structural;
+- fixed bỏ phần chồng lấn còn 141.949 token duy nhất; structural chỉ tính nội dung parser gắn được vào node Điều/Phụ lục nên phần đầu trước Điều không được đưa vào chunk;
+- `doc_nodes`: 3.379;
 - vector: tất cả 768 chiều;
 - ràng buộc node: 0 structural thiếu node, 0 fixed có node.

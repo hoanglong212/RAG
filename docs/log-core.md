@@ -3,9 +3,10 @@
 ## 2026-08-12 — Phase 2 accepted
 
 - Provisioned a loopback-only PostgreSQL 18 cluster with pgvector 0.8.5 and unaccent, then applied and checked the D1 migrations.
-- Collected 50 official food-safety legal documents with source URLs and SHA-256 manifest entries.
-- Added fixed-512 chunking alongside structural chunking and a local Vietnamese embedding service using `pyvi` and the BKAI bi-encoder.
-- Live acceptance: 50 completed documents, 1,427 structural chunks, 296 fixed chunks, 2,958 document nodes, and 768 dimensions for every vector.
+- Collected 50 official food-safety legal documents with source URLs, structural-coverage checks, and SHA-256 manifest entries.
+- Added fixed-512 chunking with 64-token overlap alongside structural chunking and a local Vietnamese embedding service using `pyvi` and the BKAI bi-encoder.
+- Live acceptance after the coverage correction: both strategies cover the same 50 documents; 1,663 structural chunks, 328 fixed chunks, 3,379 document nodes, and 768 dimensions for every vector.
+- Token audit: fixed stores 159,741 whitespace tokens including overlap (141,949 unique); structural stores 120,109 tokens attached to recognized Điều/Phụ lục nodes and excludes the pre-Điều header/preamble.
 
 ## 2026-08-12 — D1 schema restoration
 

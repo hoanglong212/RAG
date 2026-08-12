@@ -7,6 +7,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { parseVanBan } from "../src/lib/parser";
 
 const PORTAL_ORIGIN = "https://vanban.chinhphu.vn";
 const DEFAULT_QUERY = "an toàn thực phẩm";
@@ -20,6 +21,7 @@ interface CollectedDocument {
   fileName: string;
   sha256: string;
   characterCount: number;
+  structuralChunkCount: number;
   collectedAt: string;
 }
 
@@ -29,6 +31,7 @@ interface CollectionManifest {
   query: string;
   source: string;
   requestedLimit: number;
+  requireStructural: boolean;
   collectedAt: string;
   documents: CollectedDocument[];
   skipped: Array<{ docId: string; reason: string }>;
@@ -39,6 +42,7 @@ interface CliOptions {
   limit: number;
   rawDirectory: string;
   manifestPath: string;
+  requireStructural: boolean;
 }
 
 async function main(): Promise<void> {
@@ -67,6 +71,11 @@ async function main(): Promise<void> {
 
       const fileName = `${docId}-${slugify(title).slice(0, 80) || "van-ban"}.txt`;
       const body = `${title}\n\n${text.trim()}\n`.normalize("NFC");
+      const structuralChunkCount = parseVanBan(body, { tenFile: fileName }).chunks.length;
+      if (options.requireStructural && structuralChunkCount === 0) {
+        skipped.push({ docId, reason: "Parser không tạo được structural chunk." });
+        continue;
+      }
       await writeFile(resolve(options.rawDirectory, fileName), body, "utf8");
       documents.push({
         docId,
@@ -75,6 +84,7 @@ async function main(): Promise<void> {
         fileName,
         sha256: createHash("sha256").update(body, "utf8").digest("hex"),
         characterCount: body.length,
+        structuralChunkCount,
         collectedAt,
       });
       process.stdout.write(`\rĐã tải ${documents.length}/${options.limit}: ${docId}`);
@@ -90,6 +100,7 @@ async function main(): Promise<void> {
     query: options.query,
     source: PORTAL_ORIGIN,
     requestedLimit: options.limit,
+    requireStructural: options.requireStructural,
     collectedAt,
     documents,
     skipped,
@@ -234,17 +245,19 @@ function parseOptions(args: string[]): CliOptions {
   let limit = DEFAULT_LIMIT;
   let rawDirectory = resolve("data/raw");
   let manifestPath = resolve("data/manifest-food-safety.json");
+  let requireStructural = false;
   for (let index = 0; index < args.length; index += 1) {
     const value = args[index + 1];
     if (args[index] === "--query" && value) query = value;
     if (args[index] === "--limit" && value) limit = Number.parseInt(value, 10);
     if (args[index] === "--raw-directory" && value) rawDirectory = resolve(value);
     if (args[index] === "--manifest" && value) manifestPath = resolve(value);
+    if (args[index] === "--require-structural") requireStructural = true;
   }
   if (!Number.isInteger(limit) || limit < 1 || limit > 500) {
     throw new Error("--limit phải là số nguyên từ 1 đến 500.");
   }
-  return { query, limit, rawDirectory, manifestPath };
+  return { query, limit, rawDirectory, manifestPath, requireStructural };
 }
 
 function userAgent(): string {

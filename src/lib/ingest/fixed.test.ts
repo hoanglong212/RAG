@@ -1,14 +1,32 @@
 import { describe, expect, it } from "vitest";
-import { createFixedChunks, FIXED_CHUNK_TOKENS } from "./fixed";
+import {
+  createFixedChunks,
+  FIXED_CHUNK_OVERLAP,
+  FIXED_CHUNK_TOKENS,
+} from "./fixed";
 
 describe("createFixedChunks", () => {
-  it("cat baseline moi 512 token va khong gan node cau truc", () => {
+  it("cat baseline 512 token, overlap 64 va khong gan node cau truc", () => {
     const text = Array.from({ length: FIXED_CHUNK_TOKENS + 3 }, (_, index) => `tu${index}`).join(" ");
     const chunks = createFixedChunks(text, "55/2010/QH12");
 
     expect(chunks).toHaveLength(2);
-    expect(chunks.map((chunk) => chunk.so_token)).toEqual([512, 3]);
+    expect(chunks.map((chunk) => chunk.so_token)).toEqual([
+      FIXED_CHUNK_TOKENS,
+      FIXED_CHUNK_OVERLAP + 3,
+    ]);
+    const firstWords = chunks[0].noi_dung.split(" ");
+    const secondWords = chunks[1].noi_dung.split(" ");
+    expect(firstWords.slice(-FIXED_CHUNK_OVERLAP)).toEqual(
+      secondWords.slice(0, FIXED_CHUNK_OVERLAP),
+    );
     expect(chunks.every((chunk) => chunk.node_key === null)).toBe(true);
     expect(chunks[0].duong_dan).toBe("55/2010/QH12 > Khối cố định 1");
+  });
+
+  it("tu choi overlap khong nho hon kich thuoc chunk", () => {
+    expect(() => createFixedChunks("mot hai ba", "Mẫu", 3, 3)).toThrow(
+      "Overlap fixed chunk phai tu 0 den nho hon kich thuoc chunk.",
+    );
   });
 });
