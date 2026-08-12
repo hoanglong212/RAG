@@ -157,7 +157,16 @@ export function DangTai({
             {labels.map((label, index) => (
               <li key={label} className="min-w-0">
                 <span className={cn("block h-1 rounded-full", index <= current ? "bg-but-xanh" : "bg-khay-sau")} />
-                <span className={cn("mt-1.5 block truncate text-[0.625rem] font-medium", index <= current ? "text-muc-in" : "text-nhan")}>{label}</span>
+                {/* 10px là quá nhỏ cho tiếng Việt: dấu hai tầng của `ế ộ ữ`
+                    nhoè hẳn ở cỡ đó. Dùng bậc nhỏ nhất còn đọc được. */}
+                <span
+                  className={cn(
+                    "mt-1.5 block truncate text-xs font-medium",
+                    index <= current ? "text-muc-in" : "text-nhan",
+                  )}
+                >
+                  {label}
+                </span>
               </li>
             ))}
           </ol>
