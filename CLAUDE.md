@@ -1,55 +1,92 @@
-# CLAUDE.md
+# CLAUDE.md — Track B (thiết kế và giao diện)
 
-Đặt file này ở gốc repo. Claude Code tự đọc mỗi phiên.
+Đặt ở gốc repo. Claude Code đọc file này mỗi phiên.
 
-## Bối cảnh
+> Bản này thay thế CLAUDE.md ở kế hoạch v1. Các quy tắc về lõi xử lý đã chuyển sang `AGENTS.md`.
 
-Đây là đồ án tốt nghiệp kỳ thực tập, thời hạn 14 ngày, một người làm. Kế hoạch đầy đủ nằm ở `PLAN.md`. Đọc file đó trước khi làm bất cứ việc gì.
+## Bạn phụ trách gì
 
-Sản phẩm: hệ thống RAG cho văn bản hành chính Việt Nam, parse theo cấu trúc Chương/Điều/Khoản thay vì cắt theo độ dài, kèm dashboard.
+Toàn bộ phần nhìn thấy được: design system, mọi trang, chat UI, dashboard, trạng thái rỗng và lỗi, typography, chuyển động.
+
+Bạn **không** phụ trách logic. Có agent khác đang làm track lõi trong worktree riêng. Không sửa file trong `src/lib/`, `src/db/`, `src/app/api/`, `eval/`, `scripts/`.
+
+## Đọc trước khi bắt đầu
+
+1. `KE-HOACH-V2-CODEX-CLAUDE.md` **mục 6** — design brief đầy đủ. Đây là tài liệu quan trọng nhất với bạn
+2. `docs/CONTRACT.md` — hình dạng dữ liệu bạn sẽ nhận
+3. `src/mocks/` — dữ liệu giả để phát triển
+
+## Thư mục bạn sở hữu
+
+```
+src/app/(ui)/**     các trang
+src/components/**   component
+src/styles/**       token, global CSS
+public/**           font, ảnh
+```
 
 ## Quy tắc bắt buộc
 
-**Làm đúng một phase mỗi phiên.** Kế hoạch chia 8 phase ở mục 13. Khi tôi nói làm Phase N, chỉ làm Phase N. Đạt tiêu chí nghiệm thu thì dừng lại và báo cáo. Không viết trước code của phase sau, kể cả khi "tiện tay".
+**Phát triển trên mock cho tới ngày 9.** Không chờ track lõi. Mọi thứ import từ `src/mocks/`, đúng kiểu trong `src/types/contract.ts`. Ngày gộp chỉ đổi nguồn dữ liệu, không sửa component.
 
-**Không tự ý thêm thư viện.** Stack đã chốt ở mục 2. Muốn thêm bất kỳ package nào ngoài danh sách đó, hỏi trước và nêu lý do. Đặc biệt: không cài LangChain, LlamaIndex, hay bất kỳ framework RAG nào. Toàn bộ logic RAG ở project này viết tay, đó là chủ ý.
+**Không sửa contract.** Thấy contract thiếu thứ gì thì dừng lại, nêu rõ cần gì và tại sao, chờ xác nhận. Tự thêm trường sẽ làm hỏng track kia.
 
-**Parser viết test trước.** Module `src/lib/parser/` là phần lõi. Mọi thay đổi ở đây phải có test kèm theo. Bảy cái bẫy ở mục 5.3 của kế hoạch, mỗi cái ít nhất một test case.
+**Design plan trước, code sau.** Trước khi viết dòng CSS đầu tiên, trình bày: bảng màu 4–6 giá trị hex có tên, cặp typeface cho ít nhất 2 vai trò, ý tưởng bố cục kèm wireframe ASCII, và yếu tố chữ ký. Chờ duyệt.
 
-**Không nuốt lỗi.** Parser gặp đoạn không hiểu thì đẩy vào mảng `warnings`, không được im lặng bỏ qua. Không dùng `try/catch` rỗng. Không `catch (e) { return null }`.
+**Tự phê bình bản plan trước khi trình.** Đọc lại và tự hỏi: nếu đề bài là một sản phẩm khác hoàn toàn, mình có ra đúng thiết kế này không? Nếu có, đó là mặc định chứ không phải lựa chọn — làm lại phần đó và nói rõ đã đổi gì, vì sao.
 
-**Không hardcode số liệu.** Mọi con số trên dashboard phải đến từ query thật. Không có dữ liệu thì hiện trạng thái rỗng, không bịa số mẫu.
+**Chụp màn hình và tự nhìn.** Có Playwright MCP thì dùng. Một ảnh chụp đáng giá hơn nghìn token suy đoán. Đặc biệt bắt buộc khi kiểm tra chữ tiếng Việt.
 
-**Commit nhỏ, thường xuyên.** Mỗi đơn vị công việc hoàn chỉnh là một commit, thông điệp tiếng Anh, mô tả thay đổi. Không gộp cả phase vào một commit.
+**Trạng thái rỗng, đang tải, lỗi là công dân hạng nhất.** Làm cùng lúc với trạng thái có dữ liệu, không để sau. Mock đã có sẵn ba trạng thái này.
 
-**Khi kết quả eval xấu đi, giải thích trước khi sửa.** In ra các trường hợp sai nặng nhất kèm chunk đã lấy về. Không đoán mò rồi chỉnh tham số.
+**Không hardcode số liệu.** Số trên dashboard đến từ mock hoặc API thật. Không bịa số cho đẹp.
+
+## Đặc thù tiếng Việt — kiểm tra mỗi lần dựng component có chữ
+
+- `line-height` body **1.65–1.75**, không phải 1.5. Chữ như `ế ộ ữ ỹ` có hai tầng dấu, leading mặc định làm dấu chạm dòng trên
+- Font phải có bộ ký tự tiếng Việt. Lọc theo ngôn ngữ Vietnamese trên Google Fonts trước khi chốt. Font thiếu sẽ ra ô vuông hoặc rơi về font dự phòng
+- Hạn chế `text-transform: uppercase`. Chữ hoa toàn phần nén dấu lại, khó đọc hơn hẳn tiếng Anh. Dùng thì phải tăng `letter-spacing` và chỉ cho nhãn ngắn
+- Chuỗi kiểm thử bắt buộc: `Ủy ban nhân dân — Nghị định 15/2020/NĐ-CP — Điều 8 Khoản 3 Điểm đ`. Dán vào mỗi component có chữ, chụp lại xem có bị cắt hay tràn không
+
+## Ba cái bẫy thẩm mỹ phải tránh
+
+Thiết kế do AI sinh đang tụ về ba kiểu, xuất hiện bất kể đề bài:
+
+1. Nền kem ấm khoảng `#F4F1EA` + serif tương phản cao + điểm nhấn đất nung khoảng `#D97757`
+2. Nền gần đen + đúng một màu chói
+3. Bố cục kiểu báo giấy: kẻ chỉ mảnh, bo góc bằng không, cột dày đặc
+
+Định hướng trong brief đứng gần kiểu 3. Biết điều đó và chủ động đẩy ra xa: trục văn bản phải sống động, có trạng thái, có chuyển động — không phải thêm một cột kẻ chỉ. Và đừng rơi về Inter mặc định cho mọi vai trò.
+
+## Kỷ luật màu
+
+`--dau-do` (#A8172C) **chỉ** dùng cho những gì liên quan trực tiếp tới neo trích dẫn. Không dùng cho nút, không cho cảnh báo, không cho biểu đồ. Một màu, một nghĩa.
+
+## Chữ nghĩa trong giao diện
+
+- Gọi tên theo thứ người dùng nhận ra, không theo cách hệ thống vận hành
+- Nút nói đúng việc sẽ xảy ra: "Tra cứu", không phải "Gửi". Tên hành động giữ nguyên suốt luồng
+- Trạng thái rỗng là lời mời hành động. Màn hình chat trống gợi ý ba câu hỏi mẫu lấy từ bộ tài liệu thật
+- Lỗi không xin lỗi và không mơ hồ về chuyện đã xảy ra
+- Câu quan trọng nhất hệ thống: khi độ tin cậy thấp phải hiện **"Không tìm thấy trong bộ tài liệu"**. Thiết kế cho nó một trạng thái đàng hoàng, đừng để trông như lỗi
 
 ## Chống phình phạm vi
 
-Nếu bạn định làm bất kỳ thứ nào dưới đây, dừng lại và hỏi tôi:
+Định làm bất kỳ thứ nào dưới đây thì dừng và hỏi:
 
-- OCR, xử lý văn bản scan
-- Chat nhiều lượt có nhớ ngữ cảnh
-- Đăng nhập, phân quyền
-- GraphRAG, knowledge graph
-- Agent, tool calling
-- Tối ưu hiệu năng khi chưa có phép đo cho thấy cần
+- Chế độ tối
+- Đa ngôn ngữ giao diện
+- Thư viện hoạt ảnh nặng
+- Component tự viết trong khi shadcn/ui đã có sẵn
+- Tối ưu hiệu năng khi chưa đo
 
 ## Quy ước code
 
-- TypeScript strict mode, không dùng `any`
-- Validate mọi input của API route bằng Zod
-- Raw SQL cho retrieval (Drizzle `sql` template), ORM cho CRUD thường
-- Tên biến và hàm tiếng Anh; chuỗi hiển thị cho người dùng tiếng Việt
-- Giữ tên trường tiếng Việt trong schema database (`so_hieu`, `ngay_ban_hanh`) — đây là thuật ngữ nghiệp vụ, dịch sang tiếng Anh sẽ mất nghĩa
+- TypeScript strict, không `any`
+- Tailwind + shadcn/ui. Token màu và type khai trong `src/styles/tokens.css`, không rải giá trị hex trong component
+- Cẩn thận với độ ưu tiên selector CSS. Class dạng `.section` và selector theo phần tử rất dễ triệt tiêu nhau, hay xảy ra ở padding/margin giữa các khối
+- Sàn chất lượng, làm mà không cần nói: responsive xuống mobile, focus bàn phím nhìn thấy được, tôn trọng `prefers-reduced-motion`
 
-## Đặc thù tiếng Việt
+## Khi được hỏi "xong chưa"
 
-- Luôn `normalize('NFC')` mọi văn bản ngay sau khi extract, trước khi chạy regex
-- Thứ tự bảng chữ cái cho Điểm: a b c d **đ** e ê g h i k l m n o ô ơ p q r s t u ư v x y. Không có f j w z. Không dùng `localeCompare` mặc định
-- Full-text search dùng config `'simple'`, giữ nguyên dấu thanh
-- Model embedding gốc PhoBERT phải tách từ bằng `pyvi` trước khi encode
-
-## Khi tôi hỏi "xong chưa"
-
-Trả lời bằng tiêu chí nghiệm thu của phase hiện tại, kèm bằng chứng: kết quả chạy test, số dòng trong bảng, hoặc ảnh chụp output. Không trả lời "đã xong" chung chung.
+Trả lời kèm ảnh chụp màn hình. Không mô tả bằng lời thứ có thể nhìn thấy.
