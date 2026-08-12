@@ -29,6 +29,7 @@ export interface VectorSearchOptions {
   topK: number;
   strategy: ChunkStrategy;
   candidateK?: number;
+  legalTopics?: string[];
 }
 
 /** Embed câu hỏi rồi xếp hạng chunk bằng cosine similarity của pgvector. */
@@ -41,6 +42,7 @@ export async function vectorSearch(
   if (!embedding) throw new Error("Embedding service không trả vector cho câu hỏi.");
   const vectorLiteral = `[${embedding.join(",")}]`;
   const limit = Math.max(options.topK, options.candidateK ?? options.topK);
+  const legalTopics = options.legalTopics ?? [];
 
   const rows = (await dependencies.sql`
     SELECT c.id AS chunk_id,
@@ -54,6 +56,8 @@ export async function vectorSearch(
     JOIN documents d ON d.id = c.document_id
     WHERE c.strategy = ${options.strategy}
       AND c.embedding IS NOT NULL
+      AND d.retrieval_enabled = true
+      AND (cardinality(${legalTopics}::text[]) = 0 OR d.legal_topics && ${legalTopics}::text[])
     ORDER BY c.embedding <=> ${vectorLiteral}::vector
     LIMIT ${limit}
   `) as unknown as VectorRow[];

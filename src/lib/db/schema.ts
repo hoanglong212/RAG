@@ -47,6 +47,13 @@ export type LoaiVanBanSlug = LoaiVanBan;
 export type ChunkStrategy = NonNullable<ChatRequest["strategy"]>;
 export type DocNodeType = NodeType;
 export type CheDoTim = "vector" | "hybrid";
+export type QuanHeVanBan =
+  | "sua_doi_bo_sung"
+  | "thay_the"
+  | "bai_bo"
+  | "quy_dinh_chi_tiet"
+  | "quy_dinh_xu_phat"
+  | "hop_nhat";
 
 /* ------------------------------------------------------------------ */
 
@@ -67,6 +74,16 @@ export const documents = pgTable(
     ngay_hieu_luc: date("ngay_hieu_luc"),
     /** Tieu de tom tat. */
     trich_yeu: text("trich_yeu"),
+    /** Ma doi chieu ben nguon, vi du vanban.chinhphu.vn:211189. */
+    source_ref: text("source_ref"),
+    source_url: text("source_url"),
+    legal_topics: text("legal_topics").array().notNull().default(sql`'{}'::text[]`),
+    /** Thoi diem metadata nguon chinh thong duoc doi chieu gan nhat. */
+    verified_at: timestamp("verified_at", { withTimezone: true }),
+    /** False voi van ban da ban hanh nhung chua den ngay co hieu luc. */
+    retrieval_enabled: boolean("retrieval_enabled").notNull().default(true),
+    /** Ghi chu hieu luc chi tiet hon contract, vi du het hieu luc mot phan. */
+    validity_note: text("validity_note"),
     so_trang: integer("so_trang"),
     trang_thai: text("trang_thai")
       .$type<TrangThaiHieuLuc>()
@@ -81,7 +98,39 @@ export const documents = pgTable(
     loi_chi_tiet: text("loi_chi_tiet"),
     created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("documents_so_hieu_idx").on(t.so_hieu)],
+  (t) => [
+    index("documents_so_hieu_idx").on(t.so_hieu),
+    uniqueIndex("documents_source_ref_uidx").on(t.source_ref),
+    index("documents_legal_topics_idx").using("gin", t.legal_topics),
+  ],
+);
+
+/** Quan he phap ly co nguon kiem chung giua hai van ban trong corpus. */
+export const document_relations = pgTable(
+  "document_relations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    source_document_id: uuid("source_document_id")
+      .notNull()
+      .references(() => documents.id, { onDelete: "cascade" }),
+    target_document_id: uuid("target_document_id")
+      .notNull()
+      .references(() => documents.id, { onDelete: "cascade" }),
+    relation_type: text("relation_type").$type<QuanHeVanBan>().notNull(),
+    effective_from: date("effective_from"),
+    note: text("note"),
+    source_url: text("source_url").notNull(),
+    verified_at: timestamp("verified_at", { withTimezone: true }).notNull(),
+    created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("document_relations_pair_type_uidx").on(
+      t.source_document_id,
+      t.target_document_id,
+      t.relation_type,
+    ),
+    index("document_relations_target_idx").on(t.target_document_id),
+  ],
 );
 
 /** Cay cau truc ben vung cua van ban, doc lap voi moi chien luoc chunking. */
@@ -277,6 +326,7 @@ export const news_sync_runs = pgTable("news_sync_runs", {
 
 export type Document = typeof documents.$inferSelect;
 export type DocumentMoi = typeof documents.$inferInsert;
+export type DocumentRelation = typeof document_relations.$inferSelect;
 export type Chunk = typeof chunks.$inferSelect;
 export type ChunkMoi = typeof chunks.$inferInsert;
 export type DocNode = typeof doc_nodes.$inferSelect;

@@ -13,6 +13,7 @@ export interface ViolationRule {
 export interface MatchedViolationRule {
   id: string;
   label: string;
+  topic: NewsTopic;
   source: ViolationRule["source"];
 }
 
@@ -59,13 +60,49 @@ export const VIOLATION_RULES: readonly ViolationRule[] = [
     (text) => /quảng cáo/.test(text) && /(?:xác nhận|giấy).{0,25}(?:quá|hết) (?:thời hạn|hiệu lực)/.test(text),
     { soHieu: "75/2011/TT-BNNPTNT", dieu: 11, khoan: 1 },
   ),
+  ruleForTopic(
+    "late-or-unpaid-wages",
+    "Trả lương không đúng hạn, không trả hoặc trả không đủ tiền lương",
+    "lao_dong",
+    (text) => /(?:chậm|không|thiếu).{0,25}(?:trả )?(?:tiền )?lương|khấu trừ.{0,20}lương/.test(text),
+    { soHieu: "12/2022/NĐ-CP", dieu: 17, khoan: 2 },
+  ),
+  ruleForTopic(
+    "motorbike-red-light",
+    "Người điều khiển xe mô tô, xe gắn máy không chấp hành đèn tín hiệu giao thông",
+    "giao_thong",
+    (text) => /(?:xe máy|xe mô tô|xe gắn máy).{0,40}(?:vượt|không chấp hành).{0,20}(?:đèn đỏ|đèn tín hiệu)/.test(text),
+    { soHieu: "168/2024/NĐ-CP", dieu: 7, khoan: 7, diem: "c" },
+  ),
+  ruleForTopic(
+    "motorbike-no-helmet",
+    "Người điều khiển xe mô tô, xe gắn máy không đội mũ bảo hiểm đúng quy cách",
+    "giao_thong",
+    (text) => /(?:xe máy|xe mô tô|xe gắn máy).{0,40}không đội.{0,20}mũ bảo hiểm/.test(text),
+    { soHieu: "168/2024/NĐ-CP", dieu: 7, khoan: 2, diem: "h" },
+  ),
+  ruleForTopic(
+    "land-encroachment",
+    "Lấn đất hoặc chiếm đất",
+    "dat_dai_nha_o",
+    (text) => /(?:lấn|chiếm).{0,15}đất/.test(text),
+    { soHieu: "123/2024/NĐ-CP", dieu: 13 },
+  ),
+  ruleForTopic(
+    "consumer-warranty",
+    "Không thực hiện đầy đủ trách nhiệm bảo hành sản phẩm, hàng hóa",
+    "nguoi_tieu_dung",
+    (text) => /(?:từ chối|không|chậm|né).{0,25}bảo hành|bảo hành.{0,25}(?:không|chậm|nhiều lần)/.test(text),
+    { soHieu: "19/2023/QH15", dieu: 30 },
+  ),
 ] as const;
 
 export function matchViolationRules(scenario: string): MatchedViolationRule[] {
   const normalized = scenario.normalize("NFKC").toLocaleLowerCase("vi").replace(/\s+/g, " ").trim();
-  return VIOLATION_RULES.filter((item) => item.test(normalized)).map(({ id, label, source }) => ({
+  return VIOLATION_RULES.filter((item) => item.test(normalized)).map(({ id, label, topic, source }) => ({
     id,
     label,
+    topic,
     source,
   }));
 }
@@ -91,6 +128,7 @@ export async function resolveRuleEvidence(
       FROM chunks c
       JOIN documents d ON d.id = c.document_id
       WHERE c.strategy = 'structural'
+        AND d.retrieval_enabled = true
         AND d.so_hieu = ${match.source.soHieu}
         AND c.dieu_so = ${match.source.dieu}
         AND (${match.source.khoan ?? null}::int IS NULL OR c.khoan_so = ${match.source.khoan ?? null}::int)
@@ -121,4 +159,14 @@ function rule(
   source: ViolationRule["source"],
 ): ViolationRule {
   return { id, label, topic: "an_toan_thuc_pham", test, source };
+}
+
+function ruleForTopic(
+  id: string,
+  label: string,
+  topic: NewsTopic,
+  test: ViolationRule["test"],
+  source: ViolationRule["source"],
+): ViolationRule {
+  return { id, label, topic, test, source };
 }

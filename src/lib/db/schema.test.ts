@@ -1,7 +1,7 @@
 import { getTableColumns } from "drizzle-orm";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
-import { chunks, doc_nodes, documents, lan_chay_eval } from "./schema";
+import { chunks, doc_nodes, document_relations, documents, lan_chay_eval } from "./schema";
 
 describe("D1 schema", () => {
   it("tach trang thai ingest khoi hieu luc va luu parse warnings", () => {
@@ -35,6 +35,25 @@ describe("D1 schema", () => {
       recall_at_10: expect.anything(),
       embedder_name: expect.anything(),
       strategy: expect.anything(),
+    });
+  });
+
+  it("luu nguon, chu de, trang thai truy hoi va quan he phap ly", () => {
+    expect(getTableColumns(documents)).toMatchObject({
+      source_ref: expect.anything(),
+      source_url: expect.anything(),
+      legal_topics: expect.anything(),
+      verified_at: expect.anything(),
+      retrieval_enabled: expect.anything(),
+      validity_note: expect.anything(),
+    });
+    expect(getTableColumns(document_relations)).toMatchObject({
+      source_document_id: expect.anything(),
+      target_document_id: expect.anything(),
+      relation_type: expect.anything(),
+      effective_from: expect.anything(),
+      source_url: expect.anything(),
+      verified_at: expect.anything(),
     });
   });
 });

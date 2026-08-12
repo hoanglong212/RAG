@@ -20,4 +20,13 @@ describe("violation rules", () => {
       "seafood-adulterant",
     );
   });
+  it.each([
+    ["Công ty chậm trả tiền lương cho người lao động", "late-or-unpaid-wages"],
+    ["Người đi xe máy vượt đèn đỏ", "motorbike-red-light"],
+    ["Người đi xe máy không đội mũ bảo hiểm", "motorbike-no-helmet"],
+    ["Hộ gia đình lấn đất công", "land-encroachment"],
+    ["Cửa hàng từ chối bảo hành sản phẩm lỗi", "consumer-warranty"],
+  ])("nhận diện rule đa lĩnh vực: %s", (scenario, expectedRule) => {
+    expect(matchViolationRules(scenario).map((item) => item.id)).toContain(expectedRule);
+  });
 });

@@ -56,7 +56,7 @@ export function extractLegalLocator(question: string): LegalLocator {
 /** Full-text tiếng Việt dùng simple + f_unaccent, cộng boost cho số hiệu chính xác. */
 export async function fulltextSearch(
   question: string,
-  options: { topK: number; strategy: ChunkStrategy },
+  options: { topK: number; strategy: ChunkStrategy; legalTopics?: string[] },
   sql: postgres.Sql,
 ): Promise<RetrievalResult[]> {
   const legalIdentifier = extractLegalIdentifier(question);
@@ -67,6 +67,7 @@ export async function fulltextSearch(
   const tsQuery = buildTsQuery(semanticQuestion);
   const strictTsQuery = tsQuery.replaceAll(" | ", " & ");
   if (tsQuery === "" && legalIdentifier === null) return [];
+  const legalTopics = options.legalTopics ?? [];
 
   const rows = (await sql`
     WITH query AS (
@@ -107,6 +108,8 @@ export async function fulltextSearch(
       JOIN documents d ON d.id = c.document_id
       CROSS JOIN query
       WHERE c.strategy = ${options.strategy}
+        AND d.retrieval_enabled = true
+        AND (cardinality(${legalTopics}::text[]) = 0 OR d.legal_topics && ${legalTopics}::text[])
         AND (
           (query.value IS NOT NULL AND c.tsv @@ query.value)
           OR (

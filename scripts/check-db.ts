@@ -12,6 +12,7 @@ const BANG_CAN_CO = [
   "cau_hoi_eval",
   "chunks",
   "doc_nodes",
+  "document_relations",
   "documents",
   "lan_chay_eval",
   "news_articles",
@@ -23,7 +24,18 @@ const BANG_CAN_CO = [
 const COT_D1_CAN_CO: Record<string, string[]> = {
   chunks: ["node_id", "strategy"],
   doc_nodes: ["document_id", "parent_id", "node_type", "order_index", "depth"],
-  documents: ["trang_thai", "parse_warnings", "loai_van_ban_raw", "ingest_status"],
+  documents: [
+    "trang_thai",
+    "parse_warnings",
+    "loai_van_ban_raw",
+    "ingest_status",
+    "source_ref",
+    "source_url",
+    "legal_topics",
+    "verified_at",
+    "retrieval_enabled",
+    "validity_note",
+  ],
   lan_chay_eval: ["recall_at_10", "embedder_name", "strategy"],
 };
 
@@ -111,6 +123,39 @@ async function main(): Promise<void> {
       if (!idx.some((i) => i.indexname === can)) {
         console.error(`✗ Thiếu index ${can}`);
         loi += 1;
+      }
+    }
+
+    const catalogCoverage = await sql<
+      Array<{
+        topic: string;
+        documents: number;
+        chunks: number;
+        embedded_chunks: number;
+        total_tokens: number;
+      }>
+    >`
+      SELECT topic,
+             count(DISTINCT d.id)::int AS documents,
+             count(c.id)::int AS chunks,
+             count(c.embedding)::int AS embedded_chunks,
+             coalesce(sum(c.so_token), 0)::int AS total_tokens
+      FROM documents d
+      CROSS JOIN LATERAL unnest(d.legal_topics) topic
+      LEFT JOIN chunks c ON c.document_id = d.id
+      WHERE d.retrieval_enabled = true
+      GROUP BY topic
+      ORDER BY topic`;
+    if (catalogCoverage.length > 0) {
+      console.log("\nCorpus pháp lý theo chủ đề:");
+      for (const item of catalogCoverage) {
+        console.log(
+          `  ${item.topic.padEnd(22)} ${item.documents} văn bản, ${item.chunks} chunks, ${item.total_tokens} tokens`,
+        );
+        if (item.chunks !== item.embedded_chunks) {
+          console.error(`✗ Chủ đề ${item.topic} thiếu ${item.chunks - item.embedded_chunks} embedding.`);
+          loi += 1;
+        }
       }
     }
   } finally {

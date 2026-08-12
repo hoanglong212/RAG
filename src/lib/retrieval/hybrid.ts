@@ -62,6 +62,7 @@ export async function hybridSearch(
     strategy: ChunkStrategy;
     candidateK?: number;
     lexicalWeight?: number;
+    legalTopics?: string[];
   },
   dependencies: { sql: postgres.Sql; embeddingProvider: EmbeddingProvider },
 ): Promise<RetrievalResult[]> {
@@ -69,10 +70,14 @@ export async function hybridSearch(
   const [vectorResults, fulltextResults] = await Promise.all([
     vectorSearch(
       question,
-      { topK: candidateK, strategy: options.strategy },
+      { topK: candidateK, strategy: options.strategy, legalTopics: options.legalTopics },
       dependencies,
     ),
-    fulltextSearch(question, { topK: candidateK, strategy: options.strategy }, dependencies.sql),
+    fulltextSearch(
+      question,
+      { topK: candidateK, strategy: options.strategy, legalTopics: options.legalTopics },
+      dependencies.sql,
+    ),
   ]);
   // Vector là trục ổn định; full-text là tín hiệu bổ sung có trọng số theo loại câu hỏi.
   return reciprocalRankFusion(

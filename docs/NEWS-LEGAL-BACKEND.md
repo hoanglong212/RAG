@@ -17,6 +17,8 @@ npm run news:sync
 
 Trên production, cấu hình `NEWS_SYNC_TOKEN` và gọi `POST /api/news/sync` với header `Authorization: Bearer <token>`. Biến `LEGAL_CORPUS_TOPICS` là danh sách lĩnh vực đã thực sự có corpus, phân cách bằng dấu phẩy.
 
+Corpus đa lĩnh vực được quản lý bằng `data/legal-catalog.json`. Chạy `npm run data:collect:catalog`, ingest các tệp đạt kiểm tra cấu trúc, chạy migration rồi `npm run data:sync:catalog`. Catalog lưu URL nguồn chính thức, ngày hiệu lực và quan hệ sửa đổi/hướng dẫn/xử phạt. Văn bản có ngày hiệu lực trong tương lai được đặt `retrieval_enabled=false` và không tham gia vector hoặc full-text retrieval.
+
 ## API
 
 - `GET /api/news?page&pageSize&topic&source&q&from&to`: danh sách và bộ lọc.

@@ -14,6 +14,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:check": "tsx scripts/check-db.ts",
     "data:collect": "tsx scripts/collect-legal-documents.ts",
+    "data:collect:catalog": "tsx scripts/collect-legal-documents.ts --catalog data/legal-catalog.json --manifest data/manifest-multitopic-law.json --require-structural",
+    "data:sync:catalog": "tsx scripts/sync-legal-catalog.ts",
     "news:sync": "tsx scripts/sync-news.ts",
     "ingest": "tsx scripts/ingest.ts",
     "eval": "tsx scripts/eval.ts"

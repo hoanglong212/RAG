@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "collection": "vietnamese-multitopic-law-core",
+  "query": "explicit-catalog",
+  "source": "https://vanban.chinhphu.vn",
+  "requestedLimit": 9,
+  "requireStructural": true,
+  "collectedAt": "2026-08-12T10:25:36.329Z",
+  "documents": [
+    {
+      "docId": "198540",
+      "title": "Bộ luật Lao động",
+      "sourceUrl": "https://vanban.chinhphu.vn/?classid=1&docid=198540&pageid=27160&typegroupid=3",
+      "contentSourceUrl": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=139264",
+      "fileName": "198540-bo-luat-lao-dong-45-2019-qh14.txt",
+      "sha256": "5500871b4874cbe3367e5dd7bdae79becac307bc27c42c9a12e9942f205844f1",
+      "characterCount": 189452,
+      "structuralChunkCount": 687,
+      "collectedAt": "2026-08-12T10:25:36.329Z"
+    },
+    {
+      "docId": "205182",
+      "title": "Xử phạt vi phạm hành chính trong lĩnh vực lao động, bảo hiểm xã hội và người lao động Việt Nam đi làm việc ở nước ngoài theo hợp đồng",
+      "sourceUrl": "https://vanban.chinhphu.vn/?classid=1&docid=205182&orggroupid=2&pageid=27160",
+      "contentSourceUrl": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=153913",
+      "fileName": "205182-nghi-dinh-12-2022-nd-cp.txt",
+      "sha256": "5c67ff66194bc55de486b33c54d17e3345153a484c8365f22c9269c0fc9dbaab",
+      "characterCount": 178785,
+      "structuralChunkCount": 342,
+      "collectedAt": "2026-08-12T10:25:36.329Z"
+    },
+    {
+      "docId": "211194",
+      "title": "Luật Trật tự, an toàn giao thông đường bộ",
+      "sourceUrl": "https://vanban.chinhphu.vn/?docid=211194&pageid=27160",
+      "contentSourceUrl": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=170620",
+      "fileName": "211194-luat-trat-tu-an-toan-giao-thong-36-2024-qh15.txt",
+      "sha256": "2fdc4400bc108c4c53a2a1b7bff0671479e70e033b3ca3ac72a08ebd35e828dc",
+      "characterCount": 163182,
+      "structuralChunkCount": 444,
+      "collectedAt": "2026-08-12T10:25:36.329Z"
+    },
+    {
+      "docId": "212167",
+      "title": "Xử phạt vi phạm hành chính về trật tự, an toàn giao thông trong lĩnh vực giao thông đường bộ",
+      "sourceUrl": "https://vanban.chinhphu.vn/?classid=1&docid=212167&pageid=27160",
+      "contentSourceUrl": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=173920",
+      "fileName": "212167-nghi-dinh-168-2024-nd-cp.txt",
+      "sha256": "a3d5dee91acba1a60fd152e580d45aa5c404bd752c65cd68d006199148cba41f",
+      "characterCount": 254321,
+      "structuralChunkCount": 352,
+      "collectedAt": "2026-08-12T10:25:36.329Z"
+    },
+    {
+      "docId": "211189",
+      "title": "Luật Đất đai",
+      "sourceUrl": "https://vanban.chinhphu.vn/?classid=1&docid=211189&pageid=27160&typegroupid=3",
+      "contentSourceUrl": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=177815",
+      "fileName": "211189-luat-dat-dai-31-2024-qh15.txt",
+      "sha256": "0b7a16b8c7321d44060f28ced8c75b3b402ea9abe6ee10f091448345323f9ff1",
+      "characterCount": 522558,
+      "structuralChunkCount": 1311,
+      "collectedAt": "2026-08-12T10:25:36.329Z"
+    },
+    {
+      "docId": "211201",
+      "title": "Sửa đổi, bổ sung Luật Đất đai, Luật Nhà ở, Luật Kinh doanh bất động sản và Luật Các tổ chức tín dụng",
+      "sourceUrl": "https://vanban.chinhphu.vn/?classid=1&docid=211201&pageid=27160",
+      "contentSourceUrl": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=170509",
+      "fileName": "211201-luat-43-2024-qh15.txt",
+      "sha256": "4a28aaddfc122b7095d1031e58cdde767858c9c39758793934429bd31d49d438",
+      "characterCount": 3712,
+      "structuralChunkCount": 8,
+      "collectedAt": "2026-08-12T10:25:36.329Z"
+    },
+    {
+      "docId": "211356",
+      "title": "Xử phạt vi phạm hành chính trong lĩnh vực đất đai",
+      "sourceUrl": "https://vanban.chinhphu.vn/?classid=0&docid=211356&pageid=27160",
+      "contentSourceUrl": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=174275",
+      "fileName": "211356-nghi-dinh-123-2024-nd-cp.txt",
+      "sha256": "b2672b622bc2eab51fd35df2e314b79653c0a605310efdd8546df3b559985b68",
+      "characterCount": 72831,
+      "structuralChunkCount": 135,
+      "collectedAt": "2026-08-12T10:25:36.329Z"
+    },
+    {
+      "docId": "208363",
+      "title": "Luật Bảo vệ quyền lợi người tiêu dùng",
+      "sourceUrl": "https://vanban.chinhphu.vn/?classid=1&docid=208363&orggroupid=1&pageid=27160",
+      "contentSourceUrl": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=161263",
+      "fileName": "208363-luat-bao-ve-nguoi-tieu-dung-19-2023-qh15.txt",
+      "sha256": "7c7cc555cc4f14cfb5e7c407b3f29e9fe45cb204bdf8ef3c6187dac26b6d45ae",
+      "characterCount": 104381,
+      "structuralChunkCount": 295,
+      "collectedAt": "2026-08-12T10:25:36.329Z"
+    },
+    {
+      "docId": "210254",
+      "title": "Quy định chi tiết một số điều của Luật Bảo vệ quyền lợi người tiêu dùng",
+      "sourceUrl": "https://vanban.chinhphu.vn/?docid=210254&pageid=27160",
+      "contentSourceUrl": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=167051",
+      "fileName": "210254-nghi-dinh-55-2024-nd-cp.txt",
+      "sha256": "538c479a69d983762b31bc55aa0c5feb8f008e5e726c6b0e3bf6a23b95a905d3",
+      "characterCount": 38138,
+      "structuralChunkCount": 88,
+      "collectedAt": "2026-08-12T10:25:36.329Z"
+    }
+  ],
+  "skipped": []
+}

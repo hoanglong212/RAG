@@ -10,6 +10,7 @@ export interface SearchOptions {
   topK?: number;
   candidateK?: number;
   lexicalWeight?: number;
+  legalTopics?: string[];
 }
 
 export async function timKiem(
@@ -34,11 +35,21 @@ export async function timKiem(
   ]);
 
   if (mode === "vector") {
-    return vectorSearch(cleanQuestion, { topK, strategy }, { sql, embeddingProvider: provider });
+    return vectorSearch(
+      cleanQuestion,
+      { topK, strategy, legalTopics: options.legalTopics },
+      { sql, embeddingProvider: provider },
+    );
   }
   return hybridSearch(
     cleanQuestion,
-    { topK, strategy, candidateK: options.candidateK, lexicalWeight: options.lexicalWeight },
+    {
+      topK,
+      strategy,
+      candidateK: options.candidateK,
+      lexicalWeight: options.lexicalWeight,
+      legalTopics: options.legalTopics,
+    },
     { sql, embeddingProvider: provider },
   );
 }

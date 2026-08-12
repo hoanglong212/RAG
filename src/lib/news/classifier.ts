@@ -3,9 +3,9 @@ import type { NewsTopic } from "../../types/news";
 const TOPIC_KEYWORDS: Record<Exclude<NewsTopic, "khac">, string[]> = {
   phap_luat: ["pháp luật", "khởi tố", "bắt giữ", "tòa án", "xét xử", "vi phạm", "mức phạt", "xử phạt"],
   kinh_te: ["kinh tế", "ngân hàng", "lãi suất", "chứng khoán", "doanh nghiệp", "thị trường", "đầu tư"],
-  lao_dong: ["lao động", "tiền lương", "bảo hiểm xã hội", "thất nghiệp", "công đoàn", "người lao động"],
-  dat_dai_nha_o: ["đất đai", "bất động sản", "nhà ở", "chung cư", "sổ đỏ", "quy hoạch", "dự án nhà"],
-  giao_thong: ["giao thông", "tai nạn", "đường bộ", "ô tô", "xe máy", "nồng độ cồn", "giấy phép lái xe"],
+  lao_dong: ["lao động", "tiền lương", "bảo hiểm xã hội", "thất nghiệp", "công đoàn", "người lao động", "sa thải", "nghỉ việc", "thử việc", "làm thêm giờ"],
+  dat_dai_nha_o: ["đất đai", "bất động sản", "nhà ở", "chung cư", "sổ đỏ", "quy hoạch", "dự án nhà", "lấn chiếm đất", "thu hồi đất", "giấy chứng nhận quyền sử dụng đất"],
+  giao_thong: ["giao thông", "tai nạn", "đường bộ", "ô tô", "xe máy", "nồng độ cồn", "giấy phép lái xe", "vượt đèn đỏ", "chạy quá tốc độ", "không đội mũ bảo hiểm"],
   giao_duc: ["giáo dục", "học sinh", "sinh viên", "đại học", "tuyển sinh", "trường học", "giáo viên"],
   y_te: ["y tế", "bệnh viện", "bác sĩ", "bệnh nhân", "dịch bệnh", "thuốc", "sức khỏe"],
   an_toan_thuc_pham: [
@@ -15,7 +15,7 @@ const TOPIC_KEYWORDS: Record<Exclude<NewsTopic, "khac">, string[]> = {
   moi_truong: ["môi trường", "ô nhiễm", "khí thải", "nước thải", "rác thải", "biến đổi khí hậu", "sạt lở"],
   cong_nghe: ["công nghệ", "trí tuệ nhân tạo", "ai", "dữ liệu cá nhân", "an ninh mạng", "phần mềm", "internet"],
   nong_nghiep: ["nông nghiệp", "nông dân", "chăn nuôi", "thủy sản", "trồng trọt", "nông sản", "dịch tả lợn"],
-  nguoi_tieu_dung: ["người tiêu dùng", "hàng giả", "bảo vệ quyền lợi", "quảng cáo sai", "sản phẩm lỗi", "khiếu nại"],
+  nguoi_tieu_dung: ["người tiêu dùng", "hàng giả", "bảo vệ quyền lợi", "quảng cáo sai", "sản phẩm lỗi", "khiếu nại", "bảo hành", "đổi trả", "hoàn tiền"],
   van_hoa_giai_tri: ["văn hóa", "giải trí", "nghệ sĩ", "ca sĩ", "điện ảnh", "âm nhạc", "lễ hội"],
   the_thao: ["thể thao", "bóng đá", "vận động viên", "giải đấu", "đội tuyển", "world cup"],
   quoc_te: ["quốc tế", "thế giới", "liên hợp quốc", "châu âu", "hoa kỳ", "trung quốc", "nga", "ukraine"],

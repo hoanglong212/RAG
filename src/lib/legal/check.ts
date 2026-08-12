@@ -23,7 +23,8 @@ export async function checkLegalScenario(
   const detected = classifyNews(scenario).topics;
   const detectedTopics = requestedTopic ? [requestedTopic] : detected;
   const supportedTopics = readSupportedTopics();
-  const isSupported = detectedTopics.some((topic) => supportedTopics.includes(topic));
+  const activeTopics = detectedTopics.filter((topic) => supportedTopics.includes(topic));
+  const isSupported = activeTopics.length > 0;
   const disclaimer =
     "Kết quả chỉ là đối chiếu sơ bộ từ corpus hiện có, không phải kết luận vi phạm hoặc tư vấn pháp lý.";
   if (!isSupported) {
@@ -42,16 +43,18 @@ export async function checkLegalScenario(
   const question = `Tình huống: ${scenario}\nHãy xác định dấu hiệu hành vi có thể liên quan, quy định tương ứng và các dữ kiện còn thiếu để có thể kết luận.`;
   // Retrieval chỉ dùng sự kiện gốc; câu hướng dẫn dài sẽ làm loãng embedding của hành vi.
   const matchedRules = matchViolationRules(scenario);
+  const scopedRules = matchedRules.filter((rule) => activeTopics.includes(rule.topic));
   const retrieved = await timKiem(scenario, {
     mode: "hybrid",
     strategy: "structural",
     topK: 8,
     candidateK: 80,
     lexicalWeight: 1,
+    legalTopics: activeTopics,
   });
-  const ruleEvidence = matchedRules.length === 0
+  const ruleEvidence = scopedRules.length === 0
     ? []
-    : await resolveRuleEvidence((await import("../db/client")).sql, matchedRules);
+    : await resolveRuleEvidence((await import("../db/client")).sql, scopedRules);
   // Rule đã được kiểm chứng theo locator thì không trộn văn bản cũ có nội dung tương tự.
   const results = ruleEvidence.length > 0 ? ruleEvidence : retrieved;
   const topScore = results[0]?.score ?? 0;
@@ -64,7 +67,7 @@ export async function checkLegalScenario(
       answer: null,
       citations: [],
       topScore,
-      matchedRules,
+      matchedRules: scopedRules,
       disclaimer,
     };
   }
@@ -88,11 +91,11 @@ export async function checkLegalScenario(
       })),
     })) answer += token;
     if (!answer.trim() || answer.trim() === "KHÔNG_TÌM_THẤY") {
-      return { status: "evidence_only", detectedTopics, supportedTopics, answer: null, citations, topScore, matchedRules, disclaimer };
+      return { status: "evidence_only", detectedTopics, supportedTopics, answer: null, citations, topScore, matchedRules: scopedRules, disclaimer };
     }
-    return { status: "matched", detectedTopics, supportedTopics, answer, citations, topScore, matchedRules, disclaimer };
+    return { status: "matched", detectedTopics, supportedTopics, answer, citations, topScore, matchedRules: scopedRules, disclaimer };
   } catch {
-    return { status: "evidence_only", detectedTopics, supportedTopics, answer: null, citations, topScore, matchedRules, disclaimer };
+    return { status: "evidence_only", detectedTopics, supportedTopics, answer: null, citations, topScore, matchedRules: scopedRules, disclaimer };
   }
 }
 
@@ -101,7 +104,9 @@ export function readSupportedTopics(env: NodeJS.ProcessEnv = process.env): NewsT
     ?.split(",")
     .map((item) => item.trim())
     .filter((item): item is NewsTopic => NEWS_TOPICS.includes(item as NewsTopic));
-  return configured?.length ? configured : ["an_toan_thuc_pham"];
+  return configured?.length
+    ? configured
+    : ["an_toan_thuc_pham", "lao_dong", "giao_thong", "dat_dai_nha_o", "nguoi_tieu_dung"];
 }
 
 function readThreshold(): number {
