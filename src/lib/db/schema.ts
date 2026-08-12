@@ -5,6 +5,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   customType,
   date,
   index,
@@ -16,7 +17,15 @@ import {
   timestamp,
   uuid,
   vector,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
+import type { CanhBao } from "../parser";
+import type {
+  ChatRequest,
+  LoaiVanBan,
+  NodeType,
+  TrangThaiHieuLuc as ContractTrangThaiHieuLuc,
+} from "../../types/contract";
 
 /**
  * So chieu vector lay tu bien moi truong. Doi model o Phase 7 thi doi bien nay
@@ -31,7 +40,11 @@ const tsvector = customType<{ data: string; driverData: string }>({
   },
 });
 
-export type TrangThaiTaiLieu = "dang_xu_ly" | "hoan_tat" | "loi";
+export type IngestStatus = "dang_xu_ly" | "hoan_tat" | "loi";
+export type TrangThaiHieuLuc = ContractTrangThaiHieuLuc;
+export type LoaiVanBanSlug = LoaiVanBan;
+export type ChunkStrategy = NonNullable<ChatRequest["strategy"]>;
+export type DocNodeType = NodeType;
 export type CheDoTim = "vector" | "hybrid";
 
 /* ------------------------------------------------------------------ */
@@ -44,19 +57,55 @@ export const documents = pgTable(
     ten_file: text("ten_file").notNull(),
     /** "15/2020/NĐ-CP" */
     so_hieu: text("so_hieu"),
-    /** "Nghị định" | "Thông tư" | "Quyết định" | ... */
-    loai_van_ban: text("loai_van_ban"),
+    /** Slug dong theo docs/CONTRACT.md. */
+    loai_van_ban: text("loai_van_ban").$type<LoaiVanBanSlug>(),
+    /** Cach viet nguyen van parser doc duoc, dung de sua cac truong hop roi vao `khac`. */
+    loai_van_ban_raw: text("loai_van_ban_raw"),
     co_quan_ban_hanh: text("co_quan_ban_hanh"),
     ngay_ban_hanh: date("ngay_ban_hanh"),
     ngay_hieu_luc: date("ngay_hieu_luc"),
     /** Tieu de tom tat. */
     trich_yeu: text("trich_yeu"),
     so_trang: integer("so_trang"),
-    trang_thai: text("trang_thai").$type<TrangThaiTaiLieu>().notNull().default("dang_xu_ly"),
+    trang_thai: text("trang_thai")
+      .$type<TrangThaiHieuLuc>()
+      .notNull()
+      .default("chua_xac_dinh"),
+    parse_warnings: jsonb("parse_warnings")
+      .$type<CanhBao[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    /** Trang thai ky thuat cua pipeline; tach khoi trang_thai hieu luc. */
+    ingest_status: text("ingest_status").$type<IngestStatus>().notNull().default("dang_xu_ly"),
     loi_chi_tiet: text("loi_chi_tiet"),
     created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("documents_so_hieu_idx").on(t.so_hieu)],
+);
+
+/** Cay cau truc ben vung cua van ban, doc lap voi moi chien luoc chunking. */
+export const doc_nodes = pgTable(
+  "doc_nodes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    document_id: uuid("document_id")
+      .notNull()
+      .references(() => documents.id, { onDelete: "cascade" }),
+    parent_id: uuid("parent_id").references((): AnyPgColumn => doc_nodes.id, {
+      onDelete: "cascade",
+    }),
+    node_type: text("node_type").$type<DocNodeType>().notNull(),
+    so_thu_tu: text("so_thu_tu"),
+    tieu_de: text("tieu_de"),
+    noi_dung: text("noi_dung").notNull().default(""),
+    breadcrumb: text("breadcrumb").notNull(),
+    order_index: integer("order_index").notNull(),
+    depth: integer("depth").notNull().default(0),
+  },
+  (t) => [
+    index("doc_nodes_document_order_idx").on(t.document_id, t.order_index),
+    index("doc_nodes_parent_id_idx").on(t.parent_id),
+  ],
 );
 
 /** Don vi truy hoi. */
@@ -67,6 +116,8 @@ export const chunks = pgTable(
     document_id: uuid("document_id")
       .notNull()
       .references(() => documents.id, { onDelete: "cascade" }),
+    node_id: uuid("node_id").references(() => doc_nodes.id, { onDelete: "cascade" }),
+    strategy: text("strategy").$type<ChunkStrategy>().notNull().default("structural"),
     /** "Chương II" */
     chuong: text("chuong"),
     chuong_tieu_de: text("chuong_tieu_de"),
@@ -106,6 +157,12 @@ export const chunks = pgTable(
     index("chunks_tsv_idx").using("gin", t.tsv),
     index("chunks_document_id_idx").on(t.document_id),
     index("chunks_dieu_so_idx").on(t.dieu_so),
+    index("chunks_strategy_idx").on(t.strategy),
+    index("chunks_node_id_idx").on(t.node_id),
+    check(
+      "chunk_structural_has_node",
+      sql`${t.strategy} <> 'structural' OR ${t.node_id} IS NOT NULL`,
+    ),
   ],
 );
 
@@ -146,6 +203,9 @@ export const lan_chay_eval = pgTable("lan_chay_eval", {
   /** {mode, topK, model, ...} */
   cau_hinh: jsonb("cau_hinh"),
   recall_at_5: real("recall_at_5"),
+  recall_at_10: real("recall_at_10"),
+  embedder_name: text("embedder_name"),
+  strategy: text("strategy").$type<ChunkStrategy>(),
   mrr: real("mrr"),
   so_cau_hoi: integer("so_cau_hoi"),
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -155,6 +215,8 @@ export type Document = typeof documents.$inferSelect;
 export type DocumentMoi = typeof documents.$inferInsert;
 export type Chunk = typeof chunks.$inferSelect;
 export type ChunkMoi = typeof chunks.$inferInsert;
+export type DocNode = typeof doc_nodes.$inferSelect;
+export type DocNodeMoi = typeof doc_nodes.$inferInsert;
 export type TruyVanMoi = typeof truy_van.$inferInsert;
 export type CauHoiEval = typeof cau_hoi_eval.$inferSelect;
 export type LanChayEvalMoi = typeof lan_chay_eval.$inferInsert;

@@ -8,7 +8,21 @@ import postgres from "postgres";
 config({ path: ".env.local" });
 config({ path: ".env" });
 
-const BANG_CAN_CO = ["cau_hoi_eval", "chunks", "documents", "lan_chay_eval", "truy_van"];
+const BANG_CAN_CO = [
+  "cau_hoi_eval",
+  "chunks",
+  "doc_nodes",
+  "documents",
+  "lan_chay_eval",
+  "truy_van",
+];
+
+const COT_D1_CAN_CO: Record<string, string[]> = {
+  chunks: ["node_id", "strategy"],
+  doc_nodes: ["document_id", "parent_id", "node_type", "order_index", "depth"],
+  documents: ["trang_thai", "parse_warnings", "loai_van_ban_raw", "ingest_status"],
+  lan_chay_eval: ["recall_at_10", "embedder_name", "strategy"],
+};
 
 async function main(): Promise<void> {
   const url = process.env.DATABASE_URL;
@@ -61,16 +75,36 @@ async function main(): Promise<void> {
       console.error(`✗ Thiếu bảng: ${thieu.join(", ")}. Chạy: npm run db:migrate`);
       loi += 1;
     } else {
-      console.log("✓ Đủ 5 bảng theo PLAN.md mục 3");
+      console.log(`✓ Đủ ${BANG_CAN_CO.length} bảng sau quyết định D1`);
+    }
+
+    const cot = await sql<{ table_name: string; column_name: string }[]>`
+      SELECT table_name, column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = ANY(${Object.keys(COT_D1_CAN_CO)})`;
+    for (const [table, requiredColumns] of Object.entries(COT_D1_CAN_CO)) {
+      const actual = cot.filter((item) => item.table_name === table).map((item) => item.column_name);
+      const missing = requiredColumns.filter((column) => !actual.includes(column));
+      if (missing.length > 0) {
+        console.error(`✗ Bảng ${table} thiếu cột D1: ${missing.join(", ")}`);
+        loi += 1;
+      }
     }
 
     const idx = await sql<{ indexname: string; indexdef: string }[]>`
       SELECT indexname, indexdef FROM pg_indexes
-      WHERE schemaname = 'public' AND tablename IN ('chunks', 'documents', 'truy_van')
+      WHERE schemaname = 'public' AND tablename IN ('chunks', 'doc_nodes', 'documents', 'truy_van')
       ORDER BY indexname`;
     console.log(`\nIndex (${idx.length}):`);
     for (const i of idx) console.log(`  ${i.indexname}`);
-    for (const can of ["chunks_embedding_idx", "chunks_tsv_idx"]) {
+    for (const can of [
+      "chunks_embedding_idx",
+      "chunks_tsv_idx",
+      "chunks_node_id_idx",
+      "chunks_strategy_idx",
+      "doc_nodes_document_order_idx",
+      "doc_nodes_parent_id_idx",
+    ]) {
       if (!idx.some((i) => i.indexname === can)) {
         console.error(`✗ Thiếu index ${can}`);
         loi += 1;
@@ -84,7 +118,7 @@ async function main(): Promise<void> {
     console.error(`\n${loi} vấn đề cần xử lý.`);
     process.exit(1);
   }
-  console.log("\n✓ Database sẵn sàng cho Phase 3.");
+  console.log("\n✓ Database khớp quyết định D1 và sẵn sàng tiếp tục Phase 2.");
 }
 
 main().catch((e: unknown) => {
