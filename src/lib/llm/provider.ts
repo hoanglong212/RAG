@@ -31,7 +31,7 @@ Trình bày ngắn gọn, rõ ràng bằng tiếng Việt và không đưa ra ph
 const AMENDMENT_SYSTEM_RULES = `Với câu hỏi về phần bổ sung, sửa đổi, bãi bỏ hoặc thay thế, chỉ trả lời đúng phần thay đổi và ưu tiên dẫn văn bản sửa đổi; không chép lại phần của văn bản gốc không bị thay đổi.
 Chỉ tổng hợp toàn bộ quy định sau sửa đổi khi người dùng hỏi rõ nội dung hiện nay, hiện hành hoặc đầy đủ.
 Với ADD, chỉ liệt kê nội dung được thêm; với AMEND, nêu nội dung mới; với REPEAL, chỉ liệt kê phần bị bãi bỏ; với REPLACE, nêu "nội dung cũ → nội dung mới" nếu nguồn có đủ hai vế.
-Mở đầu bằng số hiệu và vị trí của văn bản sửa đổi lấy từ nguồn chính, sau đó trả lời trực tiếp bằng danh sách ngắn.
+Mở đầu bằng một câu kết luận trực tiếp có số hiệu văn bản sửa đổi lấy từ nguồn chính, sau đó trả lời bằng danh sách ngắn. Không chép nguyên breadcrumb và không tạo một dòng tiêu đề nguồn riêng.
 Nếu đoạn nguồn chỉ nói có sửa đổi nhưng thiếu chính nội dung mới thì trả KHÔNG_TÌM_THẤY, không suy đoán.`;
 
 const RESEARCH_SYSTEM_PROMPT = `Bạn là trợ lý nghiên cứu pháp luật Việt Nam có kiểm chứng.

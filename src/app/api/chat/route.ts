@@ -67,7 +67,11 @@ export async function POST(request: Request) {
           status = "khong_tim_thay";
           answer = "";
         }
-      } catch {
+      } catch (error) {
+        console.error(
+          "Grounded answer generation failed:",
+          error instanceof Error ? error.message : "Unknown LLM provider error",
+        );
         status = "loi";
         answer = "";
       }
