@@ -16,6 +16,7 @@ import { KhungTrang, Nut, The, TieuDeMuc } from "@/components/kit/co-ban";
 import { OVanBan, VienLoc } from "@/components/kit/truong";
 import { BaoLoi } from "@/components/kit/trang-thai-kit";
 import { docLoi, guiJson } from "@/components/kit/goi-api";
+import { PhanTichTinhHuong } from "@/components/phan-tich-tinh-huong";
 import type { LegalCheckResult } from "@/lib/legal/check";
 import type { NewsTopic } from "@/types/news";
 import { NHAN_CHU_DE_TIN, NHAN_KET_QUA_PHAP_LY } from "@/types/nhan-news";
@@ -118,6 +119,17 @@ export default function TrangKiemTraTinhHuong() {
 
         {loi ? <BaoLoi tieuDe="Chưa kiểm tra được" moTa={loi} /> : null}
 
+        {/* Bản phân tích có cấu trúc đứng RIÊNG và đứng TRƯỚC khối kỹ thuật:
+            người dùng tới đây để biết mình nên làm gì, không phải để đọc
+            trạng thái truy hồi. */}
+        {ketQua?.phanTich ? (
+          <PhanTichTinhHuong
+            phanTich={ketQua.phanTich}
+            citations={ketQua.citations}
+            onMoCanCu={(c) => router.push(`/documents/${c.documentId}?node=${c.nodeId}`)}
+          />
+        ) : null}
+
         {ketQua ? (
           <The className="flex flex-col gap-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -127,6 +139,8 @@ export default function TrangKiemTraTinhHuong() {
               <ThanhDiem diem={ketQua.topScore} />
             </div>
 
+            {/* Văn xuôi chỉ còn là phương án dự phòng khi mô hình không trả
+                đúng khuôn phân tích. */}
             {ketQua.answer ? (
               <p className="whitespace-pre-wrap text-base leading-[--dong-body]">
                 {ketQua.answer}

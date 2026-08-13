@@ -136,3 +136,103 @@ export async function* streamResearchAnswer(
 ): AsyncGenerator<string> {
   yield* streamCompletion(RESEARCH_SYSTEM_PROMPT, buildResearchSynthesisPrompt(context), config);
 }
+
+/* ------------------------------------------------------------------ */
+/* Phân tích tình huống có cấu trúc                                     */
+
+/**
+ * Vì sao cần một lời nhắc riêng thay vì dùng lại SYSTEM_PROMPT: câu trả lời
+ * dạng văn xuôi cho tình huống tranh chấp luôn ra một khối chữ toàn "có thể
+ * liên quan", "có thể vi phạm" — đọc xong người dùng vẫn không biết mình
+ * đòi được hay không, và phải làm gì tiếp.
+ *
+ * Bắt trả JSON theo khuôn buộc mô hình phải quyết: một câu kết luận, mức độ
+ * chắc chắn, diễn biến theo mốc thời gian, và việc cần làm. Không có chỗ để
+ * viết lan man.
+ *
+ * Ràng buộc quan trọng nhất là `ngoaiPhamVi`: nếu văn bản ĐIỀU CHỈNH trực
+ * tiếp quan hệ này không nằm trong ngữ cảnh được cấp, mô hình phải nói ra
+ * thay vì lắp tạm điều luật gần giống. Một kết luận tự tin dựa trên nghị
+ * định sai còn tệ hơn là không kết luận.
+ */
+const PHAN_TICH_SYSTEM_PROMPT = `Bạn là trợ lý phân tích tình huống pháp luật Việt Nam.
+Chỉ được dùng các đoạn trích được cấp; tuyệt đối không bổ sung kiến thức ghi nhớ.
+
+Trả về DUY NHẤT một đối tượng JSON, không kèm giải thích, theo đúng khuôn:
+{
+  "ketLuan": "một câu duy nhất trả lời thẳng câu hỏi trọng tâm của tình huống",
+  "mucDoChacChan": "cao" | "trung_binh" | "thap",
+  "lyDoChacChan": "một câu vì sao ở mức đó",
+  "dongThoiGian": [
+    { "moc": "10/7/2026", "suKien": "việc đã xảy ra, viết ngắn",
+      "heQua": "hệ quả pháp lý của mốc này", "danChung": [1, 2] }
+  ],
+  "viecCanLam": ["hành động cụ thể, bắt đầu bằng động từ"],
+  "chungCuCanGiu": ["tài liệu hoặc dữ liệu cần lưu lại"],
+  "diemYeu": ["điểm bất lợi cho bên đang hỏi"],
+  "ngoaiPhamVi": null
+}
+
+QUY TẮC:
+- "ketLuan" phải là một câu khẳng định có định hướng, không được viết "có thể liên quan" hay "cần xem xét thêm".
+- "danChung" chỉ chứa số thứ tự đoạn trích có thật trong ngữ cảnh. Không bịa số.
+- Mốc nào không có căn cứ trong ngữ cảnh thì để "danChung": [].
+- "viecCanLam" là việc người trong tình huống làm được ngay, không phải lời khuyên chung chung.
+- Nếu văn bản điều chỉnh TRỰC TIẾP quan hệ pháp luật này không có trong ngữ cảnh, đặt "ngoaiPhamVi" là một câu nêu rõ thiếu văn bản nào và vì sao kết luận chỉ mang tính tham khảo. Khi đó "mucDoChacChan" phải là "thap".
+- Không phán quyết thay tòa án. Nói về khả năng và căn cứ, không nói "chắc chắn thắng kiện".`;
+
+export interface DoanTrichPhanTich {
+  index: number;
+  source: string;
+  content: string;
+}
+
+/** Gọi một lượt không stream và ép JSON. */
+async function goiJson(
+  systemPrompt: string,
+  userPrompt: string,
+  config: LlmConfig,
+): Promise<unknown> {
+  const response = await fetch(config.apiUrl, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${config.apiKey}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      model: config.model,
+      stream: false,
+      temperature: 0,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+  if (!response.ok) {
+    const detail = (await response.text()).slice(0, 500);
+    throw new Error(`LLM trả HTTP ${response.status}: ${detail}`);
+  }
+  const data = (await response.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  const noiDung = data.choices?.[0]?.message?.content;
+  if (!noiDung) throw new Error("LLM không trả nội dung.");
+  return JSON.parse(noiDung) as unknown;
+}
+
+export async function phanTichTinhHuong(
+  tinhHuong: string,
+  doanTrich: DoanTrichPhanTich[],
+  config = readLlmConfig(),
+): Promise<unknown> {
+  const nguon = doanTrich
+    .map((d) => `[${d.index}] ${d.source}\n${d.content}`)
+    .join("\n\n");
+  return goiJson(
+    PHAN_TICH_SYSTEM_PROMPT,
+    `TÌNH HUỐNG:\n${tinhHuong}\n\nCÁC ĐOẠN TRÍCH ĐƯỢC PHÉP DÙNG:\n${nguon}`,
+    config,
+  );
+}
