@@ -27,9 +27,24 @@ export class UnsupportedDocumentError extends Error {
   }
 }
 
+/**
+ * Thông báo nói rõ ĐÃ ĐO ĐƯỢC GÌ, không chỉ nói "không có text layer".
+ *
+ * Người dùng nhìn thấy một PDF mở lên đọc được bằng mắt và bị từ chối thì
+ * sẽ tưởng hệ thống hỏng. Nói ra số trang đã quét và bao nhiêu trang có chữ
+ * biến câu từ chối thành một kết luận kiểm chứng được, kèm đúng việc cần làm
+ * tiếp.
+ */
 export class PdfWithoutTextLayerError extends Error {
-  constructor() {
-    super("PDF không có text layer; OCR nằm ngoài phạm vi của hệ thống.");
+  constructor(
+    readonly soTrang = 0,
+    readonly soTrangCoChu = 0,
+  ) {
+    super(
+      soTrang > 0
+        ? `Đã quét ${soTrang} trang, không trang nào chứa chữ đọc được bằng máy — đây là bản scan (ảnh chụp trang giấy). Hệ thống không làm OCR. Hãy tải bản có lớp chữ từ nguồn chính thức, hoặc nạp bản DOCX.`
+        : "PDF không có text layer; OCR nằm ngoài phạm vi của hệ thống.",
+    );
     this.name = "PdfWithoutTextLayerError";
   }
 }
@@ -105,7 +120,8 @@ async function extractPdf(data: Uint8Array): Promise<ExtractedDocument> {
 }
 
 export function assertPdfHasText(pages: string[]): void {
-  if (!pages.some((page) => page.trim().length > 0)) {
-    throw new PdfWithoutTextLayerError();
+  const coChu = pages.filter((page) => page.trim().length > 0).length;
+  if (coChu === 0) {
+    throw new PdfWithoutTextLayerError(pages.length, coChu);
   }
 }
