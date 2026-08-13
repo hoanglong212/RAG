@@ -30,7 +30,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Tham số truy vấn không hợp lệ." }, { status: 400 });
   }
 
-  const filters: SQL[] = [];
+  // Contract danh sach khong co ingestStatus, vi vay chi tra cac ban ghi da
+  // hoan tat; ban dang xu ly/loi neu lo ra se bien thanh the metadata rong.
+  const filters: SQL[] = [eq(documents.ingest_status, "hoan_tat")];
   if (parsed.data.loai) filters.push(eq(documents.loai_van_ban, parsed.data.loai));
   if (parsed.data.coQuan) {
     filters.push(ilike(documents.co_quan_ban_hanh, `%${parsed.data.coQuan}%`));

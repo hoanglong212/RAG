@@ -72,6 +72,7 @@ export async function ingestDocument(
       fileName: safeName,
       data: source.data,
     });
+    assertUsableExtractedText(extracted.text);
     const parsed = parseVanBan(extracted.text, { tenFile: safeName });
     const legalTopics = classifyNews(
       `${safeName}\n${parsed.metadata.trich_yeu ?? ""}\n${extracted.text.slice(0, 8_000)}`,
@@ -140,4 +141,29 @@ export async function ingestDocument(
 export function safeErrorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : "Lỗi không xác định.";
   return message.replace(/postgres(?:ql)?:\/\/[^\s]+/gi, "[DATABASE_URL]").slice(0, 2_000);
+}
+
+/**
+ * Word can convert a scanned, digitally signed PDF into a DOCX that contains
+ * only the signature metadata while every legal page remains an image. That
+ * text is technically non-empty, but it is not a usable document body.
+ */
+export function assertUsableExtractedText(text: string): void {
+  const signatureField = "(?:Người ký|Email|Cơ quan|Thời gian ký)";
+  const signatureOnlyRemainder = text
+    .normalize("NFC")
+    .replace(
+      new RegExp(
+        `${signatureField}\\s*:\\s*.*?(?=\\s+${signatureField}\\s*:|\\r?\\n|$)`,
+        "giu",
+      ),
+      " ",
+    )
+    .replace(/[\s,.;:()\-–—/+]+/gu, "");
+
+  if (signatureOnlyRemainder.length === 0) {
+    throw new Error(
+      "Tệp chỉ chứa thông tin chữ ký số, không chứa nội dung văn bản đọc được bằng máy. Đây thường là bản scan được đổi sang DOCX; hệ thống không làm OCR. Hãy dùng bản HTML, TXT hoặc DOCX có nội dung chữ thật từ nguồn chính thức.",
+    );
+  }
 }
