@@ -370,12 +370,116 @@
     animation: hien-len var(--nhip-cham) var(--duong-cong) both;
   }
 
+  /* ---------- Premium effects ---------- */
+
+  /** Glassmorphism card: nền kính mờ, dùng dè — chỉ cho card nổi bật. */
+  .the-kinh {
+    background: var(--kinh-nen);
+    backdrop-filter: var(--kinh-mo);
+    -webkit-backdrop-filter: var(--kinh-mo);
+    border: 1px solid var(--kinh-vien);
+  }
+
+  /** Glow nhẹ khi hover — card "sáng lên" khi chuột lướt qua. */
+  .sang-khi-cham {
+    transition: box-shadow var(--nhip-cham) var(--duong-cong);
+  }
+  .sang-khi-cham:hover {
+    box-shadow: var(--sang-nhe);
+  }
+
+  /** Stagger entrance: mỗi con chậm hơn con trước 60ms. */
+  .tre-1 { animation-delay: var(--tre-1); }
+  .tre-2 { animation-delay: var(--tre-2); }
+  .tre-3 { animation-delay: var(--tre-3); }
+  .tre-4 { animation-delay: var(--tre-4); }
+  .tre-5 { animation-delay: var(--tre-5); }
+  .tre-6 { animation-delay: var(--tre-6); }
+
+  /** Scroll reveal: ẩn cho đến khi IntersectionObserver thêm class .da-hien. */
+  @keyframes truot-len {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .cho-hien {
+    opacity: 0;
+  }
+
+  .da-hien {
+    animation: truot-len 600ms var(--duong-cong) both;
+  }
+
+  /** Fade scale — cho card khi scroll vào. */
+  @keyframes phong-len {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .phong-len {
+    animation: phong-len 500ms var(--duong-cong) both;
+  }
+
+  /** Pulse nhẹ cho indicator đang hoạt động. */
+  @keyframes nhip-tho {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .nhip-tho {
+    animation: nhip-tho 2s ease-in-out infinite;
+  }
+
+  /** Shimmer loading — vệt sáng chạy ngang qua skeleton. */
+  @keyframes luot-sang {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .luot-sang {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .luot-sang::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.35),
+      transparent
+    );
+    animation: luot-sang 1.5s ease-in-out infinite;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .dong-dau,
     .hien-len,
     .loe-neo,
-    .vach-neo {
+    .vach-neo,
+    .da-hien,
+    .phong-len,
+    .nhip-tho,
+    .luot-sang::after {
       animation: none;
+    }
+
+    .cho-hien {
+      opacity: 1;
     }
 
     .o-hoi-noi-bat::before {
