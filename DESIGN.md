@@ -35,6 +35,12 @@ typography:
     fontWeight: 600
     lineHeight: 1.05
     letterSpacing: "-0.03em"
+  lead:
+    fontFamily: "Be Vietnam Pro, Segoe UI, system-ui, sans-serif"
+    fontSize: "clamp(1.1875rem, 1.6vw, 1.375rem)"
+    fontWeight: 500
+    lineHeight: 1.5
+    letterSpacing: "-0.011em"
   title:
     fontFamily: "Be Vietnam Pro, Segoe UI, system-ui, sans-serif"
     fontSize: "1rem"

@@ -267,6 +267,22 @@
     font-size: clamp(1.5rem, 2.5vw, 2.25rem);
   }
 
+  /**
+   * Câu chốt. Bậc duy nhất giữa body (1rem) và số liệu (1,5rem) — trước đây
+   * ramp nhảy thẳng qua khoảng này, nên câu kết luận của một lần tra cứu
+   * không có cỡ nào để mang: dùng body thì chìm nghỉm giữa các đoạn, dùng
+   * co-so-lieu thì to như tiêu đề trang.
+   *
+   * Giãn dòng 1,5 chứ không phải --dong-body: ở cỡ này dấu tiếng Việt đã có
+   * đủ chỗ thở, giữ 1,7 làm câu rời rạc thành từng dòng lẻ.
+   */
+  .co-ket-luan {
+    font-size: clamp(1.1875rem, 1.6vw, 1.375rem);
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.011em;
+  }
+
   /** Nhãn chữ hoa đặt trên nền mực hoặc bìa navy. */
   .nhan-hoa-sang {
     color: rgb(253 252 250 / 0.62);

@@ -13,11 +13,13 @@
  * trong lúc câu trả lời còn chưa có chữ nào.
  */
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { ChatStatus, Citation, DocumentDetail, StatsResponse } from "@/types/contract";
 import type { ResearchProgress, ResearchSource } from "@/types/research";
-import { CauTraLoi } from "@/components/cau-tra-loi";
-import { ChipTrichDan } from "@/components/chip-trich-dan";
+import { BangCanCu } from "@/components/tra-cuu/bang-can-cu";
+import { DangDungPhieu } from "@/components/tra-cuu/dang-dung-phieu";
+import { PhieuTraLoi } from "@/components/tra-cuu/phieu-tra-loi";
+import { timNeo, type NguonDeNeo } from "@/components/tra-cuu/neo-trich-dan";
 import { NguonNghienCuu } from "@/components/nguon-nghien-cuu";
 import { MatDoc } from "@/components/mat-doc";
 import { OHoi } from "@/components/o-hoi";
@@ -193,6 +195,33 @@ export function BanTraCuu({ cheDo, khiTrong, moTaTruc }: BanTraCuuProps) {
         : citations.findIndex((c) => c.chunkId === dangChon.chunkId)) + 1
     : 0;
 
+  /** Danh sách nguồn để dò neo — đánh số TRÙNG với moNguonTheoSo bên dưới. */
+  const nguonDeNeo = useMemo<NguonDeNeo[]>(
+    () =>
+      cheDo === "research"
+        ? researchSources.map((s) => ({
+            soHieu: s.soHieu ?? "",
+            breadcrumb: s.breadcrumb ?? s.title,
+            score: s.score,
+          }))
+        : citations.map((c) => ({ soHieu: c.soHieu, breadcrumb: c.breadcrumb, score: c.score })),
+    [cheDo, citations, researchSources],
+  );
+
+  /**
+   * Những VĂN BẢN câu trả lời thật sự viện dẫn. Đây là thứ chia bảng căn cứ
+   * làm hai phần, và nó đo được trên chính câu trả lời chứ không phải một
+   * ngưỡng điểm tự đặt.
+   */
+  const soHieuDaDan = useMemo(() => {
+    const tap = new Set<string>();
+    for (const neo of timNeo(answer, nguonDeNeo)) {
+      const nguon = neo.so > 0 ? nguonDeNeo[neo.so - 1] : null;
+      if (nguon?.soHieu) tap.add(nguon.soHieu);
+    }
+    return tap;
+  }, [answer, nguonDeNeo]);
+
   const moNguonTheoSo = (so: number) => {
     if (cheDo === "corpus") {
       const c = citations[so - 1];
@@ -263,52 +292,57 @@ export function BanTraCuu({ cheDo, khiTrong, moTaTruc }: BanTraCuuProps) {
             ) : null}
 
             {coNguon ? (
-              <div className="flex flex-col gap-7">
-                {/* Nguồn đứng TRÊN câu trả lời, đúng thứ tự chúng về. */}
-                <section>
-                  <h2 className="nhan-hoa mb-2.5">Nguồn ({soNguon})</h2>
-                  <ul className="flex flex-col gap-1.5">
-                    {cheDo === "research"
-                      ? researchSources.map((s, i) => (
-                          <li key={s.id}>
-                            <NguonNghienCuu
-                              source={s}
-                              index={i + 1}
-                              selected={Boolean(s.chunkId && s.chunkId === dangChon?.chunkId)}
-                              onSelect={() => {
-                                if (s.kind === "corpus")
-                                  void moTrichDan(nguonThanhTrichDan(s), true);
-                              }}
-                            />
-                          </li>
-                        ))
-                      : citations.map((td, i) => (
-                          <li key={td.chunkId}>
-                            <ChipTrichDan
-                              trichDan={td}
-                              soThuTu={i + 1}
-                              dangChon={dangChon?.chunkId === td.chunkId}
-                              onChon={(c) => void moTrichDan(c, true)}
-                            />
-                          </li>
-                        ))}
-                  </ul>
-                </section>
+              <div className="flex flex-col gap-6">
+                {/*
+                  CÂU TRẢ LỜI ĐỨNG ĐẦU. Trước đây Nguồn chiếm chỗ này với lý do
+                  "đúng thứ tự chúng về" — hệ quả là phải cuộn qua tám trích
+                  đoạn luật thô mới tới thứ mình hỏi. Khoảnh khắc trích dẫn về
+                  trước vẫn còn, nó chỉ diễn ra Ở ĐÂY (xem DangDungPhieu) rồi
+                  nhường chỗ cho phiếu thật.
+                */}
+                {answer ? (
+                  <PhieuTraLoi
+                    noiDung={answer}
+                    nguon={nguonDeNeo}
+                    soDangChon={soDangChon || undefined}
+                    onChonSo={moNguonTheoSo}
+                    dangViet={dangChay}
+                  />
+                ) : (
+                  <DangDungPhieu citations={citations} />
+                )}
 
-                <section>
-                  <h2 className="nhan-hoa mb-2.5">Trả lời</h2>
-                  {answer ? (
-                    <CauTraLoi
-                      noiDung={answer}
-                      soTrichDan={soNguon}
-                      dangChon={soDangChon || undefined}
-                      dangViet={dangChay}
-                      onChonSo={moNguonTheoSo}
-                    />
-                  ) : (
-                    <p className="text-sm text-nhan">Đang soạn câu trả lời…</p>
-                  )}
-                </section>
+                {cheDo === "research" ? (
+                  <section aria-label="Nguồn">
+                    <h2 className="nhan-hoa mb-2.5">
+                      Nguồn
+                      <span className="ml-2 font-normal normal-case tracking-normal">
+                        {soNguon} tài liệu đã đối chiếu
+                      </span>
+                    </h2>
+                    <ul className="flex flex-col gap-1.5">
+                      {researchSources.map((s, i) => (
+                        <li key={s.id}>
+                          <NguonNghienCuu
+                            source={s}
+                            index={i + 1}
+                            selected={Boolean(s.chunkId && s.chunkId === dangChon?.chunkId)}
+                            onSelect={() => {
+                              if (s.kind === "corpus") void moTrichDan(nguonThanhTrichDan(s), true);
+                            }}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ) : (
+                  <BangCanCu
+                    citations={citations}
+                    soHieuDaDan={soHieuDaDan}
+                    chunkIdDangChon={dangChon?.chunkId ?? null}
+                    onChon={(td) => void moTrichDan(td, true)}
+                  />
+                )}
               </div>
             ) : null}
           </div>
