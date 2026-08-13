@@ -51,9 +51,46 @@ export default function TrangKiemTraTinhHuong() {
   const [ketQua, setKetQua] = useState<LegalCheckResult | null>(null);
   const [dangChay, setDangChay] = useState(false);
   const [loi, setLoi] = useState<string | null>(null);
+  const [dangLuu, setDangLuu] = useState(false);
+  const [daLuu, setDaLuu] = useState(false);
 
   const soChu = tinhHuong.trim().length;
   const duDai = soChu >= 10;
+
+  /** Tiêu đề hồ sơ lấy câu đầu của mô tả — người dùng sửa lại được ở trang Hồ sơ. */
+  function datTen(mo: string): string {
+    const cau = mo.trim().split(/(?<=[.!?])\s|\n/)[0] ?? mo;
+    return cau.replace(/^Tình huống:\s*/i, "").trim().slice(0, 120) || "Hồ sơ chưa đặt tên";
+  }
+
+  async function luuHoSo() {
+    if (!ketQua) return;
+    setDangLuu(true);
+    setLoi(null);
+    try {
+      await guiJson("/api/cases", {
+        title: datTen(tinhHuong),
+        scenario: tinhHuong.trim(),
+        topic: ketQua.detectedTopics[0] ?? null,
+        analysis: {
+          status: ketQua.status,
+          answer: ketQua.answer,
+          phanTich: ketQua.phanTich,
+          citations: ketQua.citations,
+          topScore: ketQua.topScore,
+          detectedTopics: ketQua.detectedTopics,
+          missingFacts: [],
+          nextSteps: [],
+          disclaimer: ketQua.disclaimer,
+        },
+      });
+      setDaLuu(true);
+    } catch (e) {
+      setLoi(docLoi(e));
+    } finally {
+      setDangLuu(false);
+    }
+  }
 
   async function gui() {
     if (!duDai) {
@@ -63,6 +100,7 @@ export default function TrangKiemTraTinhHuong() {
     setDangChay(true);
     setLoi(null);
     setKetQua(null);
+    setDaLuu(false);
     try {
       setKetQua(
         await guiJson<LegalCheckResult>("/api/legal-check", { scenario: tinhHuong.trim() }),
@@ -141,6 +179,32 @@ export default function TrangKiemTraTinhHuong() {
             citations={ketQua.citations}
             onMoCanCu={(c) => router.push(`/documents/${c.documentId}?node=${c.nodeId}`)}
           />
+        ) : null}
+
+        {/*
+          Lưu về Hồ sơ. Đây là cầu nối duy nhất giữa hai trang: phân tích ở
+          đây, cất giữ ở kia. Trước đây trang Hồ sơ có ô phân tích riêng —
+          cùng một việc làm hai chỗ, và bản ở kia luôn cũ hơn.
+        */}
+        {ketQua && (ketQua.phanTich || ketQua.citations.length > 0) ? (
+          <The className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">Giữ lại vụ việc này</p>
+              <p className="mt-1 text-[0.8125rem] leading-relaxed text-nhan">
+                Hồ sơ lưu nguyên bản phân tích và căn cứ của lần chạy này, kể cả khi kho
+                văn bản thay đổi về sau.
+              </p>
+            </div>
+            {daLuu ? (
+              <Nut kieu="vien" onClick={() => router.push("/workspace")}>
+                Mở trong Hồ sơ
+              </Nut>
+            ) : (
+              <Nut kieu="phu" disabled={dangLuu} onClick={() => void luuHoSo()}>
+                {dangLuu ? "Đang lưu…" : "Lưu vào hồ sơ"}
+              </Nut>
+            )}
+          </The>
         ) : null}
 
         {/* Không có bản phân tích thì phải nói vì sao. Người dùng cần biết

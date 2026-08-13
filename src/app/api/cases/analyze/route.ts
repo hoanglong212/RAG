@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     const analysis: CaseAnalysis = {
       status: result.status,
       answer: result.answer,
+      phanTich: result.phanTich,
       citations: result.citations,
       topScore: result.topScore,
       detectedTopics: result.detectedTopics,

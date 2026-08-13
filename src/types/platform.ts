@@ -7,9 +7,18 @@ export interface UserProfileView {
   email: string | null;
 }
 
+/**
+ * Ảnh chụp bản phân tích tại thời điểm lưu.
+ *
+ * Cố ý là ẢNH CHỤP chứ không phải tham chiếu: kho văn bản đổi, mô hình đổi,
+ * thì hồ sơ đã lưu vẫn phải giữ nguyên thứ người dùng từng đọc và dựa vào.
+ * Muốn số mới thì chạy lại, và khi đó là một lần lưu khác.
+ */
 export interface CaseAnalysis {
   status: LegalCheckStatus;
   answer: string | null;
+  /** Bản phân tích có cấu trúc (kết luận, dòng thời gian, việc cần làm). */
+  phanTich: PhanTichLuuTru | null;
   citations: Citation[];
   topScore: number;
   detectedTopics: NewsTopic[];
@@ -17,6 +26,26 @@ export interface CaseAnalysis {
   nextSteps: string[];
   disclaimer: string;
 }
+
+/** Khuôn phân tích, khai lại ở đây để types không phụ thuộc ngược vào lib. */
+export interface PhanTichLuuTru {
+  ketLuan: string;
+  mucDoChacChan: "cao" | "trung_binh" | "thap";
+  lyDoChacChan: string;
+  dongThoiGian: Array<{
+    moc: string;
+    suKien: string;
+    heQua: string;
+    danChung: number[];
+  }>;
+  viecCanLam: string[];
+  chungCuCanGiu: string[];
+  diemYeu: string[];
+  ngoaiPhamVi: string | null;
+}
+
+export const TRANG_THAI_HO_SO = ["dang_lam", "da_xong"] as const;
+export type TrangThaiHoSo = (typeof TRANG_THAI_HO_SO)[number];
 
 export interface LegalCaseView {
   id: string;

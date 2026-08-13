@@ -30,7 +30,10 @@ export async function POST(request: Request) {
   const userId = await getOrCreateProfileId();
   const rows = await sql`
     INSERT INTO watchlists (user_id, name, topics, document_ids, last_seen_at)
-    VALUES (${userId}, ${parsed.data.name}, ${parsed.data.topics}, ${parsed.data.documentIds}, now() - interval '30 days')
+    -- Mốc "đã xem" đặt tại thời điểm tạo, KHÔNG lùi 30 ngày. Lùi lại thì vừa
+    -- bật theo dõi đã dội ngay một tháng tin cũ, và con số cập nhật thành
+    -- nhiễu ngay từ giây đầu tiên thay vì báo cái mới.
+    VALUES (${userId}, ${parsed.data.name}, ${parsed.data.topics}, ${parsed.data.documentIds}, now())
     RETURNING id`;
   return NextResponse.json({ id: String(rows[0].id) }, { status: 201 });
 }

@@ -1,30 +1,44 @@
 "use client";
 
 /**
- * Không gian hồ sơ — chỗ người dùng giữ việc của mình qua nhiều lần vào.
+ * HỒ SƠ — tủ đựng vụ việc, không phải chỗ phân tích.
  *
- * Bốn dụng cụ, xếp theo thứ tự người ta thật sự dùng: phân tích tình huống
- * trước, rồi lưu lại, rồi theo dõi thay đổi, rồi mới soạn đơn. Hồ sơ cá nhân
- * đẩy xuống cuối vì nó là việc làm một lần.
+ * Trước đây trang này có ô phân tích riêng, gọi cùng một hàm với trang Kiểm
+ * tra tình huống rồi thêm hai danh sách gợi ý cứng. Cùng một việc làm ở hai
+ * chỗ, và bản ở đây luôn là bản cũ hơn. Giờ phân tích ở trang kia, nút "Lưu
+ * vào hồ sơ" đưa kết quả sang đây, và đây lo phần mà không trang nào khác
+ * lo: GIỮ LẠI và LÀM TIẾP.
  *
- * Bản in chỉ giữ phần phân tích: nút bấm, bộ lọc và ô nhập đều `print:hidden`.
+ * Ba việc làm tiếp, xếp theo vòng đời một vụ việc:
+ *   mở lại hồ sơ đã lưu  →  sinh giấy tờ từ chính căn cứ đó  →  theo dõi
+ *   xem có văn bản hay tin gì mới động tới nó không
+ *
+ * Bản in giữ lại hồ sơ đang mở; mọi nút bấm đều print:hidden.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChipTrichDan } from "@/components/chip-trich-dan";
-import { KhungTrang, Nut, The, TieuDeMuc } from "@/components/kit/co-ban";
-import { ONhap, OChon, OVanBan, Truong, VienLoc } from "@/components/kit/truong";
-import { BaoLoi, BaoTin } from "@/components/kit/trang-thai-kit";
+import {
+  BellRing,
+  FileText,
+  FolderOpen,
+  Printer,
+  Trash2,
+} from "lucide-react";
+import { KhungTrang, Nhan, Nut, The, TieuDeMuc } from "@/components/kit/co-ban";
+import { ONhap, OChon, OVanBan } from "@/components/kit/truong";
+import { BaoLoi, BaoTin, TrongRong } from "@/components/kit/trang-thai-kit";
 import { docLoi, guiJson, layJson } from "@/components/kit/goi-api";
+import { PhanTichTinhHuong } from "@/components/phan-tich-tinh-huong";
+import { DanhSachCanCu } from "@/components/danh-sach-can-cu";
 import type { NewsTopic } from "@/types/news";
-import { NHAN_CHU_DE_TIN, NHAN_KET_QUA_PHAP_LY } from "@/types/nhan-news";
+import { NHAN_CHU_DE_TIN } from "@/types/nhan-news";
 import type {
-  CaseAnalysis,
   LegalCaseView,
   UserProfileView,
   WatchlistView,
 } from "@/types/platform";
+import { cn } from "@/lib/utils";
 
 const CHU_DE: NewsTopic[] = [
   "an_toan_thuc_pham",
@@ -40,28 +54,24 @@ const MAU_DON = [
   { id: "salary", nhan: "Yêu cầu thanh toán lương" },
 ] as const;
 
-export default function TrangKhongGianLamViec() {
+function khiNao(iso: string): string {
+  const giay = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (giay < 3600) return `${Math.max(1, Math.floor(giay / 60))} phút trước`;
+  if (giay < 86400) return `${Math.floor(giay / 3600)} giờ trước`;
+  if (giay < 604800) return `${Math.floor(giay / 86400)} ngày trước`;
+  return new Date(iso).toLocaleDateString("vi-VN");
+}
+
+export default function TrangHoSo() {
   const router = useRouter();
   const [hoSo, setHoSo] = useState<UserProfileView | null>(null);
   const [vuViec, setVuViec] = useState<LegalCaseView[]>([]);
   const [theoDoi, setTheoDoi] = useState<WatchlistView[]>([]);
-  const [tinhHuong, setTinhHuong] = useState("");
-  const [chuDe, setChuDe] = useState<NewsTopic | "">("");
-  const [phanTich, setPhanTich] = useState<CaseAnalysis | null>(null);
-  const [tenTheoDoi, setTenTheoDoi] = useState("");
-  const [chuDeTheoDoi, setChuDeTheoDoi] = useState<NewsTopic>("giao_thong");
-  const [maDon, setMaDon] = useState<string>("complaint");
-  const [truong, setTruong] = useState({
-    fullName: "",
-    address: "",
-    recipient: "",
-    facts: "",
-    request: "",
-  });
-  const [banNhap, setBanNhap] = useState("");
-  const [dangChay, setDangChay] = useState(false);
+  const [idDangMo, setIdDangMo] = useState<string | null>(null);
+  const [dangTai, setDangTai] = useState(true);
   const [tin, setTin] = useState<string | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
+  const [xacNhanXoa, setXacNhanXoa] = useState<string | null>(null);
 
   const lamMoi = useCallback(async () => {
     const [p, c, w] = await Promise.all([
@@ -72,10 +82,13 @@ export default function TrangKhongGianLamViec() {
     setHoSo(p);
     setVuViec(c);
     setTheoDoi(w);
+    setIdDangMo((hienTai) => hienTai ?? c[0]?.id ?? null);
   }, []);
 
   useEffect(() => {
-    void lamMoi().catch((e: unknown) => setLoi(docLoi(e)));
+    void lamMoi()
+      .catch((e: unknown) => setLoi(docLoi(e)))
+      .finally(() => setDangTai(false));
   }, [lamMoi]);
 
   function chay(viec: () => Promise<void>) {
@@ -83,324 +96,173 @@ export default function TrangKhongGianLamViec() {
     void viec().catch((e: unknown) => setLoi(docLoi(e)));
   }
 
-  async function phanTichHoSo() {
-    setDangChay(true);
-    setTin(null);
-    try {
-      setPhanTich(
-        await guiJson<CaseAnalysis>("/api/cases/analyze", {
-          scenario: tinhHuong,
-          ...(chuDe ? { topic: chuDe } : {}),
-        }),
-      );
-    } finally {
-      setDangChay(false);
-    }
-  }
+  const dangMo = useMemo(
+    () => vuViec.find((v) => v.id === idDangMo) ?? null,
+    [vuViec, idDangMo],
+  );
 
   return (
     <KhungTrang
-      tieuDe="Không gian hồ sơ"
-      moTa="Hồ sơ gắn với trình duyệt hiện tại bằng một cookie riêng tư. Không có tài khoản, không có mật khẩu."
+      tieuDe="Hồ sơ"
+      moTa="Vụ việc đã lưu, giấy tờ sinh ra từ chính căn cứ của nó, và những thay đổi cần theo dõi. Hồ sơ gắn với trình duyệt này bằng một cookie riêng tư — xoá cookie hoặc đổi máy là mất."
       rong="rong"
     >
-      <div className="flex flex-col gap-3">
-        {loi ? <BaoLoi moTa={loi} /> : null}
+      <div className="flex flex-col gap-4">
         {tin ? <BaoTin>{tin}</BaoTin> : null}
+        {loi ? <BaoLoi moTa={loi} /> : null}
 
-        {/* ---------- Phân tích tình huống ---------- */}
-        <The className="flex flex-col gap-4">
-          <TieuDeMuc phu="Mô tả càng đủ dữ kiện, hệ thống càng chỉ ra được chỗ bạn còn thiếu">
-            Hồ sơ tình huống
-          </TieuDeMuc>
-
-          <OVanBan
-            rows={6}
-            value={tinhHuong}
-            onChange={(e) => setTinhHuong(e.target.value)}
-            placeholder="Mô tả đầy đủ sự việc: xảy ra khi nào, giữa những ai, đã làm gì rồi…"
-          />
-
-          <div className="flex flex-col gap-3 print:hidden">
-            <VienLoc
-              cacMuc={CHU_DE.map((t) => ({ giaTri: t, nhan: NHAN_CHU_DE_TIN[t] }))}
-              dangChon={chuDe}
-              nhanTatCa="Tự nhận diện chủ đề"
-              onChon={setChuDe}
-            />
-            <div className="flex justify-end">
-              <Nut
-                disabled={dangChay || tinhHuong.trim().length < 10}
-                onClick={() => chay(phanTichHoSo)}
-              >
-                {dangChay ? "Đang phân tích…" : "Phân tích hồ sơ"}
-              </Nut>
-            </div>
-          </div>
-
-          {phanTich ? (
-            <div className="flex flex-col gap-5 border-t border-ke-mo pt-5">
-              <h3 className="text-base font-semibold">
-                {NHAN_KET_QUA_PHAP_LY[phanTich.status]}
-              </h3>
-
-              {phanTich.answer ? (
-                <p className="whitespace-pre-wrap text-base leading-[--dong-body]">
-                  {phanTich.answer}
-                </p>
-              ) : null}
-
-              <div className="grid gap-5 md:grid-cols-2">
-                <DanhSach tieuDe="Dữ kiện cần bổ sung" cacMuc={phanTich.missingFacts} />
-                <DanhSach tieuDe="Bước nên làm tiếp" cacMuc={phanTich.nextSteps} />
-              </div>
-
-              {phanTich.citations.length > 0 ? (
-                <div>
-                  <p className="nhan-hoa mb-2">Căn cứ</p>
-                  <div className="grid gap-1.5 md:grid-cols-2">
-                    {phanTich.citations.map((c, i) => (
-                      <ChipTrichDan
-                        key={c.chunkId}
-                        trichDan={c}
-                        soThuTu={i + 1}
-                        onChon={() =>
-                          router.push(`/documents/${c.documentId}?node=${c.nodeId}`)
-                        }
-                      />
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
-              <p className="text-xs leading-relaxed text-nhan">{phanTich.disclaimer}</p>
-
-              <div className="flex flex-wrap gap-2 print:hidden">
-                <Nut
-                  kieu="phu"
-                  onClick={() =>
-                    chay(async () => {
-                      await guiJson("/api/cases", {
-                        title: tinhHuong.slice(0, 90),
-                        scenario: tinhHuong,
-                        topic: chuDe || null,
-                        analysis: phanTich,
-                      });
-                      setTin("Đã lưu hồ sơ vào không gian làm việc.");
-                      await lamMoi();
-                    })
-                  }
-                >
-                  Lưu hồ sơ
-                </Nut>
-                <Nut kieu="vien" onClick={() => window.print()}>
-                  In hoặc xuất PDF
-                </Nut>
-              </div>
-            </div>
-          ) : null}
-        </The>
-
-        <div className="grid gap-3 lg:grid-cols-2 print:hidden">
-          {/* ---------- Theo dõi ---------- */}
-          <The className="flex flex-col gap-4">
-            <TieuDeMuc phu="Nhận cập nhật khi có tin hoặc văn bản mới thuộc chủ đề">
-              Theo dõi thay đổi
+        {/* ================= TỦ HỒ SƠ ================= */}
+        <div className="grid gap-3 lg:grid-cols-[20rem_minmax(0,1fr)]">
+          {/* ---- Cột trái: gáy hồ sơ ---- */}
+          <aside className="flex flex-col gap-2 print:hidden">
+            <TieuDeMuc phu={dangTai ? undefined : `${vuViec.length} hồ sơ đã lưu`}>
+              Vụ việc
             </TieuDeMuc>
 
-            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_10rem_auto]">
-              <ONhap
-                value={tenTheoDoi}
-                onChange={(e) => setTenTheoDoi(e.target.value)}
-                placeholder="Tên theo dõi"
-                aria-label="Tên theo dõi"
-              />
-              <OChon
-                value={chuDeTheoDoi}
-                onChange={(e) => setChuDeTheoDoi(e.target.value as NewsTopic)}
-                aria-label="Chủ đề theo dõi"
-              >
-                {CHU_DE.map((t) => (
-                  <option key={t} value={t}>
-                    {NHAN_CHU_DE_TIN[t]}
-                  </option>
+            {dangTai ? (
+              <div className="flex flex-col gap-2">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="h-20 animate-pulse rounded-[--bo-lon] bg-khay-sau" />
                 ))}
-              </OChon>
-              <Nut
-                onClick={() =>
+              </div>
+            ) : null}
+
+            {!dangTai && vuViec.length === 0 ? (
+              <The className="flex flex-col items-start gap-3">
+                <FolderOpen className="size-5 text-nhan" strokeWidth={1.8} />
+                <p className="text-sm font-semibold">Chưa có hồ sơ nào</p>
+                <p className="text-[0.8125rem] leading-relaxed text-nhan">
+                  Phân tích một tình huống rồi bấm <em>Lưu vào hồ sơ</em>. Bản phân tích và
+                  căn cứ của lần chạy đó được giữ nguyên tại đây.
+                </p>
+                <Nut co="nho" onClick={() => router.push("/legal-check")}>
+                  Kiểm tra một tình huống
+                </Nut>
+              </The>
+            ) : null}
+
+            <ul className="flex flex-col gap-2">
+              {vuViec.map((v) => {
+                const mo = v.id === dangMo?.id;
+                return (
+                  <li key={v.id}>
+                    <button
+                      type="button"
+                      onClick={() => setIdDangMo(v.id)}
+                      aria-current={mo ? "true" : undefined}
+                      className={cn(
+                        "w-full rounded-[--bo-lon] p-3.5 text-left transition-[box-shadow,transform,background-color] duration-[--nhip]",
+                        mo
+                          ? "bg-giay shadow-vua ring-1 ring-but-xanh/25"
+                          : "bg-giay/60 shadow-the hover:-translate-y-px hover:bg-giay hover:shadow-vua",
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "size-1.5 shrink-0 rounded-full",
+                            v.status === "da_xong" ? "bg-nhan/50" : "bg-but-xanh",
+                          )}
+                        />
+                        <span className="nhan-hoa">
+                          {v.status === "da_xong" ? "Đã xong" : "Đang làm"}
+                        </span>
+                        <span className="ml-auto text-xs text-nhan">{khiNao(v.updatedAt)}</span>
+                      </span>
+                      <span className="mt-1.5 block line-clamp-2 text-sm font-medium leading-snug">
+                        {v.title}
+                      </span>
+                      {v.topic ? (
+                        <Nhan className="mt-2">{NHAN_CHU_DE_TIN[v.topic] ?? v.topic}</Nhan>
+                      ) : null}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </aside>
+
+          {/* ---- Cột phải: hồ sơ đang mở ---- */}
+          <div className="min-w-0">
+            {dangMo ? (
+              <HoSoDangMo
+                vu={dangMo}
+                hoTen={hoSo?.displayName ?? ""}
+                xacNhanXoa={xacNhanXoa === dangMo.id}
+                onHoiXoa={() => setXacNhanXoa(dangMo.id)}
+                onHuyXoa={() => setXacNhanXoa(null)}
+                onMoCanCu={(c) => router.push(`/documents/${c.documentId}?node=${c.nodeId}`)}
+                onDoiTrangThai={(tt) =>
                   chay(async () => {
-                    await guiJson("/api/watchlists", {
-                      name: tenTheoDoi || NHAN_CHU_DE_TIN[chuDeTheoDoi],
-                      topics: [chuDeTheoDoi],
-                      documentIds: [],
-                    });
-                    setTenTheoDoi("");
-                    setTin("Đã tạo theo dõi mới.");
+                    await guiJson("/api/cases", { id: dangMo.id, status: tt }, "PATCH");
+                    setTin(tt === "da_xong" ? "Đã đánh dấu hồ sơ hoàn tất." : "Đã mở lại hồ sơ.");
                     await lamMoi();
                   })
                 }
-              >
-                Thêm
-              </Nut>
-            </div>
-
-            {theoDoi.length > 0 ? (
-              <div className="flex flex-col gap-2">
-                {theoDoi.map((t) => (
-                  <div key={t.id} className="rounded-[--bo] bg-khay p-3.5">
-                    <p className="text-sm font-medium">
-                      {t.name}
-                      <span className="ml-2 font-normal text-nhan">
-                        {t.alerts.length} cập nhật
-                      </span>
-                    </p>
-                    {t.alerts.slice(0, 3).map((c) => (
-                      <a
-                        key={`${c.kind}-${c.id}`}
-                        href={c.href}
-                        className="mt-1.5 block line-clamp-1 text-xs text-nhan underline-offset-4 hover:text-but-xanh hover:underline"
-                      >
-                        {c.kind === "news" ? "Tin" : "Văn bản"}: {c.title}
-                      </a>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-nhan">
-                Chưa theo dõi chủ đề nào. Tạo một mục để nhận cập nhật.
-              </p>
-            )}
-          </The>
-
-          {/* ---------- Biểu mẫu ---------- */}
-          <The className="flex flex-col gap-4">
-            <TieuDeMuc phu="Bản nháp để bạn sửa lại, không phải văn bản nộp được ngay">
-              Tạo đơn và biểu mẫu
-            </TieuDeMuc>
-
-            <Truong nhan="Loại đơn">
-              {(id) => (
-                <OChon id={id} value={maDon} onChange={(e) => setMaDon(e.target.value)}>
-                  {MAU_DON.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.nhan}
-                    </option>
-                  ))}
-                </OChon>
-              )}
-            </Truong>
-
-            <div className="grid gap-2 sm:grid-cols-2">
-              <ONhap
-                value={truong.fullName}
-                onChange={(e) => setTruong({ ...truong, fullName: e.target.value })}
-                placeholder="Họ và tên"
-                aria-label="Họ và tên"
-              />
-              <ONhap
-                value={truong.recipient}
-                onChange={(e) => setTruong({ ...truong, recipient: e.target.value })}
-                placeholder="Nơi nhận hoặc bên liên quan"
-                aria-label="Nơi nhận"
-              />
-              <ONhap
-                value={truong.address}
-                onChange={(e) => setTruong({ ...truong, address: e.target.value })}
-                placeholder="Địa chỉ"
-                aria-label="Địa chỉ"
-                className="sm:col-span-2"
-              />
-              <OVanBan
-                rows={2}
-                value={truong.facts}
-                onChange={(e) => setTruong({ ...truong, facts: e.target.value })}
-                placeholder="Sự việc, sản phẩm hoặc kỳ lương"
-                aria-label="Sự việc"
-                className="sm:col-span-2"
-              />
-              <OVanBan
-                rows={2}
-                value={truong.request}
-                onChange={(e) => setTruong({ ...truong, request: e.target.value })}
-                placeholder="Yêu cầu của bạn"
-                aria-label="Yêu cầu"
-                className="sm:col-span-2"
-              />
-            </div>
-
-            <div className="flex justify-end">
-              <Nut
-                kieu="phu"
-                onClick={() =>
+                onXoa={() =>
                   chay(async () => {
-                    const kq = await guiJson<{ text: string }>("/api/templates", {
-                      templateId: maDon,
-                      fields: {
-                        ...truong,
-                        seller: truong.recipient,
-                        employer: truong.recipient,
-                        product: truong.facts,
-                        period: truong.facts,
-                      },
-                    });
-                    setBanNhap(kq.text);
+                    const r = await fetch(`/api/cases?id=${dangMo.id}`, { method: "DELETE" });
+                    if (!r.ok) throw new Error("Không xoá được hồ sơ.");
+                    setXacNhanXoa(null);
+                    setIdDangMo(null);
+                    setTin("Đã xoá hồ sơ.");
+                    await lamMoi();
                   })
                 }
-              >
-                Tạo bản nháp
-              </Nut>
-            </div>
-
-            {banNhap ? (
-              <OVanBan readOnly rows={12} value={banNhap} className="font-ma text-xs" />
+                onBaoLoi={setLoi}
+              />
+            ) : !dangTai && vuViec.length > 0 ? (
+              <TrongRong
+                tieuDe="Chọn một hồ sơ"
+                moTa="Bấm một vụ việc ở cột bên trái để mở lại bản phân tích và căn cứ đã lưu."
+              />
             ) : null}
-          </The>
+          </div>
         </div>
 
-        {/* ---------- Hồ sơ đã lưu ---------- */}
-        <The className="flex flex-col gap-4 print:hidden">
-          <TieuDeMuc phu="Bấm để mở lại tình huống và kết quả phân tích">
-            Hồ sơ đã lưu ({vuViec.length})
-          </TieuDeMuc>
-          {vuViec.length > 0 ? (
-            <div className="grid gap-2 md:grid-cols-2">
-              {vuViec.map((v) => (
-                <button
-                  key={v.id}
-                  onClick={() => {
-                    setTinhHuong(v.scenario);
-                    setChuDe(v.topic ?? "");
-                    setPhanTich(v.analysis);
-                  }}
-                  className="rounded-[--bo] bg-khay p-3.5 text-left transition-colors duration-[--nhip] hover:bg-khay-sau"
-                >
-                  <span className="block line-clamp-1 text-sm font-medium">{v.title}</span>
-                  <span className="mt-1 block text-xs text-nhan">
-                    {new Date(v.updatedAt).toLocaleString("vi-VN")}
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-nhan">
-              Chưa lưu hồ sơ nào. Phân tích một tình huống rồi bấm Lưu hồ sơ.
-            </p>
-          )}
-        </The>
+        {/* ================= THEO DÕI ================= */}
+        <TheoDoiThayDoi
+          danhSach={theoDoi}
+          onTao={(ten, chuDe) =>
+            chay(async () => {
+              await guiJson("/api/watchlists", {
+                name: ten || NHAN_CHU_DE_TIN[chuDe],
+                topics: [chuDe],
+                documentIds: [],
+              });
+              setTin("Đã tạo theo dõi. Từ giờ chỉ báo những gì mới hơn thời điểm này.");
+              await lamMoi();
+            })
+          }
+          onDaXem={(id) =>
+            chay(async () => {
+              await guiJson("/api/watchlists", { id }, "PATCH");
+              await lamMoi();
+            })
+          }
+          onXoa={(id) =>
+            chay(async () => {
+              const r = await fetch(`/api/watchlists?id=${id}`, { method: "DELETE" });
+              if (!r.ok) throw new Error("Không xoá được mục theo dõi.");
+              setTin("Đã bỏ theo dõi.");
+              await lamMoi();
+            })
+          }
+        />
 
-        {/* ---------- Hồ sơ người dùng ---------- */}
+        {/* ================= HỒ SƠ CÁ NHÂN ================= */}
         <The className="flex flex-col gap-4 print:hidden">
-          <TieuDeMuc phu="Chỉ dùng để điền sẵn vào biểu mẫu, không gửi đi đâu">
-            Hồ sơ người dùng
+          <TieuDeMuc phu="Chỉ dùng để điền sẵn vào giấy tờ, không gửi đi đâu">
+            Thông tin của bạn
           </TieuDeMuc>
           {hoSo ? (
             <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
               <ONhap
                 value={hoSo.displayName}
                 onChange={(e) => setHoSo({ ...hoSo, displayName: e.target.value })}
-                placeholder="Tên hiển thị"
-                aria-label="Tên hiển thị"
+                placeholder="Họ và tên"
+                aria-label="Họ và tên"
               />
               <ONhap
                 value={hoSo.email ?? ""}
@@ -417,12 +279,12 @@ export default function TrangKhongGianLamViec() {
                       headers: { "content-type": "application/json" },
                       body: JSON.stringify(hoSo),
                     });
-                    if (!r.ok) throw new Error("Không lưu được hồ sơ.");
-                    setTin("Đã cập nhật hồ sơ người dùng.");
+                    if (!r.ok) throw new Error("Không lưu được thông tin.");
+                    setTin("Đã lưu thông tin của bạn.");
                   })
                 }
               >
-                Lưu hồ sơ
+                Lưu
               </Nut>
             </div>
           ) : (
@@ -434,24 +296,312 @@ export default function TrangKhongGianLamViec() {
   );
 }
 
-function DanhSach({ tieuDe, cacMuc }: { tieuDe: string; cacMuc: string[] }) {
+/* ------------------------------------------------------------------ */
+/* Hồ sơ đang mở                                                       */
+
+function HoSoDangMo({
+  vu,
+  hoTen,
+  xacNhanXoa,
+  onHoiXoa,
+  onHuyXoa,
+  onXoa,
+  onDoiTrangThai,
+  onMoCanCu,
+  onBaoLoi,
+}: {
+  vu: LegalCaseView;
+  hoTen: string;
+  xacNhanXoa: boolean;
+  onHoiXoa: () => void;
+  onHuyXoa: () => void;
+  onXoa: () => void;
+  onDoiTrangThai: (tt: "dang_lam" | "da_xong") => void;
+  onMoCanCu: (c: { documentId: string; nodeId: string }) => void;
+  onBaoLoi: (s: string) => void;
+}) {
+  const pt = vu.analysis?.phanTich ?? null;
+  const canCu = vu.analysis?.citations ?? [];
+
   return (
-    <div>
-      <p className="nhan-hoa">{tieuDe}</p>
-      {cacMuc.length > 0 ? (
-        <ul className="mt-2 flex flex-col gap-1.5">
-          {cacMuc.map((m) => (
-            <li key={m} className="flex gap-2.5 text-sm leading-relaxed">
-              <span aria-hidden className="mt-2 size-1 shrink-0 rounded-full bg-nhan" />
-              <span>{m}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-2 text-sm text-nhan">Không có mục nào.</p>
-      )}
+    <div className="flex flex-col gap-3">
+      <The className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+          <div className="min-w-0">
+            <p className="nhan-hoa">
+              Lưu {khiNao(vu.createdAt)} · Sửa {khiNao(vu.updatedAt)}
+            </p>
+            <h2 className="mt-1.5 text-lg font-semibold leading-snug">{vu.title}</h2>
+          </div>
+
+          <div className="flex shrink-0 flex-wrap items-center gap-2 print:hidden">
+            <Nut
+              kieu={vu.status === "da_xong" ? "vien" : "phu"}
+              co="nho"
+              onClick={() => onDoiTrangThai(vu.status === "da_xong" ? "dang_lam" : "da_xong")}
+            >
+              {vu.status === "da_xong" ? "Mở lại" : "Đánh dấu xong"}
+            </Nut>
+            <Nut kieu="vien" co="nho" onClick={() => window.print()}>
+              <Printer className="size-3.5" strokeWidth={1.9} />
+              In
+            </Nut>
+            {xacNhanXoa ? (
+              <>
+                <Nut kieu="phu" co="nho" onClick={onXoa}>
+                  Xoá thật
+                </Nut>
+                <Nut kieu="lang" co="nho" onClick={onHuyXoa}>
+                  Thôi
+                </Nut>
+              </>
+            ) : (
+              <Nut kieu="lang" co="nho" onClick={onHoiXoa}>
+                <Trash2 className="size-3.5" strokeWidth={1.9} />
+                Xoá
+              </Nut>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <p className="nhan-hoa">Sự việc đã ghi lại</p>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-nhan">
+            {vu.scenario}
+          </p>
+        </div>
+      </The>
+
+      {pt ? (
+        <PhanTichTinhHuong phanTich={pt} citations={canCu} onMoCanCu={onMoCanCu} />
+      ) : vu.analysis?.answer ? (
+        <The>
+          <TieuDeMuc>Phân tích đã lưu</TieuDeMuc>
+          <p className="mt-2.5 whitespace-pre-wrap text-base leading-[--dong-body]">
+            {vu.analysis.answer}
+          </p>
+        </The>
+      ) : null}
+
+      {canCu.length > 0 ? (
+        <The>
+          <TieuDeMuc phu="Ảnh chụp tại thời điểm lưu, không đổi theo kho văn bản">
+            Căn cứ đã lưu ({canCu.length})
+          </TieuDeMuc>
+          <div className="mt-2.5">
+            <DanhSachCanCu citations={canCu} onMo={onMoCanCu} />
+          </div>
+        </The>
+      ) : null}
+
+      <SoanGiayTo vu={vu} hoTen={hoTen} onBaoLoi={onBaoLoi} />
     </div>
   );
 }
 
-/* Xem components/kit/goi-api.ts. */
+/* ------------------------------------------------------------------ */
+/* Soạn giấy tờ từ chính hồ sơ                                         */
+
+function SoanGiayTo({
+  vu,
+  hoTen,
+  onBaoLoi,
+}: {
+  vu: LegalCaseView;
+  hoTen: string;
+  onBaoLoi: (s: string) => void;
+}) {
+  const [maDon, setMaDon] = useState<string>("complaint");
+  const [noiNhan, setNoiNhan] = useState("");
+  const [yeuCau, setYeuCau] = useState("");
+  const [banNhap, setBanNhap] = useState("");
+  const [dangChay, setDangChay] = useState(false);
+
+  /* Căn cứ của hồ sơ đi thẳng vào mục "Tài liệu kèm theo" của lá đơn — đây
+     chính là chỗ việc lưu hồ sơ trả công: không phải gõ lại điều khoản nào. */
+  const kemTheo = (vu.analysis?.citations ?? []).map(
+    (c) => `${c.soHieu} — ${c.breadcrumb}`,
+  );
+
+  async function sinhDon() {
+    setDangChay(true);
+    try {
+      const kq = await guiJson<{ text: string }>("/api/templates", {
+        templateId: maDon,
+        attachments: kemTheo,
+        fields: {
+          fullName: hoTen,
+          recipient: noiNhan,
+          seller: noiNhan,
+          employer: noiNhan,
+          address: "",
+          facts: vu.scenario,
+          product: vu.scenario.slice(0, 120),
+          period: vu.scenario.slice(0, 120),
+          request: yeuCau,
+        },
+      });
+      setBanNhap(kq.text);
+    } catch (e) {
+      onBaoLoi(docLoi(e));
+    } finally {
+      setDangChay(false);
+    }
+  }
+
+  return (
+    <The className="flex flex-col gap-4 print:hidden">
+      <TieuDeMuc phu={`Sự việc và ${kemTheo.length} căn cứ của hồ sơ này được điền sẵn`}>
+        Soạn giấy tờ từ hồ sơ
+      </TieuDeMuc>
+
+      <div className="grid gap-2 sm:grid-cols-3">
+        <OChon value={maDon} onChange={(e) => setMaDon(e.target.value)} aria-label="Loại đơn">
+          {MAU_DON.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.nhan}
+            </option>
+          ))}
+        </OChon>
+        <ONhap
+          value={noiNhan}
+          onChange={(e) => setNoiNhan(e.target.value)}
+          placeholder="Nơi nhận hoặc bên liên quan"
+          aria-label="Nơi nhận"
+        />
+        <ONhap
+          value={yeuCau}
+          onChange={(e) => setYeuCau(e.target.value)}
+          placeholder="Yêu cầu của bạn"
+          aria-label="Yêu cầu"
+        />
+      </div>
+
+      <div className="flex justify-end">
+        <Nut kieu="phu" disabled={dangChay} onClick={() => void sinhDon()}>
+          <FileText className="size-4" strokeWidth={1.9} />
+          {dangChay ? "Đang soạn…" : "Tạo bản nháp"}
+        </Nut>
+      </div>
+
+      {banNhap ? (
+        <div className="flex flex-col gap-2">
+          <OVanBan readOnly rows={14} value={banNhap} className="font-ma text-xs" />
+          <div className="flex flex-wrap justify-end gap-2">
+            <Nut
+              kieu="vien"
+              co="nho"
+              onClick={() => void navigator.clipboard?.writeText(banNhap)}
+            >
+              Sao chép
+            </Nut>
+          </div>
+          <p className="text-xs leading-relaxed text-nhan">
+            Bản nháp hỗ trợ soạn thảo. Hãy kiểm tra lại thẩm quyền nơi nhận, thông tin cá
+            nhân và hồ sơ kèm theo trước khi gửi.
+          </p>
+        </div>
+      ) : null}
+    </The>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Theo dõi thay đổi                                                   */
+
+function TheoDoiThayDoi({
+  danhSach,
+  onTao,
+  onDaXem,
+  onXoa,
+}: {
+  danhSach: WatchlistView[];
+  onTao: (ten: string, chuDe: NewsTopic) => void;
+  onDaXem: (id: string) => void;
+  onXoa: (id: string) => void;
+}) {
+  const [ten, setTen] = useState("");
+  const [chuDe, setChuDe] = useState<NewsTopic>("giao_thong");
+
+  return (
+    <The className="flex flex-col gap-4 print:hidden">
+      <TieuDeMuc phu="Báo khi có văn bản hoặc tin mới thuộc chủ đề bạn chọn">
+        Theo dõi thay đổi
+      </TieuDeMuc>
+
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_12rem_auto]">
+        <ONhap
+          value={ten}
+          onChange={(e) => setTen(e.target.value)}
+          placeholder="Đặt tên, ví dụ: Xe máy của tôi"
+          aria-label="Tên theo dõi"
+        />
+        <OChon
+          value={chuDe}
+          onChange={(e) => setChuDe(e.target.value as NewsTopic)}
+          aria-label="Chủ đề theo dõi"
+        >
+          {CHU_DE.map((t) => (
+            <option key={t} value={t}>
+              {NHAN_CHU_DE_TIN[t]}
+            </option>
+          ))}
+        </OChon>
+        <Nut
+          onClick={() => {
+            onTao(ten.trim(), chuDe);
+            setTen("");
+          }}
+        >
+          Theo dõi
+        </Nut>
+      </div>
+
+      {danhSach.length === 0 ? (
+        <p className="text-sm leading-relaxed text-nhan">
+          Chưa theo dõi gì. Tạo một mục để biết khi nào có văn bản hoặc tin mới động tới
+          lĩnh vực bạn quan tâm.
+        </p>
+      ) : (
+        <ul className="grid gap-2 md:grid-cols-2">
+          {danhSach.map((t) => (
+            <li key={t.id} className="rounded-[--bo] bg-khay p-3.5">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  {t.alerts.length > 0 ? (
+                    <BellRing className="size-3.5 text-but-xanh" strokeWidth={2} />
+                  ) : null}
+                  {t.name}
+                </span>
+                <span className="text-xs text-nhan">
+                  {t.alerts.length > 0 ? `${t.alerts.length} mục mới` : "Chưa có gì mới"}
+                </span>
+              </div>
+
+              {t.alerts.slice(0, 3).map((c) => (
+                <a
+                  key={`${c.kind}-${c.id}`}
+                  href={c.href}
+                  className="mt-1.5 block line-clamp-1 text-xs text-nhan underline-offset-4 hover:text-but-xanh hover:underline"
+                >
+                  {c.kind === "news" ? "Tin" : "Văn bản"}: {c.title}
+                </a>
+              ))}
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {t.alerts.length > 0 ? (
+                  <Nut kieu="vien" co="nho" onClick={() => onDaXem(t.id)}>
+                    Đánh dấu đã xem
+                  </Nut>
+                ) : null}
+                <Nut kieu="lang" co="nho" onClick={() => onXoa(t.id)}>
+                  Bỏ theo dõi
+                </Nut>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </The>
+  );
+}

@@ -180,7 +180,16 @@ export function DieuHuong() {
 
         <span aria-hidden className="hidden h-7 w-px bg-giay/15 xl:block" />
 
-        <nav aria-label="Điều hướng chính" className="hidden min-w-0 flex-1 items-center gap-0.5 xl:flex">
+        {/*
+          Khay công cụ nằm NGOÀI thẻ nav. Để nó bên trong thì nav không co
+          xuống được và cả cụm đẩy ra ngoài mép màn hình ở 1280px — vừa đúng
+          bề ngang máy chiếu phòng họp. Giờ nav tự cuộn ngang khi chật, còn
+          khay giữ nguyên vị trí bên phải.
+        */}
+        <nav
+          aria-label="Điều hướng chính"
+          className="hidden min-w-0 flex-1 items-center gap-0.5 overflow-x-auto [scrollbar-width:none] xl:flex"
+        >
           {CHINH.map((m) => (
             <Muc key={m.href} href={m.href} nhan={m.nhan} icon={m.icon} mo={dangMo(duongDan, m.href)} />
           ))}
@@ -188,10 +197,11 @@ export function DieuHuong() {
           {HE_THONG.map((m) => (
             <Muc key={m.href} href={m.href} nhan={m.nhan} icon={m.icon} mo={dangMo(duongDan, m.href)} />
           ))}
-          <div className="ml-auto">
-            <KhayCongCu />
-          </div>
         </nav>
+
+        <div className="hidden shrink-0 xl:block">
+          <KhayCongCu />
+        </div>
 
         <div className="ml-auto flex min-w-0 items-center gap-2 xl:hidden">
           {/* Khay công cụ có mặt ở cả màn hình hẹp — trên cảm ứng nó mở bằng

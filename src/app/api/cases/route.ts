@@ -3,7 +3,7 @@ import { z } from "zod";
 import { sql } from "@/lib/db/client";
 import { getOrCreateProfileId } from "@/lib/profile";
 import { NEWS_TOPICS } from "@/types/news";
-import type { LegalCaseView } from "@/types/platform";
+import { TRANG_THAI_HO_SO, type LegalCaseView } from "@/types/platform";
 
 export const runtime = "nodejs";
 
@@ -11,7 +11,7 @@ const createSchema = z.object({
   title: z.string().trim().min(1).max(200),
   scenario: z.string().trim().min(10).max(5_000),
   topic: z.enum(NEWS_TOPICS).nullable().optional(),
-  status: z.string().trim().max(30).default("analyzed"),
+  status: z.enum(TRANG_THAI_HO_SO).default("dang_lam"),
   analysis: z.unknown().nullable().optional(),
 });
 
@@ -33,6 +33,30 @@ export async function POST(request: Request) {
             ${parsed.data.status}, ${JSON.stringify(parsed.data.analysis ?? null)}::jsonb)
     RETURNING id, title, scenario, topic, status, analysis, created_at, updated_at`;
   return NextResponse.json(toView(rows[0]), { status: 201 });
+}
+
+/** Đổi tiêu đề hoặc trạng thái của một hồ sơ đã lưu. */
+const patchSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string().trim().min(1).max(200).optional(),
+  status: z.enum(TRANG_THAI_HO_SO).optional(),
+});
+
+export async function PATCH(request: Request) {
+  const parsed = patchSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Yêu cầu cập nhật hồ sơ không hợp lệ." }, { status: 400 });
+  }
+  const userId = await getOrCreateProfileId();
+  const rows = await sql`
+    UPDATE legal_cases
+    SET title = coalesce(${parsed.data.title ?? null}, title),
+        status = coalesce(${parsed.data.status ?? null}, status),
+        updated_at = now()
+    WHERE id = ${parsed.data.id} AND user_id = ${userId}
+    RETURNING id, title, scenario, topic, status, analysis, created_at, updated_at`;
+  if (!rows[0]) return NextResponse.json({ error: "Không tìm thấy hồ sơ." }, { status: 404 });
+  return NextResponse.json(toView(rows[0]));
 }
 
 export async function DELETE(request: Request) {

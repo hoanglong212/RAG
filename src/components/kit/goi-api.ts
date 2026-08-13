@@ -72,10 +72,14 @@ export async function layJson<T>(duongDan: string): Promise<T> {
   return docPhanHoi<T>(r, duongDan);
 }
 
-/** POST JSON + đọc an toàn. */
-export async function guiJson<T>(duongDan: string, body: unknown): Promise<T> {
+/** Gửi JSON (POST mặc định, PATCH/PUT khi cần) + đọc an toàn. */
+export async function guiJson<T>(
+  duongDan: string,
+  body: unknown,
+  phuongThuc: "POST" | "PATCH" | "PUT" = "POST",
+): Promise<T> {
   const r = await fetch(duongDan, {
-    method: "POST",
+    method: phuongThuc,
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
   }).catch(() => {
