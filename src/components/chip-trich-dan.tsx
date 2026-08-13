@@ -61,7 +61,9 @@ export function ChipTrichDan({
         <span className="mt-1 block text-[0.8125rem] font-medium text-muc-in">
           {rutGonDuongDan(trichDan.breadcrumb)}
         </span>
-        <span className="mt-1 block line-clamp-2 text-xs leading-relaxed text-nhan">
+        {/* KHÔNG thêm `block` ở đây: line-clamp cần display:-webkit-box, và
+            `block` ghi đè nó nên cả trích đoạn 500 ký tự đổ ra nguyên si. */}
+        <span className="mt-1 line-clamp-2 text-xs leading-relaxed text-nhan">
           {trichDan.trichDoan}
         </span>
       </span>

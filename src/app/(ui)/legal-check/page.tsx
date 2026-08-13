@@ -5,29 +5,28 @@
  *
  * Chữ nghĩa ở trang này phải cẩn thận: hệ thống TRÌNH BÀY QUY ĐỊNH, KHÔNG
  * PHÁN QUYẾT. Không viết "bạn sẽ bị phạt", chỉ nêu hành vi liên quan tới điều
- * nào và điều đó quy định gì. Dòng miễn trừ đứng ngay dưới kết quả chứ không
- * giấu ở chân trang.
+ * nào và điều đó quy định gì.
+ *
+ * KHÔNG còn ô chọn chủ đề. Bộ phân loại đoán sai thường xuyên, mà bắt người
+ * dùng tự xếp tình huống của mình vào một trong năm lĩnh vực là hỏi ngược
+ * đúng thứ họ đang đi tìm câu trả lời. Giờ hệ thống tự nhận diện, không
+ * trúng chủ đề nào thì tìm trên toàn kho và để ngưỡng điểm quyết định.
  */
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChipTrichDan } from "@/components/chip-trich-dan";
+import { ScrollText } from "lucide-react";
 import { KhungTrang, Nut, The, TieuDeMuc } from "@/components/kit/co-ban";
-import { OVanBan, VienLoc } from "@/components/kit/truong";
+import { OVanBanTuGian } from "@/components/kit/truong";
 import { BaoLoi } from "@/components/kit/trang-thai-kit";
 import { docLoi, guiJson } from "@/components/kit/goi-api";
 import { PhanTichTinhHuong } from "@/components/phan-tich-tinh-huong";
+import { DanhSachCanCu } from "@/components/danh-sach-can-cu";
 import type { LegalCheckResult } from "@/lib/legal/check";
-import type { NewsTopic } from "@/types/news";
 import { NHAN_CHU_DE_TIN, NHAN_KET_QUA_PHAP_LY } from "@/types/nhan-news";
 
-const CHU_DE_HO_TRO: NewsTopic[] = [
-  "an_toan_thuc_pham",
-  "lao_dong",
-  "giao_thong",
-  "dat_dai_nha_o",
-  "nguoi_tieu_dung",
-];
+const VI_DU =
+  "Ngày 05/8/2026, Nam mượn xe máy của Hùng trong 3 ngày để về quê. Hùng giao cả xe lẫn giấy đăng ký bản gốc. Nam không về quê mà đem xe bán cho anh Minh với giá 45 triệu đồng…";
 
 /** Thanh độ tin cậy. Xanh bút bi, không đỏ — đây không phải neo trích dẫn. */
 function ThanhDiem({ diem }: { diem: number }) {
@@ -35,10 +34,7 @@ function ThanhDiem({ diem }: { diem: number }) {
   return (
     <div className="flex items-center gap-2.5">
       <span className="nhan-hoa">Điểm cao nhất</span>
-      <span
-        aria-hidden
-        className="h-1.5 w-24 overflow-hidden rounded-full bg-khay-sau"
-      >
+      <span aria-hidden className="h-1.5 w-24 overflow-hidden rounded-full bg-khay-sau">
         <span
           className="block h-full rounded-full bg-but-xanh transition-[width] duration-[--nhip-cham]"
           style={{ width: `${phanTram}%` }}
@@ -52,15 +48,16 @@ function ThanhDiem({ diem }: { diem: number }) {
 export default function TrangKiemTraTinhHuong() {
   const router = useRouter();
   const [tinhHuong, setTinhHuong] = useState("");
-  const [chuDe, setChuDe] = useState<NewsTopic | "">("");
   const [ketQua, setKetQua] = useState<LegalCheckResult | null>(null);
   const [dangChay, setDangChay] = useState(false);
   const [loi, setLoi] = useState<string | null>(null);
 
-  /** `chuDeChay` cho phép chạy lại ngay với chủ đề vừa chọn, không chờ state. */
-  async function gui(chuDeChay: NewsTopic | "" = chuDe) {
-    if (tinhHuong.trim().length < 10) {
-      setLoi("Mô tả còn quá ngắn để tìm căn cứ. Hãy viết rõ hơn, ít nhất 10 ký tự.");
+  const soChu = tinhHuong.trim().length;
+  const duDai = soChu >= 10;
+
+  async function gui() {
+    if (!duDai) {
+      setLoi("Mô tả còn quá ngắn để tìm căn cứ. Hãy viết rõ hơn diễn biến sự việc.");
       return;
     }
     setDangChay(true);
@@ -68,10 +65,7 @@ export default function TrangKiemTraTinhHuong() {
     setKetQua(null);
     try {
       setKetQua(
-        await guiJson<LegalCheckResult>("/api/legal-check", {
-          scenario: tinhHuong.trim(),
-          ...(chuDeChay ? { topic: chuDeChay } : {}),
-        }),
+        await guiJson<LegalCheckResult>("/api/legal-check", { scenario: tinhHuong.trim() }),
       );
     } catch (e) {
       setLoi(docLoi(e));
@@ -83,35 +77,54 @@ export default function TrangKiemTraTinhHuong() {
   return (
     <KhungTrang
       tieuDe="Kiểm tra tình huống pháp luật"
-      moTa="Mô tả sự việc bằng ngôn ngữ thường. Hệ thống tìm dấu hiệu liên quan trong bộ văn bản và chỉ trả kết quả khi có căn cứ trích dẫn được."
+      moTa="Kể lại sự việc theo trình tự thời gian, bằng ngôn ngữ thường. Hệ thống tự nhận diện lĩnh vực, tìm điều khoản liên quan và chỉ kết luận khi có căn cứ trích dẫn được."
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <The className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <label htmlFor="tinh-huong" className="nhan-hoa">
-              Tình huống cần kiểm tra
+              Diễn biến sự việc
             </label>
-            <OVanBan
+            <OVanBanTuGian
               id="tinh-huong"
-              rows={7}
+              rows={6}
               value={tinhHuong}
               onChange={(e) => setTinhHuong(e.target.value)}
-              placeholder="Ví dụ: Công ty đã chậm trả lương cho tôi hai tháng, tôi đã gửi đơn nhưng chưa được trả lời…"
+              onKeyDown={(e) => {
+                // Ctrl/Cmd + Enter gửi; Enter thường vẫn xuống dòng vì đây là
+                // văn bản dài nhiều đoạn, không phải ô hỏi một câu.
+                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                  e.preventDefault();
+                  if (duDai && !dangChay) void gui();
+                }
+              }}
+              placeholder={`Càng nhiều mốc thời gian và con số, kết quả càng bám sát.\n\nVí dụ: ${VI_DU}`}
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <span className="nhan-hoa">Chủ đề</span>
-            <VienLoc
-              cacMuc={CHU_DE_HO_TRO.map((t) => ({ giaTri: t, nhan: NHAN_CHU_DE_TIN[t] }))}
-              dangChon={chuDe}
-              nhanTatCa="Tự nhận diện"
-              onChon={setChuDe}
-            />
-          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+              {tinhHuong.length === 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setTinhHuong(VI_DU)}
+                  className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-but-xanh underline-offset-4 hover:underline"
+                >
+                  <ScrollText className="size-3.5" strokeWidth={1.9} />
+                  Điền một ví dụ
+                </button>
+              ) : (
+                <span className="so-hieu text-xs tabular-nums text-nhan">
+                  {soChu.toLocaleString("vi-VN")} ký tự
+                </span>
+              )}
+              <span className="hidden text-xs text-nhan sm:inline">
+                <kbd className="font-ma">Ctrl</kbd> + <kbd className="font-ma">Enter</kbd> để
+                kiểm tra
+              </span>
+            </div>
 
-          <div className="flex justify-end">
-            <Nut disabled={dangChay || tinhHuong.trim().length < 10} onClick={() => void gui()}>
+            <Nut disabled={dangChay || !duDai} onClick={() => void gui()}>
               {dangChay ? "Đang tìm căn cứ…" : "Kiểm tra với pháp luật"}
             </Nut>
           </div>
@@ -119,15 +132,24 @@ export default function TrangKiemTraTinhHuong() {
 
         {loi ? <BaoLoi tieuDe="Chưa kiểm tra được" moTa={loi} /> : null}
 
-        {/* Bản phân tích có cấu trúc đứng RIÊNG và đứng TRƯỚC khối kỹ thuật:
-            người dùng tới đây để biết mình nên làm gì, không phải để đọc
-            trạng thái truy hồi. */}
+        {/* Bản phân tích đứng RIÊNG và đứng TRƯỚC khối kỹ thuật: người dùng
+            tới đây để biết mình nên làm gì, không phải để đọc trạng thái
+            truy hồi. */}
         {ketQua?.phanTich ? (
           <PhanTichTinhHuong
             phanTich={ketQua.phanTich}
             citations={ketQua.citations}
             onMoCanCu={(c) => router.push(`/documents/${c.documentId}?node=${c.nodeId}`)}
           />
+        ) : null}
+
+        {/* Không có bản phân tích thì phải nói vì sao. Người dùng cần biết
+            đây là tạm thời (hết hạn mức) hay là giới hạn thật của hệ thống. */}
+        {ketQua?.loiPhanTich ? (
+          <div className="rounded-[--bo-lon] bg-khay-sau px-4 py-3.5 shadow-the">
+            <p className="text-sm font-semibold">Chưa dựng được bản phân tích</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-nhan">{ketQua.loiPhanTich}</p>
+          </div>
         ) : null}
 
         {ketQua ? (
@@ -139,43 +161,24 @@ export default function TrangKiemTraTinhHuong() {
               <ThanhDiem diem={ketQua.topScore} />
             </div>
 
+            {ketQua.detectedTopics.length > 0 ? (
+              <p className="text-sm leading-relaxed text-nhan">
+                Hệ thống nhận diện tình huống này thuộc{" "}
+                <span className="font-medium text-muc-in">
+                  {ketQua.detectedTopics
+                    .map((t) => NHAN_CHU_DE_TIN[t] ?? t)
+                    .join(", ")}
+                </span>
+                .
+              </p>
+            ) : null}
+
             {/* Văn xuôi chỉ còn là phương án dự phòng khi mô hình không trả
                 đúng khuôn phân tích. */}
             {ketQua.answer ? (
               <p className="whitespace-pre-wrap text-base leading-[--dong-body]">
                 {ketQua.answer}
               </p>
-            ) : null}
-
-            {/*
-              Bộ tự nhận diện chủ đề không phải lúc nào cũng đúng — một tranh
-              chấp đặt cọc mua nhà dễ bị xếp vào "kinh tế", chủ đề mà corpus
-              chưa phủ, và người dùng nhận về ngõ cụt. Chọn tay đúng chủ đề
-              thì thường ra căn cứ, nên phải nói ra chứ đừng để họ tự đoán.
-            */}
-            {ketQua.status === "insufficient_corpus" && !chuDe ? (
-              <div className="rounded-[--bo] bg-khay px-3.5 py-3">
-                <p className="text-sm leading-relaxed">
-                  Hệ thống tự xếp tình huống này vào một chủ đề mà kho chưa phủ. Nếu bạn
-                  biết nó thuộc lĩnh vực nào, hãy chọn thẳng chủ đề ở trên rồi kiểm tra
-                  lại — thường sẽ ra căn cứ.
-                </p>
-                <div className="mt-2.5 flex flex-wrap gap-1.5">
-                  {CHU_DE_HO_TRO.map((t) => (
-                    <Nut
-                      key={t}
-                      kieu="vien"
-                      co="nho"
-                      onClick={() => {
-                        setChuDe(t);
-                        void gui(t);
-                      }}
-                    >
-                      {NHAN_CHU_DE_TIN[t]}
-                    </Nut>
-                  ))}
-                </div>
-              </div>
             ) : null}
 
             {ketQua.matchedRules.length > 0 ? (
@@ -203,18 +206,14 @@ export default function TrangKiemTraTinhHuong() {
 
             {ketQua.citations.length > 0 ? (
               <section>
-                <TieuDeMuc phu="Bấm để mở đúng Khoản trong văn bản gốc">
-                  Căn cứ được truy hồi
+                <TieuDeMuc phu="Bấm một dòng để đọc nguyên văn, hoặc mở thẳng văn bản gốc">
+                  Căn cứ được truy hồi ({ketQua.citations.length})
                 </TieuDeMuc>
-                <div className="mt-2.5 grid gap-1.5 md:grid-cols-2">
-                  {ketQua.citations.map((c, i) => (
-                    <ChipTrichDan
-                      key={c.chunkId}
-                      trichDan={c}
-                      soThuTu={i + 1}
-                      onChon={() => router.push(`/documents/${c.documentId}?node=${c.nodeId}`)}
-                    />
-                  ))}
+                <div className="mt-2.5">
+                  <DanhSachCanCu
+                    citations={ketQua.citations}
+                    onMo={(c) => router.push(`/documents/${c.documentId}?node=${c.nodeId}`)}
+                  />
                 </div>
               </section>
             ) : null}

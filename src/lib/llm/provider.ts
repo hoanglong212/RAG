@@ -203,6 +203,9 @@ async function goiJson(
       model: config.model,
       stream: false,
       temperature: 0,
+      // Đủ rộng cho một bản phân tích có dòng thời gian. Bỏ trống thì phản
+      // hồi bị cắt giữa chừng và JSON.parse ném ra ở một chỗ khó lần.
+      max_tokens: 2_000,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: systemPrompt },
@@ -215,10 +218,16 @@ async function goiJson(
     throw new Error(`LLM trả HTTP ${response.status}: ${detail}`);
   }
   const data = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
+    choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
   };
-  const noiDung = data.choices?.[0]?.message?.content;
+  const lua = data.choices?.[0];
+  const noiDung = lua?.message?.content;
   if (!noiDung) throw new Error("LLM không trả nội dung.");
+  // Cắt vì hết token thì JSON chắc chắn dở dang — nói thẳng thay vì để
+  // JSON.parse ném ra một lỗi cú pháp không ai lần ngược được.
+  if (lua?.finish_reason === "length") {
+    throw new Error("Phản hồi JSON bị cắt vì vượt giới hạn token.");
+  }
   return JSON.parse(noiDung) as unknown;
 }
 
@@ -227,8 +236,17 @@ export async function phanTichTinhHuong(
   doanTrich: DoanTrichPhanTich[],
   config = readLlmConfig(),
 ): Promise<unknown> {
+  /*
+   * Cắt bớt mỗi đoạn trích trước khi gửi.
+   *
+   * Bước phân tích cần biết điều khoản NÓI VỀ CÁI GÌ, không cần nguyên văn
+   * tám điều luật. Gửi hết vừa đẩy phần nhập lên rất dài, vừa ăn mất chỗ của
+   * phần trả lời — và khi phần trả lời bị cắt thì cả bản phân tích mất trắng
+   * chứ không hỏng một nửa. Nguyên văn vẫn nằm nguyên ở danh sách căn cứ cho
+   * người dùng đọc.
+   */
   const nguon = doanTrich
-    .map((d) => `[${d.index}] ${d.source}\n${d.content}`)
+    .map((d) => `[${d.index}] ${d.source}\n${d.content.slice(0, 700)}`)
     .join("\n\n");
   return goiJson(
     PHAN_TICH_SYSTEM_PROMPT,

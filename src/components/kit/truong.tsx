@@ -8,7 +8,7 @@
  */
 
 import type { ComponentProps, ReactNode } from "react";
-import { useId } from "react";
+import { useCallback, useEffect, useId, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 const NEN_TRUONG =
@@ -54,6 +54,62 @@ export function OVanBan({ className, ...props }: ComponentProps<"textarea">) {
     <textarea
       {...props}
       className={cn(NEN_TRUONG, "resize-y leading-relaxed", className)}
+    />
+  );
+}
+
+/**
+ * Ô văn bản TỰ GIÃN theo nội dung.
+ *
+ * Ô cố định số dòng bắt người viết cuộn ngầm bên trong một khung nhỏ: gõ tới
+ * dòng thứ tám là không còn nhìn thấy đoạn mở đầu, mà mô tả một tình huống
+ * tranh chấp thì luôn dài hơn thế. Ở đây ô cao lên theo chữ cho tới một trần,
+ * nên toàn bộ nội dung nằm trong tầm mắt.
+ */
+export function OVanBanTuGian({
+  value,
+  className,
+  caoToiDa = 520,
+  ...props
+}: ComponentProps<"textarea"> & { caoToiDa?: number }) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  const chinhChieuCao = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, caoToiDa)}px`;
+    el.style.overflowY = el.scrollHeight > caoToiDa ? "auto" : "hidden";
+  }, [caoToiDa]);
+
+  /*
+   * Đo trong khung hình KẾ TIẾP, không đo ngay.
+   *
+   * Đo lúc hydrate thì ô chưa có bề ngang thật, chữ giữ chỗ bị xuống dòng
+   * thành hàng chục dòng, `scrollHeight` vọt lên và ô trống mở ra chạm trần
+   * 520px. Đợi một khung hình là bố cục đã xong, đo mới đúng.
+   */
+  useEffect(() => {
+    const id = requestAnimationFrame(chinhChieuCao);
+    return () => cancelAnimationFrame(id);
+  }, [value, chinhChieuCao]);
+
+  // Đổi bề ngang cửa sổ thì số dòng đổi theo, phải đo lại.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const theoDoi = new ResizeObserver(() => chinhChieuCao());
+    theoDoi.observe(el);
+    return () => theoDoi.disconnect();
+  }, [chinhChieuCao]);
+
+  return (
+    <textarea
+      {...props}
+      ref={ref}
+      value={value}
+      onInput={chinhChieuCao}
+      className={cn(NEN_TRUONG, "resize-none leading-relaxed", className)}
     />
   );
 }

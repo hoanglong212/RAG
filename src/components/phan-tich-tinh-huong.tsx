@@ -14,6 +14,7 @@
  * lưng, phần nào chỉ là thuật lại lời kể.
  */
 
+import { CheckCircle2, ShieldAlert } from "lucide-react";
 import type { Citation } from "@/types/contract";
 import type { PhanTichTinhHuong as DuLieuPhanTich } from "@/lib/legal/check";
 import { ConDau } from "@/components/kit/con-dau";
@@ -26,32 +27,59 @@ const NHAN_CHAC_CHAN: Record<DuLieuPhanTich["mucDoChacChan"], string> = {
   thap: "Căn cứ mỏng",
 };
 
+/**
+ * Ba khối cuối trông giống hệt nhau thì mắt trượt qua cả ba. Mỗi khối mang
+ * một sức nặng khác nhau và phải nhìn ra được điều đó ngay:
+ *
+ *   viec   — việc PHẢI làm, có thứ tự, nặng nhất: số thứ tự tô xanh bút bi
+ *   chung  — thứ cần giữ, dạng liệt kê có dấu tích
+ *   yeu    — điểm bất lợi, nền khay đậm để tách khỏi hai khối trên
+ */
 function DanhSach({
   tieuDe,
   phu,
   cacMuc,
-  danhSo = false,
+  kieu,
 }: {
   tieuDe: string;
   phu?: string;
   cacMuc: string[];
-  danhSo?: boolean;
+  kieu: "viec" | "chung" | "yeu";
 }) {
   if (cacMuc.length === 0) return null;
-  const Bao = danhSo ? "ol" : "ul";
+  const Bao = kieu === "viec" ? "ol" : "ul";
+  const Icon = kieu === "chung" ? CheckCircle2 : ShieldAlert;
+
   return (
     <section>
       <TieuDeMuc phu={phu}>{tieuDe}</TieuDeMuc>
-      <Bao className="mt-2.5 flex flex-col gap-2">
+      <Bao className="mt-3 flex flex-col gap-1.5">
         {cacMuc.map((m, i) => (
-          <li key={m} className="flex gap-3 text-sm leading-relaxed">
-            {danhSo ? (
-              // Ở đây thứ tự MANG thông tin: làm việc 2 trước việc 1 thì hỏng.
-              <span className="so-hieu shrink-0 text-nhan">{i + 1}</span>
-            ) : (
-              <span aria-hidden className="mt-2.5 size-1 shrink-0 rounded-full bg-nhan" />
+          <li
+            key={m}
+            className={cn(
+              "flex items-start gap-3 rounded-[--bo] px-3.5 py-3 text-sm leading-relaxed",
+              kieu === "viec" && "bg-khay/70",
+              kieu === "chung" && "bg-khay/70",
+              kieu === "yeu" && "bg-khay-sau/70",
             )}
-            <span>{m}</span>
+          >
+            {kieu === "viec" ? (
+              // Thứ tự ở đây MANG thông tin: làm việc 2 trước việc 1 là hỏng.
+              <span className="so-hieu mt-px grid size-5 shrink-0 place-items-center rounded-full bg-but-xanh text-[0.6875rem] font-semibold text-giay">
+                {i + 1}
+              </span>
+            ) : (
+              <Icon
+                aria-hidden
+                className={cn(
+                  "mt-0.5 size-4 shrink-0",
+                  kieu === "chung" ? "text-but-xanh" : "text-nhan",
+                )}
+                strokeWidth={1.9}
+              />
+            )}
+            <span className={kieu === "viec" ? "font-medium" : undefined}>{m}</span>
           </li>
         ))}
       </Bao>
@@ -168,17 +196,19 @@ export function PhanTichTinhHuong({
         tieuDe="Việc cần làm"
         phu="Theo thứ tự"
         cacMuc={phanTich.viecCanLam}
-        danhSo
+        kieu="viec"
       />
       <DanhSach
         tieuDe="Chứng cứ cần giữ"
         phu="Thiếu những thứ này thì lập luận ở trên khó đứng"
         cacMuc={phanTich.chungCuCanGiu}
+        kieu="chung"
       />
       <DanhSach
         tieuDe="Điểm bất lợi"
         phu="Phía bên kia nhiều khả năng sẽ dựa vào đây"
         cacMuc={phanTich.diemYeu}
+        kieu="yeu"
       />
     </The>
   );

@@ -40,6 +40,11 @@ export interface LegalCheckResult {
   answer: string | null;
   /** Bản phân tích có cấu trúc; null khi mô hình không trả đúng khuôn. */
   phanTich: PhanTichTinhHuong | null;
+  /**
+   * Vì sao không có bản phân tích. Nuốt im lặng thì người dùng chỉ thấy kết
+   * quả tự nhiên nghèo đi mà không biết là tạm thời hay vĩnh viễn.
+   */
+  loiPhanTich: string | null;
   citations: Citation[];
   topScore: number;
   matchedRules: MatchedViolationRule[];
@@ -54,22 +59,24 @@ export async function checkLegalScenario(
   const detectedTopics = requestedTopic ? [requestedTopic] : detected;
   const supportedTopics = readSupportedTopics();
   const activeTopics = detectedTopics.filter((topic) => supportedTopics.includes(topic));
-  const isSupported = activeTopics.length > 0;
   const disclaimer =
     "Kết quả chỉ là đối chiếu sơ bộ từ corpus hiện có, không phải kết luận vi phạm hoặc tư vấn pháp lý.";
-  if (!isSupported) {
-    return {
-      status: "insufficient_corpus",
-      detectedTopics,
-      supportedTopics,
-      answer: null,
-      phanTich: null,
-      citations: [],
-      topScore: 0,
-      matchedRules: [],
-      disclaimer,
-    };
-  }
+
+  /*
+   * KHÔNG chặn theo chủ đề nữa.
+   *
+   * Bộ phân loại chủ đề đoán từ câu chữ, và nó đoán sai thường xuyên: một
+   * tranh chấp đặt cọc mua nhà bị xếp vào "kinh tế", một vụ mượn xe rồi đem
+   * bán bị xếp vào "khác". Trước đây gặp chủ đề ngoài danh sách là trả về
+   * ngõ cụt "corpus chưa hỗ trợ", trong khi kho VẪN có điều khoản dùng được
+   * — chọn tay đúng chủ đề là ra ngay.
+   *
+   * Giờ chủ đề chỉ còn là gợi ý để thu hẹp khi nó chắc chắn. Đoán không
+   * trúng chủ đề nào được hỗ trợ thì tìm trên toàn kho, rồi để NGƯỠNG ĐIỂM
+   * quyết định có đủ căn cứ hay không. Ngưỡng là thứ đo được; nhãn chủ đề
+   * thì không.
+   */
+  const locTheoChuDe = activeTopics.length > 0 ? activeTopics : undefined;
 
   const question = `Tình huống: ${scenario}\nHãy xác định dấu hiệu hành vi có thể liên quan, quy định tương ứng và các dữ kiện còn thiếu để có thể kết luận.`;
   // Retrieval chỉ dùng sự kiện gốc; câu hướng dẫn dài sẽ làm loãng embedding của hành vi.
@@ -81,7 +88,7 @@ export async function checkLegalScenario(
     topK: 8,
     candidateK: 80,
     lexicalWeight: 1,
-    legalTopics: activeTopics,
+    legalTopics: locTheoChuDe,
   });
   const ruleEvidence = scopedRules.length === 0
     ? []
@@ -97,6 +104,7 @@ export async function checkLegalScenario(
       supportedTopics,
       answer: null,
       phanTich: null,
+      loiPhanTich: null,
       citations: [],
       topScore,
       matchedRules: scopedRules,
@@ -119,7 +127,11 @@ export async function checkLegalScenario(
   }));
 
   // Phân tích có cấu trúc chạy trước; văn xuôi chỉ còn là phương án dự phòng.
-  const phanTich = await docPhanTich(scenario, doanTrich, citations.length);
+  const { ket: phanTich, loi: loiPhanTich } = await docPhanTich(
+    scenario,
+    doanTrich,
+    citations.length,
+  );
   if (phanTich) {
     return {
       status: "matched",
@@ -127,6 +139,7 @@ export async function checkLegalScenario(
       supportedTopics,
       answer: null,
       phanTich,
+      loiPhanTich: null,
       citations,
       topScore,
       matchedRules: scopedRules,
@@ -140,11 +153,12 @@ export async function checkLegalScenario(
       answer += token;
     }
     if (!answer.trim() || answer.trim() === "KHÔNG_TÌM_THẤY") {
-      return { status: "evidence_only", detectedTopics, supportedTopics, answer: null, phanTich: null, citations, topScore, matchedRules: scopedRules, disclaimer };
+      return { status: "evidence_only", detectedTopics, supportedTopics, answer: null, phanTich: null, loiPhanTich, citations, topScore, matchedRules: scopedRules, disclaimer };
     }
-    return { status: "matched", detectedTopics, supportedTopics, answer, phanTich: null, citations, topScore, matchedRules: scopedRules, disclaimer };
-  } catch {
-    return { status: "evidence_only", detectedTopics, supportedTopics, answer: null, phanTich: null, citations, topScore, matchedRules: scopedRules, disclaimer };
+    return { status: "matched", detectedTopics, supportedTopics, answer, phanTich: null, loiPhanTich, citations, topScore, matchedRules: scopedRules, disclaimer };
+  } catch (error) {
+    // Văn xuôi hỏng nốt: báo lý do của bước phân tích, hoặc của chính lần này.
+    return { status: "evidence_only", detectedTopics, supportedTopics, answer: null, phanTich: null, loiPhanTich: loiPhanTich ?? docLoiPhanTich(error), citations, topScore, matchedRules: scopedRules, disclaimer };
   }
 }
 
@@ -153,15 +167,37 @@ export async function checkLegalScenario(
  * ngoài danh sách trích dẫn thật — mô hình hay trả [9] khi chỉ có 8 đoạn,
  * và một dẫn chứng trỏ vào hư vô còn tệ hơn không dẫn.
  */
+/** Chuyển lỗi kỹ thuật thành câu người dùng đọc được và biết phải chờ hay sửa. */
+function docLoiPhanTich(error: unknown): string {
+  const tin = error instanceof Error ? error.message : String(error);
+  // Bỏ dấu chấm cuối câu mà nhóm bắt nuốt phải: "55m52.32s." → "55m52.32s".
+  const cho = /try again in ([0-9hms.]+)/i.exec(tin)?.[1]?.replace(/\.+$/, "");
+  if (/rate_limit|429/i.test(tin)) {
+    return `Hết hạn mức token trong ngày của nhà cung cấp LLM${cho ? `, thử lại sau ${cho}` : ""}. Phần căn cứ bên dưới vẫn tra được bình thường vì nó không dùng LLM.`;
+  }
+  if (/GROQ_API_KEY|LLM_API_KEY|LLM_MODEL/i.test(tin)) {
+    return "Chưa cấu hình khoá LLM, nên bước phân tích bị bỏ qua.";
+  }
+  if (/vượt giới hạn token/i.test(tin)) {
+    return "Bản phân tích dài quá mức cho phép nên bị cắt. Hãy rút gọn mô tả tình huống.";
+  }
+  if (/timeout|abort|ECONNREFUSED|fetch/i.test(tin)) {
+    return "Không gọi được dịch vụ LLM. Phần căn cứ bên dưới vẫn dùng được.";
+  }
+  return "Không dựng được bản phân tích cho tình huống này.";
+}
+
 async function docPhanTich(
   scenario: string,
   doanTrich: Array<{ index: number; source: string; content: string }>,
   soTrichDan: number,
-): Promise<PhanTichTinhHuong | null> {
+): Promise<{ ket: PhanTichTinhHuong | null; loi: string | null }> {
   try {
     const tho = await phanTichTinhHuong(scenario, doanTrich);
     const kq = phanTichSchema.safeParse(tho);
-    if (!kq.success) return null;
+    if (!kq.success) {
+      return { ket: null, loi: "Mô hình trả về bản phân tích không đúng khuôn." };
+    }
 
     const dongThoiGian = kq.data.dongThoiGian.map((moc) => ({
       ...moc,
@@ -185,13 +221,20 @@ async function docPhanTich(
         : null);
 
     return {
-      ...kq.data,
-      dongThoiGian,
-      ngoaiPhamVi,
-      mucDoChacChan: ngoaiPhamVi ? "thap" : kq.data.mucDoChacChan,
+      ket: {
+        ...kq.data,
+        dongThoiGian,
+        ngoaiPhamVi,
+        mucDoChacChan: ngoaiPhamVi ? "thap" : kq.data.mucDoChacChan,
+      },
+      loi: null,
     };
-  } catch {
-    return null;
+  } catch (error) {
+    console.error(
+      "[legal-check] phân tích có cấu trúc thất bại:",
+      error instanceof Error ? error.message : error,
+    );
+    return { ket: null, loi: docLoiPhanTich(error) };
   }
 }
 
