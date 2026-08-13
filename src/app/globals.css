@@ -370,15 +370,15 @@
     animation: hien-len var(--nhip-cham) var(--duong-cong) both;
   }
 
-  /* ---------- Premium effects ---------- */
-
-  /** Glassmorphism card: nền kính mờ, dùng dè — chỉ cho card nổi bật. */
-  .the-kinh {
-    background: var(--kinh-nen);
-    backdrop-filter: var(--kinh-mo);
-    -webkit-backdrop-filter: var(--kinh-mo);
-    border: 1px solid var(--kinh-vien);
-  }
+  /*
+   * KHÔNG có lớp kính mờ.
+   *
+   * DESIGN.md chốt hai lần rằng phân lớp bằng màu nền chứ không bằng blur:
+   * "Không dùng blur kính; các lớp vẫn là màu phẳng để độ tương phản ổn
+   * định." Với một sản phẩm mà nội dung chính là chữ tiếng Việt có dấu chồng
+   * hai tầng, nền mờ phía sau là thứ ăn thẳng vào độ đọc được — cái đắt nhất
+   * ở đây. Ba tầng bàn/khay/giấy đã đủ tạo chiều sâu.
+   */
 
   /** Glow nhẹ khi hover — card "sáng lên" khi chuột lướt qua. */
   .sang-khi-cham {

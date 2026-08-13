@@ -11,11 +11,14 @@ export function HeroSection({ stats }: { stats: StatsResponse | null }) {
       <div className="pointer-events-none absolute -right-16 -top-16 size-80 rounded-full bg-gradient-to-br from-white/10 to-transparent blur-2xl" />
 
       <div className="relative z-10">
-        <div className="mb-6 flex items-center gap-3">
+        {/*
+          Bỏ nhãn "Hệ thống RAG Pháp luật 2.0" từng đứng cạnh con dấu. Ba lý
+          do cùng lúc: nó là nhãn mào đầu phía trên tiêu đề — thứ chỉ làm loãng
+          câu tiêu đề vốn đã tự đứng được; nó dùng nền kính mờ mà DESIGN.md
+          cấm; và "2.0" là một số hiệu phiên bản không có thật.
+        */}
+        <div className="mb-6">
           <ConDau co={52} className="block transition-transform duration-300 hover:scale-105" />
-          <span className="rounded-full bg-giay/10 px-3 py-1 text-xs font-semibold tracking-wider text-giay/90 uppercase backdrop-blur-md">
-            Hệ thống RAG Pháp luật 2.0
-          </span>
         </div>
 
         {/*

@@ -114,31 +114,20 @@
   /** Đường cong giảm tốc nhanh, dành riêng cho động tác đóng dấu. */
   --duong-cong-dong-dau: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* ---------- Gradient & hiệu ứng premium ---------- */
+  /* ---------- Phản hồi khi rê chuột ---------- */
 
-  /** Gradient nền chính: navy nhạt, dùng cho hero và header nổi bật. */
-  --gr-hero: linear-gradient(135deg, #16294a 0%, #1e3a5f 50%, #24406b 100%);
-  /** Gradient nhẹ cho card nổi bật. */
-  --gr-card: linear-gradient(160deg, rgba(253, 252, 250, 0.95), rgba(231, 234, 239, 0.6));
-  /** Gradient text cho tiêu đề accent. */
-  /* --gr-text đã bỏ: nó chỉ phục vụ chữ đổ màu ở tiêu đề trang chủ, mà nhấn
-     mạnh phải đến từ sức nặng hoặc độ sáng chứ không phải lớp trang trí. */
-
-  /* ---------- Glassmorphism ---------- */
-
-  /** Nền kính mờ cho overlay và card đặc biệt. */
-  --kinh-nen: rgba(253, 252, 250, 0.72);
-  --kinh-vien: rgba(255, 255, 255, 0.35);
-  --kinh-mo: blur(16px) saturate(1.2);
-
-  /* ---------- Glow (viền sáng) ---------- */
-
-  /** Glow nhẹ cho card đang hover. */
+  /**
+   * Thứ duy nhất còn lại của nhóm hiệu ứng "premium" từng có ở đây.
+   *
+   * Đã bỏ: hai gradient nền, gradient chữ, ba token kính mờ, và hai mức glow
+   * đậm hơn. Bốn trong số đó chưa từng được dùng ở đâu, phần kính thì trái
+   * thẳng DESIGN.md, còn gradient chữ là trang trí không mang nghĩa.
+   *
+   * Cái này ở lại vì nó KHÔNG phải quầng sáng trang trí: có blur 20px và
+   * offset âm, tức là một cái bóng thật, và nó chỉ xuất hiện khi rê chuột —
+   * một phản hồi có nghĩa chứ không phải lớp sơn.
+   */
   --sang-nhe: 0 0 0 1px rgba(36, 64, 107, 0.12), 0 0 20px -4px rgba(36, 64, 107, 0.15);
-  /** Glow mạnh cho card quan trọng. */
-  --sang-dam: 0 0 0 1px rgba(36, 64, 107, 0.18), 0 0 32px -4px rgba(36, 64, 107, 0.25);
-  /** Glow xanh nhạt cho trạng thái active. */
-  --sang-xanh: 0 0 0 2px rgba(36, 64, 107, 0.2), 0 4px 24px -4px rgba(36, 64, 107, 0.18);
 
   /* ---------- Stagger timing ---------- */
 
