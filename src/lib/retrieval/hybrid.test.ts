@@ -42,6 +42,13 @@ describe("hybrid retrieval", () => {
     expect(buildTsQuery(question)).not.toContain("bao:*");
   });
 
+  it("không loại bỏ các từ mang nghĩa sửa đổi pháp lý", () => {
+    const query = buildTsQuery("bổ sung sửa đổi bãi bỏ thay thế điểm mới hiện nay");
+    for (const term of ["bo:*", "sung:*", "sua:*", "doi:*", "bai:*", "thay:*", "moi:*", "hien:*"]) {
+      expect(query).toContain(term);
+    }
+  });
+
   it("tách Điều, Khoản, Điểm để boost đúng node thay vì toàn văn bản", () => {
     expect(extractLegalLocator("Theo điểm i khoản 12 Điều 1 Nghị định 124/2021/NĐ-CP")).toEqual({
       dieu: 1,

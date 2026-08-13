@@ -3,6 +3,7 @@ import type { EmbeddingProvider } from "../embedding/provider";
 import type { ChunkStrategy } from "../db/schema";
 import { extractLegalIdentifier, extractLegalLocator } from "./fulltext";
 import { fulltextSearch } from "./fulltext";
+import { rerankForLegalIntent } from "./query-understanding";
 import { vectorSearch, type RetrievalResult } from "./vector";
 
 export const RRF_K = 60;
@@ -80,10 +81,11 @@ export async function hybridSearch(
     ),
   ]);
   // Vector là trục ổn định; full-text là tín hiệu bổ sung có trọng số theo loại câu hỏi.
-  return reciprocalRankFusion(
+  const fused = reciprocalRankFusion(
     [vectorResults, fulltextResults],
-    options.topK,
+    candidateK,
     RRF_K,
     [1, options.lexicalWeight ?? lexicalWeightForQuestion(question)],
   );
+  return rerankForLegalIntent(question, fused).slice(0, options.topK);
 }

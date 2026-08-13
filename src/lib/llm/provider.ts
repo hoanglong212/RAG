@@ -1,3 +1,5 @@
+import { understandLegalQuery } from "../retrieval/query-understanding";
+
 export interface LlmContext {
   question: string;
   passages: Array<{ index: number; source: string; content: string }>;
@@ -25,6 +27,12 @@ Không suy đoán, không bổ sung kiến thức ngoài ngữ cảnh.
 Mỗi khẳng định pháp lý phải có dẫn chiếu [n] tới đúng đoạn nguồn.
 Nếu ngữ cảnh không đủ để trả lời, chỉ trả đúng chuỗi KHÔNG_TÌM_THẤY.
 Trình bày ngắn gọn, rõ ràng bằng tiếng Việt và không đưa ra phán quyết pháp lý.`;
+
+const AMENDMENT_SYSTEM_RULES = `Với câu hỏi về phần bổ sung, sửa đổi, bãi bỏ hoặc thay thế, chỉ trả lời đúng phần thay đổi và ưu tiên dẫn văn bản sửa đổi; không chép lại phần của văn bản gốc không bị thay đổi.
+Chỉ tổng hợp toàn bộ quy định sau sửa đổi khi người dùng hỏi rõ nội dung hiện nay, hiện hành hoặc đầy đủ.
+Với ADD, chỉ liệt kê nội dung được thêm; với AMEND, nêu nội dung mới; với REPEAL, chỉ liệt kê phần bị bãi bỏ; với REPLACE, nêu "nội dung cũ → nội dung mới" nếu nguồn có đủ hai vế.
+Mở đầu bằng số hiệu và vị trí của văn bản sửa đổi lấy từ nguồn chính, sau đó trả lời trực tiếp bằng danh sách ngắn.
+Nếu đoạn nguồn chỉ nói có sửa đổi nhưng thiếu chính nội dung mới thì trả KHÔNG_TÌM_THẤY, không suy đoán.`;
 
 const RESEARCH_SYSTEM_PROMPT = `Bạn là trợ lý nghiên cứu pháp luật Việt Nam có kiểm chứng.
 Chỉ trả lời dựa trên danh mục nguồn được cấp; tuyệt đối không bổ sung kiến thức ghi nhớ.
@@ -55,10 +63,16 @@ export function readLlmConfig(): LlmConfig {
 }
 
 export function buildGroundedPrompt(context: LlmContext): string {
+  const understanding = understandLegalQuery(context.question);
   const passages = context.passages
     .map((passage) => `[${passage.index}] ${passage.source}\n${passage.content}`)
     .join("\n\n");
-  return `CÂU HỎI:\n${context.question}\n\nNGỮ CẢNH:\n${passages}`;
+  const interpretation = understanding.intent === "amendment_delta"
+    ? `AMENDMENT_DELTA: Trả lời chỉ phần thay đổi do thao tác ${understanding.operation ?? "delta"}; không liệt kê lại nội dung không thay đổi. Ưu tiên trích dẫn văn bản sửa đổi.`
+    : understanding.intent === "current_provision"
+      ? "CURRENT_PROVISION: Người dùng hỏi toàn bộ quy định hiện hành; có thể tổng hợp văn bản gốc và các phần sửa đổi nếu ngữ cảnh đủ."
+      : "GENERAL: Trả lời trực tiếp theo ngữ cảnh được cung cấp.";
+  return `DIỄN GIẢI YÊU CẦU:\n${interpretation}\n\nCÂU HỎI:\n${context.question}\n\nNGỮ CẢNH:\n${passages}`;
 }
 
 export function buildResearchSynthesisPrompt(context: ResearchLlmContext): string {
@@ -126,7 +140,11 @@ export async function* streamGroundedAnswer(
   context: LlmContext,
   config = readLlmConfig(),
 ): AsyncGenerator<string> {
-  yield* streamCompletion(SYSTEM_PROMPT, buildGroundedPrompt(context), config);
+  yield* streamCompletion(
+    `${SYSTEM_PROMPT}\n${AMENDMENT_SYSTEM_RULES}`,
+    buildGroundedPrompt(context),
+    config,
+  );
 }
 
 /** Tổng hợp lần hai sau khi Compound đã thu thập nguồn web. */
