@@ -65,7 +65,8 @@ export function KhayCongCu() {
     return () => document.removeEventListener("mousedown", ngoai);
   }, [ghim]);
 
-  const congCu = BO_CONG_CU.find((c) => c.ma === maMo);
+  const viTri = BO_CONG_CU.findIndex((c) => c.ma === maMo);
+  const congCu = viTri >= 0 ? BO_CONG_CU[viTri] : undefined;
 
   return (
     <div ref={bocRef} className="relative flex items-center" onMouseLeave={henDong}>
@@ -113,16 +114,38 @@ export function KhayCongCu() {
         <div
           onMouseEnter={huyDong}
           className={cn(
-            "absolute right-0 top-[calc(100%+0.75rem)] z-50 w-[min(38rem,calc(100vw-1.5rem))]",
-            "rounded-[--bo-lon] bg-giay p-4 shadow-noi ring-1 ring-muc-in/[0.06] sm:p-5",
+            "hien-len absolute right-0 top-[calc(100%+0.75rem)] z-50 w-[min(38rem,calc(100vw-1.5rem))]",
+            "rounded-[--bo-lon] bg-giay shadow-noi ring-1 ring-muc-in/[0.06]",
           )}
         >
-          {/* Mũi nhọn chỉ về nút đang mở, để panel không trôi lơ lửng. */}
+          {/*
+            Mũi nhọn chỉ đúng nút đang mở.
+
+            Trước đây nó ghim cứng `right-6`, nên dù mở công cụ nào mũi nhọn
+            cũng chỉ vào icon cuối cùng — panel trông như gắn nhầm chỗ.
+
+            Số học: nút size-9 (2,25rem) cách nhau gap-0.5 (0,125rem) nên bước
+            là 2,375rem; tâm nút thứ i tính từ mép phải là bước×(n−1−i) cộng
+            nửa nút 1,125rem. Trừ tiếp 0,375rem vì `right` định vị ô vuông
+            CHƯA xoay, mà tâm thị giác của mũi nhọn nằm giữa ô 0,75rem ấy.
+          */}
           <span
             aria-hidden
-            className="absolute -top-1.5 right-6 size-3 rotate-45 rounded-[2px] bg-giay"
+            style={{
+              right: `${(BO_CONG_CU.length - 1 - viTri) * 2.375 + 0.75}rem`,
+            }}
+            className="absolute -top-1.5 size-3 rotate-45 rounded-[2px] bg-giay"
           />
-          <div className="relative">
+
+          {/* Đầu panel nói đang mở công cụ nào. Ba icon không nhãn thì sau khi
+              bấm người dùng không còn gì xác nhận mình mở đúng cái mình định. */}
+          <div className="flex items-baseline gap-2 border-b border-ke-mo px-4 py-2.5 sm:px-5">
+            <congCu.icon className="size-4 shrink-0 translate-y-0.5 text-but-xanh" strokeWidth={1.8} />
+            <span className="text-sm font-semibold">{congCu.nhan}</span>
+            <span className="truncate text-xs text-nhan">{congCu.moTa}</span>
+          </div>
+
+          <div className="relative p-4 sm:p-5">
             <congCu.Noi />
           </div>
         </div>
