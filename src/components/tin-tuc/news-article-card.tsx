@@ -45,10 +45,12 @@ function tuKhoaConLai(keywords: string[], topics: NewsArticleSummary["topics"]):
 
 function ThanhHanhDong({
   dangChay,
+  coTheDoiChieu,
   onTimLienQuan,
   onDoiChieu,
 }: {
   dangChay: boolean;
+  coTheDoiChieu: boolean;
   onTimLienQuan: () => void;
   onDoiChieu: () => void;
 }) {
@@ -65,14 +67,23 @@ function ThanhHanhDong({
       >
         So sánh nguồn
       </button>
-      <button
-        type="button"
-        disabled={dangChay}
-        onClick={onDoiChieu}
-        className={cn(nen, "text-but-xanh hover:bg-but-xanh-nhat")}
-      >
-        {dangChay ? "Đang đối chiếu…" : "Đối chiếu pháp luật"}
-      </button>
+      {/*
+        Nút đối chiếu chỉ hiện khi kho THẬT SỰ phủ chủ đề của bài.
+        Trước đây nó có mặt trên mọi thẻ, kể cả tin bóng đá và tin quốc tế —
+        và bấm vào thì nhận về tám điều luật Việt Nam gán bừa. Mời người dùng
+        làm một việc mà hệ thống không làm nổi là cách nhanh nhất để họ thôi
+        tin những lần nó làm được thật.
+      */}
+      {coTheDoiChieu ? (
+        <button
+          type="button"
+          disabled={dangChay}
+          onClick={onDoiChieu}
+          className={cn(nen, "text-but-xanh hover:bg-but-xanh-nhat")}
+        >
+          {dangChay ? "Đang đối chiếu…" : "Đối chiếu pháp luật"}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -136,6 +147,7 @@ function DauBai({ bai }: { bai: NewsArticleSummary }) {
 export function NewsArticleCard({
   bai,
   kieu = "thuong",
+  coTheDoiChieu = false,
   dangChay,
   lienQuan,
   doiChieuKq,
@@ -145,6 +157,8 @@ export function NewsArticleCard({
   bai: NewsArticleSummary;
   /** "dan" = bài dẫn đầu dòng tin, được ảnh lớn và tiêu đề cỡ câu chốt. */
   kieu?: "dan" | "thuong";
+  /** Kho văn bản có phủ chủ đề của bài này không. Đo từ /api/coverage. */
+  coTheDoiChieu?: boolean;
   dangChay: boolean;
   lienQuan: RelatedArticle[] | null;
   doiChieuKq: LegalCheckResult | null;
@@ -206,6 +220,7 @@ export function NewsArticleCard({
         <div className="ml-auto">
           <ThanhHanhDong
             dangChay={dangChay}
+            coTheDoiChieu={coTheDoiChieu}
             onTimLienQuan={onTimLienQuan}
             onDoiChieu={onDoiChieu}
           />

@@ -46,6 +46,32 @@ interface RelatedArticle {
   source: NewsSource;
 }
 
+/** Đầu mục của một khúc dòng tin. Nổi bật dành cho khúc đối chiếu được. */
+function DauMuc({
+  tieuDe,
+  phu,
+  so,
+  noiBat = false,
+}: {
+  tieuDe: string;
+  phu: string;
+  so: number;
+  noiBat?: boolean;
+}) {
+  return (
+    <div className="mb-3">
+      <div className="flex items-baseline gap-2.5">
+        <h2 className={noiBat ? "text-base font-semibold text-muc-in" : "nhan-hoa text-muc-mo"}>
+          {tieuDe}
+        </h2>
+        <span aria-hidden className="h-px flex-1 bg-ke-mo" />
+        <span className="so-hieu text-nhan">{so}</span>
+      </div>
+      <p className="mt-1 text-[0.8125rem] leading-relaxed text-nhan">{phu}</p>
+    </div>
+  );
+}
+
 export default function TrangTinTuc() {
   const [data, setData] = useState<NewsResponse>({ items: [], total: 0 });
   const [nguon, setNguon] = useState<NewsSource[]>([]);
@@ -63,6 +89,7 @@ export default function TrangTinTuc() {
   const [lienQuan, setLienQuan] = useState<{ id: string; items: RelatedArticle[] } | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
 
+  const [phamViKho, setPhamViKho] = useState<Set<NewsTopic>>(new Set());
   const [dangDongBo, setDangDongBo] = useState(false);
   const [ketQuaDongBo, setKetQuaDongBo] = useState<KetQuaDongBo[] | null>(null);
   const [loiDongBo, setLoiDongBo] = useState<string | null>(null);
@@ -88,6 +115,27 @@ export default function TrangTinTuc() {
       .then(async (r) => {
         const kq = (await r.json()) as { sources?: NewsSource[] };
         setNguon(kq.sources ?? []);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  /*
+   * Phạm vi thật của kho văn bản, đọc từ /api/coverage.
+   *
+   * Đây là thứ quyết định bài nào được mời "Đối chiếu pháp luật". Trước đây
+   * nút đó có trên MỌI thẻ; bấm vào một tin bóng đá thì vẫn nhận về tám điều
+   * luật Việt Nam kèm điểm 0,48 — cùng mức điểm với một tin vi phạm y tế thật.
+   * Lấy phạm vi từ dữ liệu chứ không tự liệt kê chủ đề nào "nghe có vẻ pháp
+   * lý": kho hiện phủ an toàn thực phẩm, đất đai, giao thông, lao động, người
+   * tiêu dùng — và danh sách đó sẽ đổi khi nạp thêm văn bản.
+   */
+  useEffect(() => {
+    void fetch("/api/coverage")
+      .then(async (r) => {
+        const rows = (await r.json()) as { topic: string; documents: number }[];
+        setPhamViKho(
+          new Set(rows.filter((x) => x.documents > 0).map((x) => x.topic as NewsTopic)),
+        );
       })
       .catch(() => undefined);
   }, []);
@@ -156,16 +204,40 @@ export default function TrangTinTuc() {
     return doDoTuoi(moiNhat);
   }, [data.items]);
 
-  const nhomNgay = useMemo(() => gomTheoNgay(data.items), [data.items]);
+  /*
+   * Chia dòng tin theo thứ hệ thống LÀM ĐƯỢC cho từng bài, không theo thứ tự
+   * thời gian thuần.
+   *
+   * Phóng to bài đầu tiên không phải là một nguyên tắc sắp xếp, nó chỉ là một
+   * bài to hơn. Sản phẩm này khác một trình đọc RSS ở đúng một chỗ: nó đối
+   * chiếu được tin với kho luật. Vậy thì trục tổ chức đúng của trang phải là
+   * "bài nào đối chiếu được", và điều đó đo được từ /api/coverage.
+   */
+  const { doiChieuDuoc, conLai } = useMemo(() => {
+    if (phamViKho.size === 0) return { doiChieuDuoc: [], conLai: data.items };
+    const trong: NewsArticleSummary[] = [];
+    const ngoai: NewsArticleSummary[] = [];
+    for (const b of data.items) {
+      (b.topics.some((t) => phamViKho.has(t)) ? trong : ngoai).push(b);
+    }
+    return { doiChieuDuoc: trong, conLai: ngoai };
+  }, [data.items, phamViKho]);
+
+  const nhomNgay = useMemo(() => gomTheoNgay(conLai), [conLai]);
   const coBai = !dangTai && data.items.length > 0;
   const coLoc = Boolean(loc.q || loc.chuDe || loc.nguon);
 
-  function baiThe(bai: NewsArticleSummary, kieu: "dan" | "thuong" = "thuong") {
+  function baiThe(
+    bai: NewsArticleSummary,
+    kieu: "dan" | "thuong" = "thuong",
+    coTheDoiChieu = false,
+  ) {
     return (
       <NewsArticleCard
         key={bai.id}
         bai={bai}
         kieu={kieu}
+        coTheDoiChieu={coTheDoiChieu}
         dangChay={dangChay === bai.id}
         lienQuan={lienQuan?.id === bai.id ? lienQuan.items : null}
         doiChieuKq={doiChieuKq?.id === bai.id ? doiChieuKq.kq : null}
@@ -236,23 +308,57 @@ export default function TrangTinTuc() {
               </p>
             ) : null}
 
-            <div className="flex flex-col gap-6">
-              {nhomNgay.map((nhom, iNhom) => (
-                <section key={nhom.khoa}>
-                  <div className="mb-2.5 flex items-baseline gap-2.5">
-                    <h2 className="nhan-hoa text-muc-mo">{nhom.nhan}</h2>
-                    <span aria-hidden className="h-px flex-1 bg-ke-mo" />
-                    <span className="so-hieu text-nhan">{nhom.bai.length}</span>
-                  </div>
+            <div className="flex flex-col gap-7">
+              {doiChieuDuoc.length > 0 ? (
+                <section aria-label="Tin đối chiếu được với kho">
+                  <DauMuc
+                    tieuDe="Đối chiếu được với kho"
+                    phu={`Chủ đề của những bài này nằm trong ${phamViKho.size} lĩnh vực kho đang phủ`}
+                    so={doiChieuDuoc.length}
+                    noiBat
+                  />
                   <div className="flex flex-col gap-3">
-                    {nhom.bai.map((bai, i) =>
-                      // Chỉ bài đầu của nhóm mới nhất được làm bài dẫn. Mỗi
-                      // ngày một bài dẫn thì lại thành đều nhau, mất tác dụng.
-                      baiThe(bai, iNhom === 0 && i === 0 ? "dan" : "thuong"),
+                    {doiChieuDuoc.map((bai, i) =>
+                      baiThe(bai, i === 0 ? "dan" : "thuong", true),
                     )}
                   </div>
                 </section>
-              ))}
+              ) : null}
+
+              {nhomNgay.length > 0 ? (
+                <section aria-label="Tin còn lại">
+                  {doiChieuDuoc.length > 0 ? (
+                    <DauMuc
+                      tieuDe="Tin khác"
+                      phu="Kho chưa có văn bản cho những chủ đề này, nên chưa đối chiếu được"
+                      so={conLai.length}
+                    />
+                  ) : null}
+                  <div className="flex flex-col gap-5">
+                    {nhomNgay.map((nhom, iNhom) => (
+                      <div key={nhom.khoa}>
+                        <div className="mb-2.5 flex items-baseline gap-2.5">
+                          <h3 className="nhan-hoa text-muc-mo">{nhom.nhan}</h3>
+                          <span aria-hidden className="h-px flex-1 bg-ke-mo" />
+                          <span className="so-hieu text-nhan">{nhom.bai.length}</span>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                          {nhom.bai.map((bai, i) =>
+                            // Không có bài nào đối chiếu được thì bài mới nhất
+                            // vẫn dẫn dòng tin — trang không được để trống đỉnh.
+                            baiThe(
+                              bai,
+                              doiChieuDuoc.length === 0 && iNhom === 0 && i === 0
+                                ? "dan"
+                                : "thuong",
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
             </div>
           </>
         ) : null}
