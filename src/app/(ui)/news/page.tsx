@@ -17,7 +17,7 @@
  * khoảng trống. Thiếu ngày 13/08 thì không có tiêu đề "Hôm qua" — nhìn là biết.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { KhungTrang, Nut } from "@/components/kit/co-ban";
 import { BaoLoi, TrongRong, XuongDanhSach } from "@/components/kit/trang-thai-kit";
 import { docLoi, docPhanHoi, layJson } from "@/components/kit/goi-api";
@@ -26,7 +26,7 @@ import type { NewsArticleSummary, NewsTopic } from "@/types/news";
 
 import { NewsFilterBar } from "@/components/tin-tuc/news-filter-bar";
 import { NewsArticleCard } from "@/components/tin-tuc/news-article-card";
-import { DaiTrangThai, type KetQuaDongBo } from "@/components/tin-tuc/dai-trang-thai";
+import { BaoTinhTrangNguon, type KetQuaDongBo } from "@/components/tin-tuc/dai-trang-thai";
 import { doDoTuoi, gomTheoNgay } from "@/components/tin-tuc/dong-thoi-gian";
 
 interface NewsResponse {
@@ -45,6 +45,17 @@ interface RelatedArticle {
   publishedAt: string | null;
   source: NewsSource;
 }
+
+/**
+ * Số văn bản tối thiểu để coi một lĩnh vực là kho CÓ phủ.
+ *
+ * Trước đây chỉ cần lớn hơn 0, và điều đó để lọt kinh_te — lĩnh vực có đúng
+ * MỘT văn bản, 26 đoạn. Hệ quả nhìn thấy được: một bài về chuỗi cung ứng công
+ * nghệ Trung Quốc vẫn được mời đối chiếu với luật hành chính Việt Nam, và bài
+ * thao túng cổ phiếu nhận về quy định đất đai. Một văn bản không phải là phủ
+ * một lĩnh vực; đó là một văn bản lạc vào.
+ */
+const SO_VAN_BAN_TOI_THIEU = 2;
 
 /** Đầu mục của một khúc dòng tin. Nổi bật dành cho khúc đối chiếu được. */
 function DauMuc({
@@ -135,7 +146,11 @@ export default function TrangTinTuc() {
       .then(async (r) => {
         const rows = (await r.json()) as { topic: string; documents: number }[];
         setPhamViKho(
-          new Set(rows.filter((x) => x.documents > 0).map((x) => x.topic as NewsTopic)),
+          new Set(
+            rows
+              .filter((x) => x.documents >= SO_VAN_BAN_TOI_THIEU)
+              .map((x) => x.topic as NewsTopic),
+          ),
         );
       })
       .catch(() => undefined);
@@ -166,7 +181,17 @@ export default function TrangTinTuc() {
     };
   }, [data.items]);
 
-  async function dongBo() {
+  /*
+   * Tự lấy tin mới khi mở trang.
+   *
+   * Trước đây phải bấm "Cập nhật ngay" trên một dải trạng thái thường trực —
+   * người dùng không nên phải tự bấm để trang tin có tin mới.
+   *
+   * Có chốt 15 phút: mở lại trang trong vòng 15 phút kể từ bài mới nhất thì
+   * không gọi nữa. Không có chốt thì mỗi lần mở là tám lượt tải RSS, vừa chậm
+   * vừa dễ bị các tòa soạn chặn — mà trong 15 phút cũng hiếm khi có gì mới.
+   */
+  const dongBo = useCallback(async () => {
     setDangDongBo(true);
     setLoiDongBo(null);
     setKetQuaDongBo(null);
@@ -187,7 +212,7 @@ export default function TrangTinTuc() {
     } finally {
       setDangDongBo(false);
     }
-  }
+  }, [doc]);
 
   async function doiChieu(id: string) {
     setDangChay(id);
@@ -247,6 +272,18 @@ export default function TrangTinTuc() {
     return { doiChieuDuoc: trong, conLai: ngoai };
   }, [data.items, phamViKho]);
 
+  /** Mở trang mà tin đã cũ quá 15 phút thì tự lấy mới, đúng một lần mỗi phiên. */
+  const daTuDongBo = useRef(false);
+  useEffect(() => {
+    if (daTuDongBo.current || dangTai || data.items.length === 0) return;
+    if (doTuoi.gio !== null && doTuoi.gio * 60 < 15) {
+      daTuDongBo.current = true;
+      return;
+    }
+    daTuDongBo.current = true;
+    void dongBo();
+  }, [dangTai, data.items.length, doTuoi.gio, dongBo]);
+
   const nhomNgay = useMemo(() => gomTheoNgay(conLai), [conLai]);
   const coBai = !dangTai && data.items.length > 0;
   const coLoc = Boolean(loc.q || loc.chuDe || loc.nguon);
@@ -278,15 +315,22 @@ export default function TrangTinTuc() {
       moTa="Tin lấy từ RSS, chỉ lưu tiêu đề, tóm tắt và liên kết về bài gốc. Mỗi bài đối chiếu được với corpus văn bản để xem tin nói đúng tới đâu."
     >
       <div className="flex flex-col gap-4">
+        {/*
+          Dải trạng thái thường trực đã bỏ: trang tự lấy tin mới khi mở nên
+          không còn gì để người dùng phải bấm, và một thanh chỉ để báo "mọi thứ
+          bình thường" là thanh không đáng chỗ.
+
+          Nhưng KHÔNG im lặng khi hỏng. Đúng cái đã xảy ra hai hôm trước là
+          trang đứng yên hai ngày mà không nói gì. Dòng dưới chỉ hiện khi thật
+          sự có chuyện: một nguồn không lấy được, hoặc lấy xong mà tin vẫn cũ.
+        */}
         {coBai ? (
-          <DaiTrangThai
+          <BaoTinhTrangNguon
             doTuoi={doTuoi}
-            soBai={data.total}
             nguon={nguon}
             dangDongBo={dangDongBo}
             ketQua={ketQuaDongBo}
             loi={loiDongBo}
-            onDongBo={() => void dongBo()}
           />
         ) : null}
 

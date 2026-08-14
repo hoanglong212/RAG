@@ -76,7 +76,11 @@ export async function syncNewsSource(
           ${item.imageUrl}, ${item.publishedAt?.toISOString() ?? null}::timestamptz,
           ${item.topics}, ${item.keywords}, ${item.locations}
         )
-        ON CONFLICT (source_id, external_id) DO UPDATE SET
+        -- Xung đột theo external_id (hash của URL) chứ không theo cặp với
+        -- source_id: cùng một bài về qua hai feed chuyên mục của cùng tòa soạn
+        -- vẫn là MỘT bài. Không cập nhật source_id ở đây — giữ nơi thấy đầu
+        -- tiên, vì đổi qua đổi lại mỗi lần đồng bộ chỉ làm nhiễu.
+        ON CONFLICT (external_id) DO UPDATE SET
           url = excluded.url,
           title = excluded.title,
           summary = excluded.summary,

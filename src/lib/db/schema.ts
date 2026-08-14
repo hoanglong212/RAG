@@ -304,7 +304,18 @@ export const news_articles = pgTable(
     updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    uniqueIndex("news_articles_source_external_uidx").on(t.source_id, t.external_id),
+    /*
+     * Danh tính một bài báo là URL của nó, không phải cặp (nguồn, URL).
+     *
+     * Khóa cũ gồm cả source_id, nên cùng một bài lấy về từ hai feed khác nhau
+     * của CÙNG một tòa soạn thành hai dòng. Từ khi mỗi báo có nhiều feed
+     * chuyên mục, đo được 56 URL bị lặp và có bài nằm ba lần trong kho — vừa
+     * ở feed tổng hợp, vừa ở mục Kinh doanh, vừa ở mục Xe.
+     *
+     * external_id đã là SHA-256 của URL canonical nên đặt duy nhất trên nó
+     * giữ nguyên chủ đích ban đầu là không index thẳng chuỗi URL dài.
+     */
+    uniqueIndex("news_articles_external_uidx").on(t.external_id),
     index("news_articles_published_at_idx").on(t.published_at.desc()),
     index("news_articles_source_id_idx").on(t.source_id),
     index("news_articles_topics_idx").using("gin", t.topics),
