@@ -117,6 +117,80 @@ describe("xepTheoLienQuan", () => {
     expect(xepTheoLienQuan(GOC, nhieu, 4)).toHaveLength(4);
   });
 
+  /**
+   * Tìm được bài đúng khi tập ứng viên đủ lớn để thống kê độ hiếm bật lên.
+   *
+   * Đây là hình dạng thật của dữ liệu: vài chục bài đủ loại, một bài trùng sự
+   * việc. Ngưỡng bật IDF là 20 ứng viên nên trường hợp này đi qua nhánh có
+   * trọng số, khác với test phía dưới.
+   */
+  it("vẫn tìm đúng bài khi tập ứng viên đủ lớn để bật trọng số độ hiếm", () => {
+    const lon = [
+      ...Array.from({ length: 28 }, (_, i) => ({
+        id: `n${i}`,
+        title: `Tin thường ngày số ${i} về giá vàng và thời tiết miền Bắc`,
+        summary: null,
+      })),
+      {
+        id: "dung",
+        title: "Trump kháng cáo phán quyết chặn xây phòng khiêu vũ lên Tòa Tối cao",
+        summary: null,
+      },
+    ];
+    const kq = xepTheoLienQuan(GOC, lon, 5);
+    expect(kq).toHaveLength(1);
+    expect(kq[0].bai.id).toBe("dung");
+  });
+
+  it("tập ứng viên quá nhỏ thì bỏ qua thống kê độ hiếm, không tính bừa", () => {
+    const it = [
+      { id: "a", title: "Tòa Tối cao Mỹ xem xét kháng cáo vụ phòng khiêu vũ", summary: null },
+    ];
+    expect(xepTheoLienQuan(GOC, it)).toHaveLength(1);
+  });
+
+  /**
+   * Hồi quy cho cặp sai thật, đo được trên máy sau ba lần siết ngưỡng:
+   *
+   *   "Con gái tuổi teen của Minh Tiệp"
+   *     ↔ "Cô gái 20 tuổi dùng ma túy bị ném xuống sông Hồng"   (0,65)
+   *
+   * Trùng `con`, `gái`, `tiếp` — ba âm tiết rời, trong đó `tiếp` chỉ là nửa
+   * tên riêng "Minh Tiệp" đụng phải từ phổ thông. Không có cặp âm tiết nào
+   * chung, nên luật cặp loại thẳng; siết ngưỡng thì không bao giờ loại được.
+   */
+  it("loại cặp chỉ trùng âm tiết rời, không trùng từ ghép nào", () => {
+    const goc = { id: "g", title: "Con gái tuổi teen của Minh Tiệp" };
+    const nen = Array.from({ length: 25 }, (_, i) => ({
+      id: `n${i}`,
+      title: `Thời tiết hôm nay khu vực số ${i} có mưa rào rải rác`,
+      summary: null,
+    }));
+    const sai = {
+      id: "sai",
+      title: "Cô gái 20 tuổi dùng ma túy bị ném xuống sông Hồng: Có những lần tiếp theo",
+      summary: null,
+    };
+    expect(xepTheoLienQuan(goc, [...nen, sai])).toEqual([]);
+  });
+
+  it("giữ cặp có chung từ ghép thật", () => {
+    const goc = { id: "g", title: "Bệnh viện Chợ Rẫy cảnh báo người bệnh về dịch vụ bốc số" };
+    const nen = Array.from({ length: 25 }, (_, i) => ({
+      id: `n${i}`,
+      title: `Giá vàng trong nước phiên số ${i} tiếp tục đi ngang`,
+      summary: null,
+    }));
+    const dung = {
+      id: "dung",
+      title: "Bệnh viện Chợ Rẫy cảnh báo dịch vụ 'bốc số' khám nhanh",
+      summary: null,
+    };
+    const kq = xepTheoLienQuan(goc, [...nen, dung]);
+    expect(kq).toHaveLength(1);
+    expect(kq[0].bai.id).toBe("dung");
+  });
+
   it("trùng vài từ lẻ nhưng khác sự việc thì vẫn bị loại", () => {
     const gan = {
       id: "gan",

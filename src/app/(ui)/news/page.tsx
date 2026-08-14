@@ -90,6 +90,7 @@ export default function TrangTinTuc() {
   const [loi, setLoi] = useState<string | null>(null);
 
   const [phamViKho, setPhamViKho] = useState<Set<NewsTopic>>(new Set());
+  const [demNguon, setDemNguon] = useState<Record<string, number>>({});
   const [dangDongBo, setDangDongBo] = useState(false);
   const [ketQuaDongBo, setKetQuaDongBo] = useState<KetQuaDongBo[] | null>(null);
   const [loiDongBo, setLoiDongBo] = useState<string | null>(null);
@@ -141,6 +142,29 @@ export default function TrangTinTuc() {
   }, []);
 
   useEffect(() => void doc(), [doc]);
+
+  /*
+   * Đếm trước số báo khác cùng đưa cho cả danh sách, một lượt gọi.
+   * Nút "So sánh nguồn" chỉ hiện ở bài có kết quả — xem ghi chú trong
+   * ThanhHanhDong về vì sao.
+   */
+  useEffect(() => {
+    if (data.items.length === 0) return;
+    let huy = false;
+    void fetch("/api/news/related-counts", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ids: data.items.slice(0, 50).map((b) => b.id) }),
+    })
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((d: Record<string, number>) => {
+        if (!huy) setDemNguon(d ?? {});
+      })
+      .catch(() => undefined);
+    return () => {
+      huy = true;
+    };
+  }, [data.items]);
 
   async function dongBo() {
     setDangDongBo(true);
@@ -238,6 +262,7 @@ export default function TrangTinTuc() {
         bai={bai}
         kieu={kieu}
         coTheDoiChieu={coTheDoiChieu}
+        soNguonKhac={demNguon[bai.id] ?? 0}
         dangChay={dangChay === bai.id}
         lienQuan={lienQuan?.id === bai.id ? lienQuan.items : null}
         doiChieuKq={doiChieuKq?.id === bai.id ? doiChieuKq.kq : null}

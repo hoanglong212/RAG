@@ -46,11 +46,14 @@ function tuKhoaConLai(keywords: string[], topics: NewsArticleSummary["topics"]):
 function ThanhHanhDong({
   dangChay,
   coTheDoiChieu,
+  soNguonKhac,
   onTimLienQuan,
   onDoiChieu,
 }: {
   dangChay: boolean;
   coTheDoiChieu: boolean;
+  /** Số báo khác cùng đưa tin này, đếm sẵn qua /api/news/related-counts. */
+  soNguonKhac: number;
   onTimLienQuan: () => void;
   onDoiChieu: () => void;
 }) {
@@ -59,14 +62,24 @@ function ThanhHanhDong({
     "transition-colors duration-[--nhip] disabled:pointer-events-none disabled:opacity-45";
   return (
     <div className="flex shrink-0 items-center gap-1">
-      <button
-        type="button"
-        disabled={dangChay}
-        onClick={onTimLienQuan}
-        className={cn(nen, "text-nhan hover:bg-khay hover:text-muc-in")}
-      >
-        So sánh nguồn
-      </button>
+      {/*
+        Chỉ hiện khi THẬT SỰ có bài để so. Đo được: chỉ ~7% bản tin có báo khác
+        cùng đưa, nên trước đây hơn chín trong mười lần bấm là gặp màn hình
+        rỗng — đủ để kết luận tính năng chưa từng chạy.
+
+        Con số đi kèm biến nút thành thông tin chứ không còn là lời mời: "2 báo
+        cùng đưa" tự nó đã là điều đáng biết về một bản tin.
+      */}
+      {soNguonKhac > 0 ? (
+        <button
+          type="button"
+          disabled={dangChay}
+          onClick={onTimLienQuan}
+          className={cn(nen, "text-nhan hover:bg-khay hover:text-muc-in")}
+        >
+          {soNguonKhac} báo cùng đưa
+        </button>
+      ) : null}
       {/*
         Nút đối chiếu chỉ hiện khi kho THẬT SỰ phủ chủ đề của bài.
         Trước đây nó có mặt trên mọi thẻ, kể cả tin bóng đá và tin quốc tế —
@@ -148,6 +161,7 @@ export function NewsArticleCard({
   bai,
   kieu = "thuong",
   coTheDoiChieu = false,
+  soNguonKhac = 0,
   dangChay,
   lienQuan,
   doiChieuKq,
@@ -159,6 +173,8 @@ export function NewsArticleCard({
   kieu?: "dan" | "thuong";
   /** Kho văn bản có phủ chủ đề của bài này không. Đo từ /api/coverage. */
   coTheDoiChieu?: boolean;
+  /** Số tòa soạn khác cùng đưa tin này. 0 thì không mời so sánh. */
+  soNguonKhac?: number;
   dangChay: boolean;
   lienQuan: RelatedArticle[] | null;
   doiChieuKq: LegalCheckResult | null;
@@ -221,6 +237,7 @@ export function NewsArticleCard({
           <ThanhHanhDong
             dangChay={dangChay}
             coTheDoiChieu={coTheDoiChieu}
+            soNguonKhac={soNguonKhac}
             onTimLienQuan={onTimLienQuan}
             onDoiChieu={onDoiChieu}
           />

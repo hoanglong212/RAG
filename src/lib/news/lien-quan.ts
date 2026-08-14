@@ -73,6 +73,38 @@ export interface BaiDeSoSanh {
 }
 
 /**
+ * Cặp âm tiết liền nhau trong tiêu đề.
+ *
+ * Đây là chỗ sửa quan trọng nhất, và nó là chuyện ngôn ngữ chứ không phải
+ * chuyện chỉnh số. Tiếng Việt viết rời từng âm tiết nhưng từ thì đa âm: "Chợ
+ * Rẫy", "chú tiểu", "thả diều", "Minh Tiệp" đều là MỘT từ. Khớp theo âm tiết
+ * đơn nên mới có chuyện "Con gái tuổi teen của Minh Tiệp" ghép với "Cô gái 20
+ * tuổi dùng ma túy bị ném xuống sông Hồng": trùng `con`, `gái`, và `tiếp` —
+ * trong đó `tiếp` chỉ là nửa cái tên riêng "Minh Tiệp" đụng phải từ phổ thông.
+ *
+ * Siết ngưỡng không chữa được: mỗi lần nâng lại lộ ra một cặp sai khác, vì lỗi
+ * nằm ở đơn vị so khớp. Hai bài cùng một sự việc gần như luôn dùng chung ít
+ * nhất một từ ghép thật — tên người, địa danh, hành vi. Hai bài khác sự việc
+ * thì hầu như không bao giờ.
+ *
+ * Giữ nguyên thứ tự và KHÔNG bỏ hư từ trước khi ghép cặp: "thả diều" phải liền
+ * nhau mới tính, còn bỏ hư từ trước sẽ dán nhầm hai âm tiết vốn cách xa nhau.
+ */
+export function tachCapAmTiet(chu: string): Set<string> {
+  const am = boDau(chu)
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((t) => t.length >= 1);
+  const cap = new Set<string>();
+  for (let i = 0; i + 1 < am.length; i++) {
+    // Cặp toàn hư từ ("của tôi", "và các") không mang thông tin định danh.
+    if (HU_TU.has(am[i]) && HU_TU.has(am[i + 1])) continue;
+    cap.add(`${am[i]} ${am[i + 1]}`);
+  }
+  return cap;
+}
+
+/**
  * Điểm liên quan trong khoảng 0..1, theo hệ số Jaccard có trọng số.
  *
  * Dùng mẫu số là tập từ của bài GỐC chứ không phải hợp của hai tập: câu hỏi
@@ -80,7 +112,58 @@ export interface BaiDeSoSanh {
  * giống nhau tới đâu". Tiêu đề dài ngắn khác nhau nhiều nên hợp hai tập sẽ
  * phạt oan những tiêu đề dài.
  */
-export function diemLienQuan(goc: BaiDeSoSanh, ung: BaiDeSoSanh): number {
+/**
+ * Trọng số theo độ hiếm (IDF). Từ càng hiếm càng nói lên nhiều.
+ *
+ * Không có bước này thì mọi từ nặng như nhau, và tiêu đề ngắn gồm toàn từ phổ
+ * thông sẽ ghép bừa. Đo được trên máy: "Con gái tuổi teen của Minh Tiệp" khớp
+ * "Cô gái 20 tuổi dùng ma túy bị ném xuống sông Hồng" ở 0,75, chỉ vì trùng
+ * "con", "gái", "tuổi" — ba từ có mặt ở khắp nơi. Danh sách hư từ không cứu
+ * được: chúng là từ thật, chỉ là không phân biệt được gì.
+ *
+ * Với IDF, ba từ đó gần như không đóng góp, còn "Minh Tiệp" hay "sông Hồng"
+ * mới mang điểm. Độ hiếm tính trên chính tập ứng viên đang xét nên không cần
+ * từ điển dựng sẵn và tự thích nghi theo dòng tin.
+ */
+/**
+ * Tập ứng viên nhỏ hơn ngưỡng này thì thống kê độ hiếm không đáng tin, quay về
+ * cân đều. Với vài chục bài, một từ xuất hiện hai lần đã bị coi là "phổ thông".
+ */
+const CO_MAU_TOI_THIEU_CHO_IDF = 20;
+
+/** Sàn trọng số: từ phổ thông tới đâu cũng còn giá trị, không bị triệt tiêu. */
+const SAN_TRONG_SO = 0.25;
+
+export function dungBangDoHiem(tapVanBan: string[]): Map<string, number> | undefined {
+  if (tapVanBan.length < CO_MAU_TOI_THIEU_CHO_IDF) return undefined;
+  const df = new Map<string, number>();
+  for (const chu of tapVanBan) {
+    for (const t of new Set(tachTuKhoa(chu))) df.set(t, (df.get(t) ?? 0) + 1);
+  }
+  const N = tapVanBan.length;
+  const idf = new Map<string, number>();
+  for (const [t, d] of df) idf.set(t, Math.log((N + 1) / (d + 0.5)));
+  return idf;
+}
+
+/**
+ * Trọng số của một từ, luôn dương.
+ *
+ * Sàn 0,25 là thứ giữ cho thuật toán không tự phá. Không có sàn thì một từ có
+ * mặt ở gần hết tập ứng viên nhận trọng số ~0, và nếu tiêu đề gốc toàn những
+ * từ như thế thì mẫu số do các từ KHÔNG khớp chi phối — hai bài giống hệt nhau
+ * vẫn ra điểm 0 và bị loại. Đó chính là điều test bắt được.
+ */
+function trongSo(t: string, idf?: Map<string, number>): number {
+  if (!idf) return 1;
+  return Math.max(SAN_TRONG_SO, idf.get(t) ?? Math.log(idf.size + 1));
+}
+
+export function diemLienQuan(
+  goc: BaiDeSoSanh,
+  ung: BaiDeSoSanh,
+  idf?: Map<string, number>,
+): number {
   const tuGoc = tachTuKhoa(goc.title);
   if (tuGoc.length === 0) return 0;
 
@@ -88,12 +171,29 @@ export function diemLienQuan(goc: BaiDeSoSanh, ung: BaiDeSoSanh): number {
   const tuTieuDe = new Set(tachTuKhoa(ung.title));
   const tuTomTat = new Set(tachTuKhoa(ung.summary ?? ""));
 
-  let diem = 0;
+  let duoc = 0;
+  let tong = 0;
   for (const t of tuGoc) {
-    if (tuTieuDe.has(t)) diem += 1;
-    else if (tuTomTat.has(t)) diem += 0.45;
+    const w = trongSo(t, idf);
+    tong += w;
+    if (tuTieuDe.has(t)) duoc += w;
+    else if (tuTomTat.has(t)) duoc += w * 0.45;
   }
-  return diem / tuGoc.length;
+  return tong === 0 ? 0 : duoc / tong;
+}
+
+/** Số từ trong tiêu đề gốc xuất hiện lại ở TIÊU ĐỀ ứng viên. */
+function soTuTrungTieuDe(goc: BaiDeSoSanh, ung: BaiDeSoSanh): number {
+  const tuTieuDe = new Set(tachTuKhoa(ung.title));
+  return tachTuKhoa(goc.title).filter((t) => tuTieuDe.has(t)).length;
+}
+
+/** Số cặp âm tiết mà hai tiêu đề dùng chung. */
+function soCapTrung(goc: BaiDeSoSanh, ung: BaiDeSoSanh): number {
+  const capUng = tachCapAmTiet(ung.title);
+  let n = 0;
+  for (const c of tachCapAmTiet(goc.title)) if (capUng.has(c)) n++;
+  return n;
 }
 
 /**
@@ -118,13 +218,24 @@ export function diemLienQuan(goc: BaiDeSoSanh, ung: BaiDeSoSanh): number {
 export const NGUONG_LIEN_QUAN = 0.55;
 
 /**
- * Ít nhất bằng này từ phải trùng.
+ * Ít nhất bằng này từ của tiêu đề gốc phải xuất hiện lại trong TIÊU ĐỀ ứng
+ * viên — đếm số từ thật, không phải tổng điểm có trọng số.
  *
- * Đây mới là thứ chặn được lỗi tiêu đề ngắn. "Đi ngoài mỗi ngày có tốt không?"
- * sau khi bỏ hư từ chỉ còn vài từ, nên trùng hai từ đã cho 0,72 với một bài
- * đặc sản chẳng liên quan. Tỉ lệ một mình không đủ khi mẫu số quá nhỏ.
+ * Bản trước kiểm bằng `diem * số từ`, mà đó là tổng điểm chứ không phải số từ,
+ * nên một tiêu đề ngắn khớp vài từ ở phần tóm tắt vẫn vượt qua. Hai điều kiện
+ * này chặn hai lỗi khác nhau và cần cả hai: IDF lo phần "trùng từ vô nghĩa",
+ * còn điều kiện này lo phần "trùng quá ít chỗ".
  */
 const SO_TU_TRUNG_TOI_THIEU = 3;
+
+/**
+ * Số CẶP ÂM TIẾT phải trùng giữa hai tiêu đề.
+ *
+ * Điều kiện quyết định. Một cặp trùng nghĩa là hai bài dùng chung một từ ghép
+ * thật — "chợ rẫy", "chú tiểu", "thả diều", "lãi suất" — chứ không phải cùng
+ * dùng những âm tiết phổ thông rời rạc.
+ */
+const SO_CAP_TRUNG_TOI_THIEU = 1;
 
 export interface KetQuaLienQuan<T extends BaiDeSoSanh> {
   bai: T;
@@ -136,13 +247,23 @@ export function xepTheoLienQuan<T extends BaiDeSoSanh>(
   ungVien: T[],
   gioiHan = 6,
 ): KetQuaLienQuan<T>[] {
-  const tuGoc = tachTuKhoa(goc.title);
-  if (tuGoc.length === 0) return [];
+  if (tachTuKhoa(goc.title).length === 0) return [];
+
+  // Độ hiếm tính trên chính tập đang xét, kể cả bài gốc.
+  const idf = dungBangDoHiem([
+    goc.title,
+    ...ungVien.map((u) => u.title),
+  ]);
 
   return ungVien
     .filter((u) => u.id !== goc.id)
-    .map((bai) => ({ bai, diem: diemLienQuan(goc, bai) }))
-    .filter((r) => r.diem >= NGUONG_LIEN_QUAN && r.diem * tuGoc.length >= SO_TU_TRUNG_TOI_THIEU)
+    .map((bai) => ({ bai, diem: diemLienQuan(goc, bai, idf) }))
+    .filter(
+      (r) =>
+        r.diem >= NGUONG_LIEN_QUAN &&
+        soTuTrungTieuDe(goc, r.bai) >= SO_TU_TRUNG_TOI_THIEU &&
+        soCapTrung(goc, r.bai) >= SO_CAP_TRUNG_TOI_THIEU,
+    )
     .sort((a, b) => b.diem - a.diem)
     .slice(0, gioiHan);
 }

@@ -26,17 +26,20 @@ const CUA_SO_NGAY = 3;
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   const articles = await sql`
-    SELECT id, source_id, title, summary, coalesce(published_at, fetched_at) AS moc
-    FROM news_articles WHERE id::text = ${id} LIMIT 1`;
+    SELECT a.id, a.title, a.summary, s.homepage_url,
+           coalesce(a.published_at, a.fetched_at) AS moc
+    FROM news_articles a JOIN news_sources s ON s.id = a.source_id
+    WHERE a.id::text = ${id} LIMIT 1`;
   const article = articles[0];
   if (!article) return NextResponse.json({ error: "Không tìm thấy bài tin." }, { status: 404 });
 
   const moc = new Date(String(article.moc)).toISOString();
 
   /*
-   * Bắt buộc KHÁC NGUỒN, không phải chỉ ưu tiên như trước. Tính năng tên là
-   * "so sánh nguồn"; trả về bài của chính tờ báo đó không trả lời được câu hỏi
-   * người dùng đang hỏi.
+   * Bắt buộc KHÁC TÒA SOẠN, và phân biệt bằng homepage_url chứ không bằng
+   * source_id. Mỗi báo giờ có nhiều feed chuyên mục, nên cùng một tòa soạn có
+   * nhiều source_id; so theo source_id sẽ ghép Tuổi Trẻ mục Pháp luật với Tuổi
+   * Trẻ mục Kinh doanh và gọi đó là "so sánh nguồn".
    */
   const ungVien = await sql`
     SELECT a.id, a.title, a.summary, a.url, a.published_at, a.topics,
@@ -44,7 +47,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     FROM news_articles a
     JOIN news_sources s ON s.id = a.source_id
     WHERE a.id <> ${id}::uuid
-      AND a.source_id <> ${article.source_id}::uuid
+      AND s.homepage_url <> ${String(article.homepage_url)}
       AND coalesce(a.published_at, a.fetched_at)
             BETWEEN ${moc}::timestamptz - ${`${CUA_SO_NGAY} days`}::interval
                 AND ${moc}::timestamptz + ${`${CUA_SO_NGAY} days`}::interval
