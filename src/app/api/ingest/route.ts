@@ -6,6 +6,7 @@ import { ingestDocument, IngestDocumentError } from "@/lib/ingest/pipeline";
 import { toContractWarnings } from "@/lib/ingest/warnings";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 const uploadSchema = z

@@ -4,6 +4,7 @@ import { timKiem } from "@/lib/retrieval";
 import type { Citation } from "@/types/contract";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const requestSchema = z.object({
   question: z.string().trim().min(1).max(2_000),

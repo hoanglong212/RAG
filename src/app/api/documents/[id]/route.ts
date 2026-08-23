@@ -6,6 +6,7 @@ import { toContractWarnings } from "@/lib/ingest/warnings";
 import type { DocNode, DocumentDetail, LoaiVanBan } from "@/types/contract";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const idSchema = z.string().uuid();
 

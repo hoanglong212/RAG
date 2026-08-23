@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-12T00:00:00+07:00",
+  "title": "Design System: Tra cứu văn bản hành chính",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "neutral", "displayName": "Mực in", "canonical": "#10141b" },
+      "label": { "role": "neutral", "displayName": "Mực nhãn", "canonical": "#586275" },
+      "desk": { "role": "neutral", "displayName": "Mặt bàn", "canonical": "#d7dce5" },
+      "tray": { "role": "neutral", "displayName": "Khay công cụ", "canonical": "#e7eaef" },
+      "paper": { "role": "neutral", "displayName": "Giấy đọc", "canonical": "#fdfcfa" },
+      "pen-blue": { "role": "primary", "displayName": "Xanh bút bi", "canonical": "#24406b" },
+      "pen-blue-deep": { "role": "primary", "displayName": "Navy bìa hồ sơ", "canonical": "#16294a" },
+      "citation-red": { "role": "secondary", "displayName": "Đỏ mực dấu", "canonical": "#a8172c" },
+      "citation-anchor": { "role": "secondary", "displayName": "Vàng neo trích dẫn", "canonical": "#fbf1cf" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Tiêu đề bìa hồ sơ và số liệu nổi bật." },
+      "body": { "displayName": "UI Body", "purpose": "Giao diện tiếng Việt và nội dung thao tác." },
+      "document": { "displayName": "Document", "purpose": "Chỉ dùng cho văn bản gốc." },
+      "label": { "displayName": "Label", "purpose": "Nhãn ngắn, chữ hoa có tracking." },
+      "code": { "displayName": "Document Code", "purpose": "Số hiệu văn bản và số liệu." }
+    },
+    "shadows": [
+      { "name": "paper-rest", "value": "0 1px 2px rgb(16 20 27 / 0.06), 0 1px 1px rgb(16 20 27 / 0.04)", "purpose": "Card giấy ở trạng thái nghỉ." },
+      { "name": "control-lift", "value": "0 2px 4px rgb(16 20 27 / 0.06), 0 8px 16px -8px rgb(16 20 27 / 0.12)", "purpose": "Nút chính, filter chọn và nav active." },
+      { "name": "folder-modal-lift", "value": "0 12px 32px -8px rgb(16 20 27 / 0.22)", "purpose": "Bìa hồ sơ, menu di động và trạng thái nổi bật." }
+    ],
+    "motion": [
+      { "name": "interaction", "value": "200ms cubic-bezier(0.2, 0, 0, 1)", "purpose": "Hover, focus và active của điều khiển." },
+      { "name": "entrance", "value": "380ms cubic-bezier(0.2, 0, 0, 1)", "purpose": "Một lần khi bìa, dialog hoặc trạng thái xuất hiện." },
+      { "name": "stamp", "value": "380ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Đóng dấu và neo citation giảm tốc nhanh." },
+      { "name": "search-sweep", "value": "900ms cubic-bezier(0.2, 0, 0, 1) 300ms", "purpose": "Vạch xanh quét một lần trên ô hỏi." },
+      { "name": "reduced-motion", "value": "0ms", "purpose": "Tắt keyframe và transition khi prefers-reduced-motion là reduce." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Hành động chính xanh bút bi, nhấc nhẹ khi hover và hạ khi active.",
+      "html": "<button class=\"ds-btn-primary\">Tra cứu</button>",
+      "css": ".ds-btn-primary { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border: 0; border-radius: var(--bo); background: var(--but-xanh); color: var(--giay); font: 600 14px/1.25 var(--chu-ui); box-shadow: var(--do-noi-vua); transition: background-color var(--nhip), color var(--nhip), transform var(--nhip), box-shadow var(--nhip); } .ds-btn-primary:hover { background: var(--but-xanh-sau); transform: translateY(-1px); box-shadow: var(--do-noi-cao); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 2px solid var(--but-xanh); outline-offset: 2px; }"
+    },
+    {
+      "name": "Paper Card",
+      "kind": "card",
+      "refersTo": "card-paper",
+      "description": "Bề mặt giấy chuẩn cho nội dung và số liệu.",
+      "html": "<article class=\"ds-card-paper\"><strong>Văn bản trong kho</strong><p>1.248</p></article>",
+      "css": ".ds-card-paper { padding: 20px; border-radius: var(--bo-lon); background: var(--giay); color: var(--muc-in); box-shadow: var(--do-noi), 0 0 0 1px rgb(16 20 27 / 0.035); font-family: var(--chu-ui); } .ds-card-paper strong { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--nhan); } .ds-card-paper p { margin: 16px 0 0; font: 600 36px/1.05 var(--chu-ma); }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Trường giấy lõm trong khay với focus xanh rõ ràng.",
+      "html": "<input class=\"ds-input\" placeholder=\"Nhập số hiệu hoặc từ khóa\" />",
+      "css": ".ds-input { width: 100%; min-height: 44px; padding: 10px 14px; border: 0; border-radius: var(--bo); background: var(--giay); color: var(--muc-in); font: 400 14px/1.7 var(--chu-ui); box-shadow: inset 0 0 0 1px var(--ke-mo), 0 1px 2px rgb(16 20 27 / 0.03); transition: box-shadow var(--nhip), background-color var(--nhip); } .ds-input:hover { background: #fff; } .ds-input:focus { background: #fff; outline: 2px solid var(--but-xanh); outline-offset: 2px; box-shadow: inset 0 0 0 1px var(--but-xanh), 0 8px 20px -14px var(--muc-in); }"
+    },
+    {
+      "name": "Selected Filter",
+      "kind": "chip",
+      "refersTo": "filter-selected",
+      "description": "Filter pill đang chọn, dùng xanh bút bi và aria-pressed.",
+      "html": "<button class=\"ds-filter-selected\" aria-pressed=\"true\">Tất cả</button>",
+      "css": ".ds-filter-selected { min-height: 36px; padding: 8px 14px; border: 0; border-radius: 999px; background: var(--but-xanh); color: var(--giay); font: 600 12px/1.4 var(--chu-ui); box-shadow: var(--do-noi-vua); transition: background-color var(--nhip), transform var(--nhip), box-shadow var(--nhip); } .ds-filter-selected:hover { transform: translateY(-1px); } .ds-filter-selected:active { transform: translateY(1px); } .ds-filter-selected:focus-visible { outline: 2px solid var(--but-xanh); outline-offset: 2px; }"
+    },
+    {
+      "name": "Active Desktop Navigation",
+      "kind": "nav",
+      "description": "Mục đang mở nhấc khỏi header mực thành một thẻ giấy.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-active\" href=\"#\" aria-current=\"page\">Tra cứu</a></nav>",
+      "css": ".ds-nav { min-height: 64px; display: flex; align-items: center; padding: 0 20px; background: var(--muc-in); font-family: var(--chu-ui); } .ds-nav-active { padding: 8px 12px; border-radius: var(--bo); background: var(--giay); color: var(--muc-in); font-size: 13px; font-weight: 500; text-decoration: none; box-shadow: var(--do-noi-vua); } .ds-nav-active:focus-visible { outline: 2px solid var(--but-xanh); outline-offset: 2px; }"
+    },
+    {
+      "name": "Page Header",
+      "kind": "custom",
+      "refersTo": "page-header",
+      "description": "Bìa hồ sơ navy mở đầu mọi trang làm việc.",
+      "html": "<header class=\"ds-page-header\"><h1>Kho văn bản</h1><p>Tìm, đọc và kiểm chứng văn bản gốc.</p></header>",
+      "css": ".ds-page-header { position: relative; overflow: hidden; padding: 24px 20px; border-radius: var(--bo-lon); background-color: var(--but-xanh-sau); background-image: repeating-linear-gradient(135deg, transparent 0 14px, rgb(255 255 255 / 0.025) 14px 15px); color: var(--giay); box-shadow: var(--do-noi-cao); font-family: var(--chu-ui); } .ds-page-header h1 { margin: 0; font-size: 32px; font-weight: 600; line-height: 1.05; letter-spacing: -0.03em; } .ds-page-header p { max-width: 42rem; margin: 12px 0 0; color: rgb(253 252 250 / 0.7); font-size: 14px; line-height: 1.7; }"
+    },
+    {
+      "name": "Search Panel",
+      "kind": "custom",
+      "description": "Bề mặt hỏi đáp giấy nổi, nêu rõ phạm vi và cam kết dẫn nguồn.",
+      "html": "<form class=\"ds-search-panel\"><span>Tra cứu trên toàn bộ kho văn bản</span><textarea placeholder=\"Hỏi bằng tiếng Việt thường\"></textarea><button>Tra cứu</button></form>",
+      "css": ".ds-search-panel { position: relative; display: grid; gap: 12px; padding: 20px; overflow: hidden; border-radius: var(--bo-lon); background: var(--giay); color: var(--muc-in); box-shadow: var(--do-noi-vua), 0 0 0 1px rgb(16 20 27 / 0.045); font-family: var(--chu-ui); transition: box-shadow var(--nhip), transform var(--nhip); } .ds-search-panel::before { content: ''; position: absolute; top: -1px; left: 16px; right: 16px; height: 2px; background: linear-gradient(90deg, transparent, var(--but-xanh), transparent); opacity: 0.22; } .ds-search-panel:focus-within { transform: translateY(-1px); box-shadow: var(--do-noi-cao); } .ds-search-panel span { color: var(--but-xanh); font-size: 12px; font-weight: 600; } .ds-search-panel textarea { min-height: 84px; resize: none; border: 0; background: transparent; color: var(--muc-in); font: 500 17px/1.7 var(--chu-ui); } .ds-search-panel textarea:focus { outline: none; } .ds-search-panel button { justify-self: end; min-height: 40px; padding: 8px 16px; border: 0; border-radius: var(--bo); background: var(--but-xanh); color: var(--giay); font-weight: 600; } .ds-search-panel button:focus-visible { outline: 2px solid var(--but-xanh); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Bàn tra cứu hồ sơ",
+    "overview": "Giao diện là một dụng cụ mở văn bản hành chính, không phải bản sao của một tờ công văn. Thế giới vật chất có ba lớp rõ ràng: bàn làm nền, khay giữ công cụ và giấy dành cho nội dung cần đọc. Header màu mực tạo gáy cứng cho toàn bộ sản phẩm; đầu mỗi trang là một bìa hồ sơ xanh navy trước khi người dùng đi vào các tờ giấy thao tác. Hệ thống giữ vẻ nghiêm túc, sáng và có trật tự, nhưng không biến thành trang báo hay giao diện hành chính dày đặc. Provenance là trọng tâm: màu đỏ chỉ xuất hiện khi một chi tiết có thể đưa người dùng về căn cứ gốc.",
+    "keyCharacteristics": [
+      "Ba lớp vật liệu bàn, khay và giấy tạo chiều sâu trước khi dùng bóng.",
+      "Xanh bút bi điều khiển hành động; đỏ mực dấu chứng minh nguồn.",
+      "Tiêu đề trang navy giống bìa hồ sơ, nội dung nằm trên giấy sáng.",
+      "Chuyển động ngắn, có mục đích và luôn có phương án reduced-motion.",
+      "Component dùng chung là nguồn hình thức chuẩn cho mọi trang."
+    ],
+    "rules": [
+      { "name": "The One Red Meaning Rule", "body": "Thấy đỏ nghĩa là có căn cứ và có đường về nguồn; không dùng đỏ cho nút, cảnh báo hoặc biểu đồ.", "section": "colors" },
+      { "name": "The Three Materials Rule", "body": "Phân cấp bằng bàn, khay và giấy trước khi tăng bóng hoặc thêm đường viền.", "section": "colors" },
+      { "name": "The Tool-versus-Document Rule", "body": "Sans-serif là công cụ; serif là tài liệu gốc. Không dùng serif để trang trí card hoặc heading giao diện.", "section": "typography" },
+      { "name": "The Tonal-First Rule", "body": "Nếu đổi vật liệu đã đủ phân cấp thì không tăng bóng.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do dùng shared kit cho nút, card, trường, filter, page header và navigation.",
+      "Do giữ chữ giao diện đạt tối thiểu 4.5:1 và để focus bàn phím luôn nhìn thấy.",
+      "Do đưa nguồn lên trước lời giải thích khi trình bày kết quả tra cứu.",
+      "Do tắt keyframe và đưa thời lượng transition về 0 khi người dùng bật reduced motion."
+    ],
+    "donts": [
+      "Don't dùng đỏ ngoài provenance, citation và anchor về văn bản gốc.",
+      "Don't biến bề mặt đọc thành nhiều card trắng giống nhau hoặc thêm blur kính.",
+      "Don't dùng serif ngoài nội dung văn bản gốc, hoặc chữ hoa dài cho tiếng Việt.",
+      "Don't hiển thị nav desktop dưới xl hay thay dialog di động bằng menu không quản lý focus."
+    ]
+  }
+}

@@ -7,6 +7,7 @@ import type { Citation } from "@/types/contract";
 import type { PenaltyResult } from "@/types/platform";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const schema = z.object({ scenario: z.string().trim().min(10).max(5_000) });
 

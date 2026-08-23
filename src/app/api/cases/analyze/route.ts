@@ -6,6 +6,7 @@ import { NEWS_TOPICS } from "@/types/news";
 import type { CaseAnalysis } from "@/types/platform";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const schema = z.object({

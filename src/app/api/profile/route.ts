@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import type { UserProfileView } from "@/types/platform";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const updateSchema = z.object({
   displayName: z.string().trim().min(1).max(100),

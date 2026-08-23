@@ -4,6 +4,7 @@ import { sql } from "@/lib/db/client";
 import type { CompareChange } from "@/types/platform";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const schema = z.object({ left: z.string().uuid(), right: z.string().uuid() }).refine((value) => value.left !== value.right);
 

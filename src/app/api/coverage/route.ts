@@ -4,6 +4,7 @@ import { NEWS_TOPICS, type NewsTopic } from "@/types/news";
 import type { CoverageRow } from "@/types/platform";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const rows = await sql`

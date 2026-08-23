@@ -13,6 +13,7 @@ import { chunks, documents } from "@/lib/db/schema";
 import type { DocumentSummary, LoaiVanBan } from "@/types/contract";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const querySchema = z.object({
   page: z.coerce.number().int().positive().default(1),

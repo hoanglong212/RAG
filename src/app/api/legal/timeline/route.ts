@@ -4,6 +4,7 @@ import { sql } from "@/lib/db/client";
 import type { TimelineDocument, TimelineRelation } from "@/types/platform";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const schema = z.object({ documentId: z.string().uuid(), at: z.coerce.date().optional() });
 

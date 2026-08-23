@@ -6,6 +6,7 @@ import { NEWS_TOPICS } from "@/types/news";
 import { TRANG_THAI_HO_SO, type LegalCaseView } from "@/types/platform";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const createSchema = z.object({
   title: z.string().trim().min(1).max(200),

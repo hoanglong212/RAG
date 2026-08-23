@@ -1,0 +1,184 @@
+
+> rag-app@0.1.0 dev
+> next dev -p 3000
+
+   ▲ Next.js 15.5.22
+   - Local:        http://localhost:3000
+   - Network:      http://26.193.119.179:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 8.3s
+ ○ Compiling /api/chat ...
+ ✓ Compiled /api/chat in 4.1s (510 modules)
+ POST /api/chat 200 in 7279ms
+ ○ Compiling / ...
+ ✓ Compiled / in 9.9s (725 modules)
+ GET / 200 in 10566ms
+ ○ Compiling /api/news ...
+ ✓ Compiled /api/news in 1149ms (964 modules)
+ GET /api/eval/runs 200 in 1759ms
+ GET /api/coverage 200 in 1776ms
+ GET /api/news?pageSize=4 200 in 1819ms
+ GET /api/stats 200 in 1845ms
+ ○ Compiling /documents ...
+ ✓ Compiled /documents in 773ms (1011 modules)
+ GET /documents 200 in 1269ms
+ ○ Compiling /api/documents ...
+ ✓ Compiled /api/documents in 917ms (1013 modules)
+ GET /api/stats 200 in 2502ms
+ GET /api/documents 200 in 2591ms
+ ○ Compiling /api/chat ...
+ ✓ Compiled /api/chat in 637ms (711 modules)
+ GET /documents 200 in 397ms
+ POST /api/chat 200 in 2038ms
+ ○ Compiling /api/documents/[id] ...
+ ✓ Compiled /api/documents/[id] in 896ms (1019 modules)
+ GET /api/documents/f484b066-b53b-4701-b4f5-7eb96e7c8884 200 in 3114ms
+ ✓ Compiled in 1449ms (319 modules)
+ ✓ Compiled in 771ms (319 modules)
+ GET /documents 200 in 1074ms
+ GET /documents 200 in 138ms
+ ✓ Compiled in 557ms (319 modules)
+ GET /documents 200 in 94ms
+ ✓ Compiled in 593ms (319 modules)
+ GET /documents 200 in 149ms
+ ✓ Compiled in 204ms (319 modules)
+ GET /documents 200 in 62ms
+ ✓ Compiled in 137ms (319 modules)
+ GET /documents 200 in 51ms
+ ✓ Compiled in 189ms (319 modules)
+   Reload env: .env.local
+ GET /documents 200 in 155ms
+ ✓ Compiled in 440ms (772 modules)
+ GET /documents 200 in 295ms
+ ✓ Compiled /api/chat in 120ms (699 modules)
+ GET /documents 200 in 2411ms
+ POST /api/chat 200 in 3544ms
+ POST /api/chat 200 in 2469ms
+ ✓ Compiled in 693ms (319 modules)
+ ✓ Compiled in 423ms (319 modules)
+ ✓ Compiled in 299ms (319 modules)
+ ✓ Compiled in 429ms (319 modules)
+ ✓ Compiled in 305ms (319 modules)
+ ✓ Compiled in 450ms (319 modules)
+ ✓ Compiled in 465ms (319 modules)
+ ✓ Compiled in 380ms (319 modules)
+ ✓ Compiled in 428ms (319 modules)
+ ✓ Compiled in 1790ms (319 modules)
+ ✓ Compiled in 379ms (319 modules)
+ ✓ Compiled in 405ms (319 modules)
+ ✓ Compiled in 263ms (319 modules)
+ ✓ Compiled in 338ms (319 modules)
+ ✓ Compiled in 301ms (319 modules)
+ ✓ Compiled in 364ms (319 modules)
+ ✓ Compiled in 2.4s (786 modules)
+ ✓ Compiled in 386ms (319 modules)
+ ✓ Compiled in 288ms (319 modules)
+ ✓ Compiled in 298ms (319 modules)
+ ✓ Compiled in 297ms (319 modules)
+ ✓ Compiled in 250ms (319 modules)
+ ✓ Compiled in 289ms (319 modules)
+ ✓ Compiled in 252ms (319 modules)
+ ✓ Compiled in 297ms (319 modules)
+ ✓ Compiled in 272ms (319 modules)
+ ✓ Compiled in 502ms (319 modules)
+ ✓ Compiled in 269ms (319 modules)
+ ✓ Compiled in 290ms (319 modules)
+ ✓ Compiled in 259ms (319 modules)
+ ✓ Compiled in 1026ms (784 modules)
+ ✓ Compiled in 845ms (786 modules)
+ ✓ Compiled in 1032ms (796 modules)
+ ✓ Compiled in 836ms (796 modules)
+ ✓ Compiled in 329ms (324 modules)
+ GET /documents 200 in 614ms
+ ✓ Compiled /api/stats in 442ms (489 modules)
+ ✓ Compiled (699 modules)
+ GET /favicon.ico 200 in 4074ms
+ GET /api/documents 200 in 3958ms
+ GET /api/stats 200 in 3966ms
+ ✓ Compiled /api/chat in 277ms (710 modules)
+ ✓ Compiled /api/documents/[id] in 296ms (713 modules)
+ GET /api/documents/f484b066-b53b-4701-b4f5-7eb96e7c8884 200 in 490ms
+ POST /api/chat 200 in 4021ms
+ ✓ Compiled in 1365ms (1037 modules)
+ GET /documents 200 in 1338ms
+ GET /favicon.ico 200 in 37ms
+ GET /api/documents 200 in 122ms
+ GET /favicon.ico 200 in 139ms
+ GET /api/stats 200 in 136ms
+ ✓ Compiled in 934ms (1037 modules)
+ GET /documents 200 in 153ms
+ ✓ Compiled /_not-found in 494ms (1028 modules)
+ GET /favicon.ico 404 in 527ms
+ ✓ Compiled in 955ms (1028 modules)
+ GET /documents 200 in 181ms
+ ✓ Compiled in 973ms (1028 modules)
+ GET /documents 200 in 120ms
+ ✓ Compiled in 979ms (1028 modules)
+ GET /documents 200 in 279ms
+ GET /api/documents 200 in 183ms
+ GET /api/stats 200 in 185ms
+ GET /favicon.ico 200 in 30ms
+ ✓ Compiled in 776ms (1028 modules)
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.1s (1361 modules)
+ GET /documents 500 in 3435ms
+ GET /documents 200 in 209ms
+ GET /documents 200 in 48ms
+ GET /documents 200 in 288ms
+ GET /favicon.ico 200 in 35ms
+ GET /favicon.ico 200 in 42ms
+ GET /api/stats 200 in 144ms
+ GET /api/documents 200 in 173ms
+ ✓ Compiled in 434ms (481 modules)
+ ✓ Compiled in 460ms (481 modules)
+ GET /documents 200 in 466ms
+ GET /documents 200 in 55ms
+ GET /favicon.ico 200 in 22ms
+ GET /documents 200 in 174ms
+ GET /favicon.ico 200 in 21ms
+ GET /favicon.ico 200 in 30ms
+ GET /api/documents 200 in 57ms
+ GET /api/stats 200 in 57ms
+ ✓ Compiled /api/chat in 228ms (905 modules)
+ ✓ Compiled /api/documents/[id] in 333ms (908 modules)
+ GET /api/documents/f484b066-b53b-4701-b4f5-7eb96e7c8884 200 in 452ms
+ POST /api/chat 200 in 2839ms
+ ✓ Compiled in 932ms (1288 modules)
+ GET /documents 200 in 330ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 576ms (1279 modules)
+ ✓ Compiled in 895ms (1293 modules)
+ GET /documents 200 in 193ms
+ GET /documents 200 in 298ms
+ GET /favicon.ico 500 in 60ms
+ GET /favicon.ico 500 in 72ms
+ ✓ Compiled /_error in 412ms (1375 modules)
+ GET /api/documents 500 in 978ms
+ GET /api/stats 500 in 977ms
+ ✓ Compiled in 929ms (1389 modules)
+ GET /documents 200 in 179ms
+ GET /favicon.ico 200 in 39ms
+ ✓ Compiled in 1158ms (1389 modules)
+ GET /documents 200 in 145ms
+ GET /favicon.ico 200 in 31ms
+ ✓ Compiled in 929ms (1389 modules)
+ GET /documents 200 in 115ms
+ ✓ Compiled in 262ms (481 modules)
+ ✓ Compiled in 323ms (481 modules)
+ GET /documents 200 in 333ms
+ GET /documents 200 in 158ms
+ ✓ Compiled in 327ms (481 modules)
+ ✓ Compiled in 498ms (481 modules)
+ GET /documents 200 in 509ms
+ GET /documents 200 in 52ms
+ GET /documents 200 in 259ms
+ GET /api/documents 404 in 361ms
+ GET /api/stats 404 in 358ms
+ POST /api/chat 404 in 262ms
+ POST /api/chat 404 in 278ms
+ POST /api/chat 404 in 258ms
+ POST /api/chat 404 in 317ms
+ POST /api/chat 404 in 259ms
+ GET /api/stats 404 in 263ms

@@ -6,6 +6,7 @@ import { NEWS_TOPICS, type NewsTopic } from "@/types/news";
 import type { WatchlistView } from "@/types/platform";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100),

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const TEMPLATES = [
   { id: "warranty", name: "Yêu cầu thực hiện bảo hành", fields: ["fullName", "address", "seller", "product", "purchaseDate", "request"] },
