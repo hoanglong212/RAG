@@ -4,8 +4,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu \
     && pip install --no-cache-dir -r requirements.txt
+ENV MODEL_NAME=bkai-foundation-models/vietnamese-bi-encoder
+RUN python -c "import os; from sentence_transformers import SentenceTransformer; SentenceTransformer(os.environ['MODEL_NAME'])"
 COPY app.py .
 
-ENV MODEL_NAME=bkai-foundation-models/vietnamese-bi-encoder
 EXPOSE 8000
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

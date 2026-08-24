@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import unicodedata
-from functools import lru_cache
+from threading import Lock, Thread
 from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, HTTPException
@@ -24,31 +24,49 @@ class EmbedResponse(BaseModel):
     embeddings: list[list[float]]
 
 
-@lru_cache(maxsize=1)
+_model: SentenceTransformer | None = None
+_model_lock = Lock()
+
+
 def get_model() -> SentenceTransformer:
+    global _model
+    if _model is not None:
+        return _model
+
     import torch
     from sentence_transformers import SentenceTransformer
 
-    model = SentenceTransformer(MODEL_NAME, device="cpu")
-    quantized_model = torch.quantization.quantize_dynamic(
-        model,
-        {torch.nn.Linear},
-        dtype=torch.qint8,
-    )
-    quantized_model.eval()
-    return quantized_model
+    with _model_lock:
+        if _model is None:
+            _model = SentenceTransformer(
+                MODEL_NAME,
+                device="cpu",
+                model_kwargs={"dtype": torch.float16},
+            )
+            _model.eval()
+    return _model
 
 
 app = FastAPI(title="Vietnamese embedding service", version="1.0.0")
 
 
+@app.on_event("startup")
+def warm_model() -> None:
+    Thread(target=get_model, name="embedding-model-warmup", daemon=True).start()
+
+
+@app.api_route("/", methods=["GET", "HEAD"])
+def root() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 @app.get("/health")
-def health() -> dict[str, str | int]:
-    model = get_model()
+def health() -> dict[str, str | int | bool]:
     return {
-        "status": "ok",
+        "status": "ok" if _model is not None else "warming",
         "model": MODEL_NAME,
-        "dimensions": model.get_sentence_embedding_dimension(),
+        "dimensions": 768,
+        "model_loaded": _model is not None,
     }
 
 
