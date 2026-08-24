@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from pyvi import ViTokenizer
 from sentence_transformers import SentenceTransformer
+import torch
 
 MODEL_NAME = os.getenv(
     "MODEL_NAME", "bkai-foundation-models/vietnamese-bi-encoder"
@@ -22,7 +23,14 @@ class EmbedResponse(BaseModel):
 
 @lru_cache(maxsize=1)
 def get_model() -> SentenceTransformer:
-    return SentenceTransformer(MODEL_NAME)
+    model = SentenceTransformer(MODEL_NAME, device="cpu")
+    quantized_model = torch.quantization.quantize_dynamic(
+        model,
+        {torch.nn.Linear},
+        dtype=torch.qint8,
+    )
+    quantized_model.eval()
+    return quantized_model
 
 
 app = FastAPI(title="Vietnamese embedding service", version="1.0.0")
