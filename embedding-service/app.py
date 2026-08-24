@@ -1,12 +1,16 @@
+from __future__ import annotations
+
 import os
 import unicodedata
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from pyvi import ViTokenizer
-from sentence_transformers import SentenceTransformer
-import torch
+
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
 
 MODEL_NAME = os.getenv(
     "MODEL_NAME", "bkai-foundation-models/vietnamese-bi-encoder"
@@ -23,6 +27,9 @@ class EmbedResponse(BaseModel):
 
 @lru_cache(maxsize=1)
 def get_model() -> SentenceTransformer:
+    import torch
+    from sentence_transformers import SentenceTransformer
+
     model = SentenceTransformer(MODEL_NAME, device="cpu")
     quantized_model = torch.quantization.quantize_dynamic(
         model,
