@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-from pyvi import ViTokenizer
 
 if TYPE_CHECKING:
     from sentence_transformers import SentenceTransformer
@@ -55,6 +54,8 @@ def health() -> dict[str, str | int]:
 
 @app.post("/embed", response_model=EmbedResponse)
 def embed(request: EmbedRequest) -> EmbedResponse:
+    from pyvi import ViTokenizer
+
     if any(not text.strip() for text in request.texts):
         raise HTTPException(status_code=422, detail="texts must not contain empty strings")
     tokenized = [
